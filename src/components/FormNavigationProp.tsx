@@ -20,7 +20,12 @@ const FormNavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
 
   return (
     <>
-      <AppBar position="sticky" color="default" elevation={1}>
+      <AppBar
+        position="sticky"
+        color="transparent"
+        elevation={1}
+        sx={{ backgroundColor: " #31383" }}
+      >
         <Toolbar sx={{ justifyContent: "center" }}>
           <Box display="flex" gap="2rem">
             {navItems.map((item) => (
@@ -30,12 +35,12 @@ const FormNavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 variant={
                   location.pathname === item.path ? "contained" : "text"
                 }
-                color="primary"
                 sx={{
                   fontWeight: "bold",
                   borderRadius: "20px",
                   px: 5,
                   py: 1,
+                  color: "#31383",
                 }}
               >
                 {item.label}

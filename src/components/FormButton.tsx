@@ -1,4 +1,3 @@
-import React from 'react';
 import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import SaveIcon from '@mui/icons-material/Save';
@@ -19,16 +18,6 @@ const PaleGreenButton = styled(Button)(({ theme }) => ({
     fontSize: '10px',
   },
 }));
-
-// ✅ ปรับให้รับ props แบบปุ่มปกติ
-// const PGButton = ({ children, ...props }: React.ComponentProps<typeof Button>) => {
-//   return (
-//     <PaleGreenButton {...props}>
-//       {props.startIcon ?? <SaveIcon />}
-//       {children}
-//     </PaleGreenButton>
-//   );
-// };
 
 const PGButton = () => {
   return <PaleGreenButton type="submit" startIcon={<SaveIcon />} >save</PaleGreenButton>;

@@ -39,7 +39,7 @@ const LabeledCheckbox: React.FC<Props> = ({
           <Typography
             variant="subtitle2"
             fontWeight="bold"
-            color="text.primary"
+            color="#0290c4"
             display="block"
           >
             {caption}
@@ -48,7 +48,7 @@ const LabeledCheckbox: React.FC<Props> = ({
         {defination && (
           <Typography
             variant="caption"
-            color="text.secondary"
+            color="#74aa15"
             display="block"
           >
             {defination}

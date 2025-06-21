@@ -348,6 +348,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                     onChange={handleInputChange}
                     error={formErrors.c_activity_data}
                   />
+                  <div style={{ marginBottom: "1.5rem" }}></div>
                   <LabeledTextField
                     type="number"
                     caption="Net calorific value (NCV)"
@@ -464,6 +465,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                     onChange={handleInputChange}
                     error={formErrors.p_activity_data}
                   />
+                  <div style={{ marginBottom: "1.5rem" }}></div>
                   <LabeledTextField
                     type="number"
                     caption="Net calorific value (NCV)"
@@ -656,6 +658,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                     onChange={handleInputChange}
                     error={formErrors.m_activity_data}
                   />
+                  <div style={{ marginBottom: "1.5rem" }}></div>
                   <LabeledTextField
                     type="number"
                     caption="Net calorific value (NCV)"

@@ -14,6 +14,7 @@ import {
   fetchCountries,
   CountryOption,
 } from "../components/dropdown/contriesmap";
+import { Margin } from "@mui/icons-material";
 
 interface InstallationFormProps {
   data: {
@@ -199,7 +200,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
               รายละเอียดสถานประกอบการ
             </Typography>
           </Box>
-          <Section title="Reporting Period" subtitle="" hasError={false}>
+
+          <Section title="Reporting Period" subtitle="" hasError={false} defaultExpanded>
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
               <div style={{ flex: 1 }}>
@@ -231,7 +233,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
           </Section>
 
           <Section
-            defaultExpanded
             title="Installation form"
             subtitle=""
             hasError={Object.values(formErrors).some((e) => !!e)}
@@ -336,6 +337,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
                   onChange={() => { }}
                   error={formErrors.unlocode}
                 />
+                <div style={{ marginBottom: "1.5rem" }}></div>
                 <LabeledTextField
                   caption="P.O. Box"
                   defination="หมายเลขตู้ไปรษณีย์ (ถ้ามี) (P.O. Box)"

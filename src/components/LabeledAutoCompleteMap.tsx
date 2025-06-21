@@ -41,14 +41,14 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
   return (
     <>
       {caption && (
-        <Typography variant="caption" color="text" style={{ fontWeight: 600 }}>
+        <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 }}>
           {caption}
         </Typography>
       )}
       {defination && (
         <Typography
           variant="caption"
-          color="textSecondary"
+          color="#74aa15"
           style={{ marginBottom: "0.25rem", display: "block" }}
         >
           {defination}

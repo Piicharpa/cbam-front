@@ -28,6 +28,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = () => {
 
   useEffect(() => {
     const savedData = localStorage.getItem("precursorData");
+    console.log(savedData);
     if (savedData) {
       const data = JSON.parse(savedData);
       if (data.industry_type) setIndustryTypeId(Number(data.industry_type));
@@ -42,6 +43,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = () => {
       setGoodsData(data);
     });
   }, []);
+  
 
   useEffect(() => {
     if (industryTypeId && goodsId && goodsData.length > 0) {

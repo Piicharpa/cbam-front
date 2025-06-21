@@ -1,190 +1,122 @@
-// // src/App.tsx
-
-// import React, { useState, useEffect } from 'react'; // <-- เพิ่ม useEffect
-// import { ThemeProvider, createTheme, CssBaseline, Container } from '@mui/material';
-// import Header from './components/Header';
-// import Navigation from './components/Navigation';
-// import Register from './components/auth/Register';
-// import Login from './components/auth/Login'; // <-- เพิ่มบรรทัดนี้
-
-// const theme = createTheme({
-//   typography: {
-//     fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-//   },
-//   palette: {
-//     background: {
-//       default: '#f8f9fa'
-//     }
-//   }
-// });
-
-// function App() {
-//   const [currentPage, setCurrentPage] = useState('dashboard');
-//   const [isLoggedIn, setIsLoggedIn] = useState(false); // <-- สถานะการ Login
-//   const [showAuthForm, setShowAuthForm] = useState<'login' | 'register' | null>('login'); // <-- ควบคุมฟอร์ม Login/Register
-
-//   // ตรวจสอบสถานะการ Login เมื่อ Component โหลดครั้งแรก
-//   useEffect(() => {
-//     const token = localStorage.getItem('authToken');
-//     if (token) {
-//       setIsLoggedIn(true);
-//       setShowAuthForm(null); // ถ้ามี token แสดงว่า login แล้ว ไม่ต้องแสดงฟอร์ม
-//     } else {
-//         setShowAuthForm('login'); // ถ้ายังไม่มี token ให้แสดงฟอร์ม Login
-//         setCurrentPage('dashboard'); // หรือจะเปลี่ยนเป็น 'login' ก็ได้ค่ะ แล้วแต่พี่อยากให้ UX เป็นแบบไหน
-//     }
-//   }, []);
-
-//   const handlePageChange = (page: string) => {
-//     setCurrentPage(page);
-//     console.log('เปลี่ยนไปหน้า:', page);
-//   };
-
-//   const handleLoginSuccess = () => {
-//     setIsLoggedIn(true);
-//     setShowAuthForm(null); // ซ่อนฟอร์ม Login/Register
-//     setCurrentPage('dashboard'); // ไปหน้า Dashboard เมื่อ Login สำเร็จ
-//   };
-
-//   const handleSwitchToRegister = () => {
-//     setShowAuthForm('register');
-//   };
-
-//   const handleSwitchToLogin = () => {
-//     setShowAuthForm('login');
-//   };
-
-//   const renderCurrentPage = () => {
-//     if (showAuthForm === 'login') {
-//         return <Login onLoginSuccess={handleLoginSuccess} onSwitchToRegister={handleSwitchToRegister} />;
-//     }
-//     if (showAuthForm === 'register') {
-//         return <Register />; // Register Component ไม่มี onLoginSuccess ในตอนนี้
-//     }
-
-//     // ถ้า Login แล้ว และไม่ใช่หน้า Login/Register ให้แสดงเนื้อหาตาม currentPage
-//     switch (currentPage) {
-//       case 'dashboard':
-//         return (
-//           <div>
-//             <h2 style={{ color: '#1a1a1a', fontWeight: '600', marginBottom: '16px' }}>
-//               📊 Dashboard - หน้าหลัก
-//             </h2>
-//             <p style={{ color: '#666666', fontSize: '1rem' }}>
-//               แสดงสถิติภาภรวมของระบบ CBAM
-//             </p>
-//             {/* อาจจะเพิ่มปุ่มหรือลิงก์ไปหน้ากรอกข้อมูลได้ที่นี่ */}
-//           </div>
-//         );
-//       case 'form':
-//         return (
-//           <div>
-//             <h2 style={{ color: '#1a1a1a', fontWeight: '600', marginBottom: '16px' }}>
-//               📝 กรอกข้อมูล CBAM (สำหรับผู้ใช้งานที่ Login แล้ว)
-//             </h2>
-//             <p style={{ color: '#666666', fontSize: '1rem' }}>
-//               ฟอร์มสำหรับกรอกข้อมูล Carbon Footprint
-//             </p>
-//             {/* ตรงนี้ในอนาคตจะเปลี่ยนเป็น Component ของ Form กรอกข้อมูลจริงๆ */}
-//           </div>
-//         );
-//       case 'reports':
-//         return (
-//           <div>
-//             <h2 style={{ color: '#1a1a1a', fontWeight: '600', marginBottom: '16px' }}>
-//               📈 รายงานสรุป
-//             </h2>
-//             <p style={{ color: '#666666', fontSize: '1rem' }}>
-//               รายงานการปล่อยก๊าซเรือนกระจก
-//             </p>
-//           </div>
-//         );
-//       case 'status':
-//         return (
-//           <div>
-//             <h2 style={{ color: '#1a1a1a', fontWeight: '600', marginBottom: '16px' }}>
-//               📋 สถานะใบสมัคร
-//             </h2>
-//             <p style={{ color: '#666666', fontSize: '1rem' }}>
-//               ตรวจสอบสถานะการอนุมัติ
-//             </p>
-//           </div>
-//         );
-//       case 'admin':
-//         return (
-//           <div>
-//             <h2 style={{ color: '#1a1a1a', fontWeight: '600', marginBottom: '16px' }}>
-//               🔧 ภาพรวมระบบ (สำหรับผู้ดูแลระบบ)
-//             </h2>
-//             <p style={{ color: '#666666', fontSize: '1rem' }}>
-//               สำหรับผู้ดูแลระบบ TGO
-//             </p>
-//           </div>
-//         );
-//       default:
-//         return <div>หน้าไม่พบ</div>;
-//     }
-//   };
-
-//   return (
-//     <ThemeProvider theme={theme}>
-//       <CssBaseline />
-//       <div style={{
-//         backgroundColor: '#f8f9fa',
-//         minHeight: '100vh',
-//         padding: '24px'
-//       }}>
-//         <Container maxWidth="xl">
-//           {/* Header อาจจะต้องปรับให้แสดงชื่อผู้ใช้จริงในอนาคต */}
-//           <Header 
-//             companyName="บริษัท เอบีซี จำกัด"
-//             userStatus={isLoggedIn ? "เข้าสู่ระบบแล้ว" : "ยังไม่ได้เข้าสู่ระบบ"} // แสดงสถานะการ Login
-//           />
-
-//           {/* Navigation จะแสดงเฉพาะเมื่อ Login แล้ว หรือจะซ่อน/เปลี่ยนปุ่มก็ได้ */}
-//           {isLoggedIn && (
-//             <Navigation onPageChange={handlePageChange} />
-//           )}
-
-//           <div style={{
-//             background: 'white',
-//             borderRadius: '8px',
-//             padding: '32px',
-//             minHeight: '400px',
-//             boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-//           }}>
-//             {renderCurrentPage()}
-//           </div>
-//         </Container>
-//       </div>
-//     </ThemeProvider>
-//   );
-// }
-
-// export default App;
-
-
 // src/App.tsx
-import React from 'react';
-import { ThemeProvider, createTheme, CssBaseline, Container } from '@mui/material';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'; // Import necessary routing components
-import Header from './components/Header'; // Import the Header component
-import Dashboard from './pages/Dashboard';
-import NavigationProp from './components/NavigationProp';
-// import Form from './pages/Form'; // Import the Form page
-import Form from './pages/Formdev'; // Import the Form page
-import Report from './pages/Report';
+import React from "react";
+import {
+  ThemeProvider,
+  createTheme,
+  CssBaseline,
+  Container,
+  Box,
+  Paper,
+  alpha,
+} from "@mui/material";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import Header from "./components/Header";
+import Dashboard from "./pages/Dashboard";
+import NavigationProp from "./components/NavigationProp";
+import Form from "./pages/Formdev";
+import Report from "./pages/Report";
 
-
+// Define a custom theme based on your color palette
 const theme = createTheme({
   typography: {
-    fontFamily: "'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+    fontFamily: "'Poppins', 'Inter', 'Segoe UI', sans-serif",
+    h4: {
+      fontWeight: 600,
+    },
+    h5: {
+      fontWeight: 600,
+    },
+    h6: {
+      fontWeight: 600,
+    },
+    button: {
+      textTransform: "none",
+      fontWeight: 500,
+    },
   },
   palette: {
+    primary: {
+      main: "#0190c3",
+      light: "#07b8dd",
+      dark: "#0290c4",
+    },
+    secondary: {
+      main: "#74aa15",
+      light: "#f3f7e7",
+      dark: "#6aaa33",
+    },
+    error: {
+      main: "#c72121",
+    },
+    warning: {
+      main: "#eb810f",
+    },
+    success: {
+      main: "#6aaa33",
+    },
     background: {
-      default: '#f8f9fa'
-    }
-  }
+      default: "#f8f9fa",
+      paper: "#ffffff",
+    },
+    text: {
+      primary: "#313837",
+      secondary: "#6f6f6f",
+    },
+    grey: {
+      200: "#f7f7f7",
+      300: "#d5d5d5",
+      400: "#939393",
+      500: "#5f5f5f",
+    },
+  },
+  shape: {
+    borderRadius: 12,
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 8,
+          padding: "10px 20px",
+          boxShadow: "0 4px 10px rgba(1, 144, 195, 0.15)",
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            transform: "translateY(-2px)",
+            boxShadow: "0 6px 12px rgba(1, 144, 195, 0.25)",
+          },
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: 16,
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.06)",
+        },
+      },
+    },
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+        },
+      },
+    },
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundImage: `radial-gradient(#e7f9cd 0.5px, transparent 0.5px), radial-gradient(#e7f9cd 0.5px, #f8f9fa 0.5px)`,
+          backgroundSize: "20px 20px",
+          backgroundPosition: "0 0, 10px 10px",
+        },
+      },
+    },
+  },
 });
 
 function App() {
@@ -192,47 +124,278 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
-        <div style={{
-          backgroundColor: '#f8f9fa',
-          minHeight: '100vh',
-          padding: '24px'
-        }}>
-          <Container maxWidth="xl">
-            <Header
-              companyName="บริษัท เอบีซี จำกัด" // Company name or logo
-              userStatus="Welcome!" // Static welcome message
-            />
-            <NavigationProp>
-              <div style={{
-                background: 'white',
-                borderRadius: '8px',
-                padding: '32px',
-                minHeight: '400px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}>
+        <Box
+          sx={{
+            minHeight: "100vh",
+            pb: 6,
+            pt: 2,
+            px: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
+              position: "absolute",
+              top: -100,
+              right: -100,
+              width: 300,
+              height: 300,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${alpha(
+                "#07b8dd",
+                0.1
+              )} 0%, rgba(255,255,255,0) 70%)`,
+              zIndex: 0,
+            },
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              bottom: -80,
+              left: -80,
+              width: 250,
+              height: 250,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${alpha(
+                "#e7f9cd",
+                0.6
+              )} 0%, rgba(255,255,255,0) 70%)`,
+              zIndex: 0,
+            },
+          }}
+        >
+          <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
+            {/* Top wave decoration */}
+            <Box
+              component="svg"
+              viewBox="0 0 1440 120"
+              sx={{
+                position: "absolute",
+                top: -20,
+                left: -20,
+                right: -20,
+                zIndex: -1,
+                opacity: 0.4,
+                pointerEvents: "none",
+              }}
+            >
+              <path
+                fill="#0190c3"
+                d="M0,32L60,42.7C120,53,240,75,360,85.3C480,96,600,96,720,80C840,64,960,32,1080,21.3C1200,11,1320,21,1380,26.7L1440,32L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
+              />
+            </Box>
 
-                <Routes>
-                  {/* <Route path="/" element={<Installation />} /> Default route to Installation page */}
-                  {/* <Route path="/installation" element={<Installation />} />   */}
-                  {/* <Route path="/Verifier" element={<Verifier/>} /> 
-                <Route path="/Dashboard" element={<Dashboard/>} /> 
-                <Route path="/Goods" element={<Goods/>} />  */}
-                  <Route path="/Home" element={<Dashboard />} />
-                  <Route path="/Form" element={<Form />} />
-                  <Route path="/Formdev" element={<Form />} />
+            {/* Header Component */}
+            <Paper
+              elevation={0}
+              sx={{
+                p: 2,
+                mb: 4,
+                background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
+                borderLeft: "6px solid #74aa15",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <Header
+                companyName="บริษัท เอบีซี จำกัด"
+                userStatus="Welcome to CBAM System!"
+              />
+            </Paper>
 
-                  <Route path="/Report" element={<Report/>} />
+            {/* Main Content */}
+            
+              {/* Content Container with glass effect */}
+              <Paper
+                elevation={2}
+                sx={{
+                  borderRadius: 3,
+                  minHeight: "500px",
+                  background: "rgba(255, 255, 255, 0.9)",
+                  backdropFilter: "blur(8px)",
+                  position: "relative",
+                  overflow: "hidden",
+                  "&::before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: "5px",
+                    background: "linear-gradient(90deg, #0190c3, #07b8dd)",
+                  },
+                }}
+              >
+                <NavigationProp>
+                {/* Routes Container */}
+                <Box
+                  sx={{
+                    p: { xs: 2, sm: 3, md: 4 },
+                    minHeight: "500px",
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/Home" replace />} />
+                    <Route path="/Home" element={<Dashboard />} />
+                    <Route path="/Form" element={<Form />} />
+                    <Route path="/Report" element={<Report />} />
+                    {/* Add additional routes here */}
+                    <Route
+                      path="*"
+                      element={
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minHeight: "400px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src="/404.svg" // Add a 404 image to your public folder
+                            alt="Page not found"
+                            sx={{
+                              width: "100%",
+                              maxWidth: "300px",
+                              mb: 3,
+                            }}
+                          />
+                          <h2 style={{ color: theme.palette.text.primary }}>
+                            Page Not Found
+                          </h2>
+                          <p style={{ color: theme.palette.text.secondary }}>
+                            The page you're looking for doesn't exist or has
+                            been moved.
+                          </p>
+                        </Box>
+                      }
+                    />
+                  </Routes>
+                </Box>
 
+                {/* Decorative elements */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: -10,
+                    right: -10,
+                    width: "150px",
+                    height: "150px",
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${alpha(
+                      "#f3f7e7",
+                      0.5
+                    )} 0%, rgba(255,255,255,0) 70%)`,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "30%",
+                    left: -20,
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${alpha(
+                      "#0190c3",
+                      0.07
+                    )} 0%, rgba(255,255,255,0) 70%)`,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                />
+                </NavigationProp>
+              </Paper>
 
+              {/* Footer with version info */}
+              <Box
+                sx={{
+                  mt: 3,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  px: 1,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      width: 8,
+                      height: 8,
+                      borderRadius: "50%",
+                      bgcolor: "success.main",
+                      animation: "pulse 2s infinite",
+                      "@keyframes pulse": {
+                        "0%": {
+                          boxShadow: `0 0 0 0 ${alpha(
+                            theme.palette.success.main,
+                            0.7
+                          )}`,
+                        },
+                        "70%": {
+                          boxShadow: `0 0 0 6px ${alpha(
+                            theme.palette.success.main,
+                            0
+                          )}`,
+                        },
+                        "100%": {
+                          boxShadow: `0 0 0 0 ${alpha(
+                            theme.palette.success.main,
+                            0
+                          )}`,
+                        },
+                      },
+                    }}
+                  />
+                  <Box
+                    component="span"
+                    sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+                  >
+                    System Online
+                  </Box>
+                </Box>
 
-
-                  {/* Feel free to add more routes here */}
-                </Routes>
-
-              </div>
-            </NavigationProp>
+                <Box
+                  component="span"
+                  sx={{ fontSize: "0.75rem", color: "text.secondary" }}
+                >
+                  CBAM System v1.0.0 •{" "}
+                  <Box component="span" sx={{ color: "primary.main" }}>
+                    The Greenhouse Organization (TGO)
+                  </Box>
+                </Box>
+              </Box>
+            
           </Container>
-        </div>
+
+          {/* Bottom wave decoration */}
+          <Box
+            component="svg"
+            viewBox="0 0 1440 120"
+            preserveAspectRatio="none"
+            sx={{
+              position: "absolute",
+              bottom: -1,
+              left: 0,
+              right: 0,
+              zIndex: -1,
+              width: "100%",
+              height: "120px",
+              opacity: 0.4,
+              pointerEvents: "none",
+            }}
+          >
+            <path
+              fill="#74aa15"
+              d="M0,64L60,69.3C120,75,240,85,360,80C480,75,600,53,720,42.7C840,32,960,32,1080,48C1200,64,1320,96,1380,112L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"
+            />
+          </Box>
+        </Box>
       </Router>
     </ThemeProvider>
   );

@@ -63,7 +63,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
     m_energy_content_bio: "",
 
     fuel_balance: "",
-    greenhous_emission: "",
+    greenhouse_emission: "",
     general_info: "",
     justification: "",
     information_quality_ssurance: "",
@@ -189,16 +189,53 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
       p_co2e_bio: calculateCO2EBio().toString(),
       p_energy_content_bio: calculateEnergyContentBio().toLocaleString(),
       m_co2e_fossil: calculateMassBalanceCO2EFossil().toString(),
-      m_energy_content_fossil: calculateEnergyContentFossil().toString(),
+      m_energy_content_fossil: calculateMassBalanceContentFossil().toString(),
       m_co2e_bio: calculateMassBalanceCO2EBio().toString(),
       m_energy_content_bio: calculateMassBalanceContentBio().toString(),
     }));
   }, [
-    formValues.p_activity_data,
-    formValues.p_net_calorific_value,
-    formValues.p_emission_factor,
-    formValues.p_oxidation_factor,
-    formValues.p_biomass_content,
+    formValues.c_method, 
+    formValues.c_source_stream_name, 
+    formValues.c_activity_data, 
+    formValues.c_ad_unit, 
+    formValues.c_net_calorific_value, 
+    formValues.c_ncv_unit, 
+    formValues.c_emission_factor, 
+    formValues.c_ef_unit, 
+    formValues.c_oxidation_factor, 
+    formValues.c_biomass_content, 
+    formValues.p_method, 
+    formValues.p_source_stream_name, 
+    formValues.p_activity_data, 
+    formValues.p_ad_unit, 
+    formValues.p_net_calorific_value, 
+    formValues.p_ncv_unit, 
+    formValues.p_emission_factor, 
+    formValues.p_ef_unit, 
+    formValues.p_oxidation_factor, 
+    formValues.p_biomass_content, 
+    formValues.p_co2e_fossil, 
+    formValues.p_co2e_bio, 
+    formValues.p_energy_content_fossil, 
+    formValues.p_energy_content_bio, 
+    formValues.m_method, 
+    formValues.m_source_stream_name, 
+    formValues.m_activity_data, 
+    formValues.m_ad_unit, 
+    formValues.m_net_calorific_value, 
+    formValues.m_ncv_unit, 
+    formValues.m_carbon_content, 
+    formValues.m_biomass_content, 
+    formValues.m_co2e_fossil, 
+    formValues.m_co2e_bio, 
+    formValues.m_energy_content_fossil, 
+    formValues.m_energy_content_bio, 
+    formValues.fuel_balance, 
+    formValues.greenhouse_emission, 
+    formValues.general_info, 
+    formValues.justification, 
+    formValues.information_quality_ssurance, 
+  
   ]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -839,11 +876,11 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                   caption="Greenhouse gas emissions balance & information on data quality"
                   defination=""
                   label=""
-                  name="fuel_balance"
-                  value={formValues.fuel_balance}
+                  name="greenhouse_emission"
+                  value={formValues.greenhouse_emission}
                   onChange={handleInputChange}
-                  error={formErrors.fuel_balance} // Pass the error for the helper text
-                  helperText={formErrors.fuel_balance} // Show error as helper text
+                  error={formErrors.greenhouse_emission} // Pass the error for the helper text
+                  helperText={formErrors.greenhouse_emission} // Show error as helper text
                   inputProps={{
                     step: "any",
                     placeholder: "Enter amount",

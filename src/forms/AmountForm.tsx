@@ -91,9 +91,17 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     navigate(redirectPath);
   };
 
-  function handleAutocompleteChange(arg0: string, val: string): void {
-    throw new Error("Function not implemented.");
-  }
+  const handleAutocompleteChange = (name: string, value: string) => {
+  setFormValues((prev) => ({
+    ...prev,
+    [name]: value,
+  }));
+
+  setFormErrors((prev) => ({
+    ...prev,
+    [name]: "", // เคลียร์ error เมื่อมีการเลือกใหม่
+  }));
+};
 
   return (
     <Container

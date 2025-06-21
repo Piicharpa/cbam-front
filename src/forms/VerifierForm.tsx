@@ -204,7 +204,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange }) => {
             </Typography>
           </Box>
 
-          <Section title="Verifier Info" subtitle="ชื่อและที่อยู่ผู้ทวนสอบ" hasError={false}>
+          <Section title="Verifier Info" subtitle="ชื่อและที่อยู่ผู้ทวนสอบ" hasError={false} defaultExpanded={true}>
             <LabeledTextField
               caption="Name of the verifier"
               label=""

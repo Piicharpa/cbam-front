@@ -1,18 +1,13 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Typography,
-  TextField,
-  Grid,
-  Autocomplete,
-  Box,
-} from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { Container, Typography, Grid, Box } from "@mui/material";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import { useNavigate } from "react-router-dom";
-import LabeledAutocomplete from "../components/LabeledAutoComplete";
 import LabeledTextField from "../components/LabeledTextField";
-// import { countries } from "../components/dropdown/goods";
+import { justification } from "../components/dropdown/justification";
+import { eleconsumption } from "../components/dropdown/eleconsumption";
+import { electricitys } from "../components/dropdown/electricitys";
+import LabeledAutocomplete from "../components/LabeledAutoComplete";
 
 interface VerifierFormProps {
   redirectPath?: string;
@@ -22,23 +17,14 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
   const navigate = useNavigate();
 
   const [formValues, setFormValues] = useState({
-    installation: "",
-    economic_activity: "",
-    address: "",
-    post_code: "",
-    po_box: "",
-    city: "",
-    country: "",
-    unlocode: "",
-    lat: "",
-    long: "",
-    auth_rep: "",
-    email: "",
-    tel: "",
-    fax: "",
-    accre_mem_state: "",
-    nat_accre: "",
-    reg_num: "",
+    embedded_direct_amount: "",
+    embedded_direct_source: "",
+    electric_consumption_amount: "",
+    electric_consumption_source: "", // Fixed typo in property name
+    electricity_emission_amount: "",
+    electricity_emission_source: "",
+    embedded_indirect_amount: "", // Fixed typo in property name
+    justification: "",
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -49,22 +35,39 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const calculateIndirectEmission = () => {
+    const ec = parseFloat(formValues.electric_consumption_amount) || 0;
+    const ef = parseFloat(formValues.electricity_emission_amount) || 0;
+
+    if (!ec|| !ef) {
+      return 0;
+    }
+
+    return (ec*ef).toFixed(4);
+  };
+
+   useEffect(() => {
+      setFormValues((prev) => ({
+        ...prev,
+        embedded_indirect_amount: calculateIndirectEmission().toString()
+      }));
+    }, [
+      formValues.embedded_indirect_amount
+    ]);
+
+    
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     const requiredFields = [
-      "installation",
-      "address",
-      "post_code",
-      "city",
-      "country",
-      "auth_rep",
-      "email",
-      "tel",
-      "fax",
-      "accre_mem_state",
-      "nat_accre",
-      "reg_num",
+      "embedded_direct_amount",
+      "embedded_direct_source",
+      "electric_consumption_amount",
+      "electric_consumption_source",
+      "electricity_emission_amount",
+      "electricity_emission_source",
+      "embedded_indirect_amount", 
+      "justification",
     ];
 
     const newErrors: { [key: string]: string } = {};
@@ -88,6 +91,10 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     navigate(redirectPath);
   };
 
+  function handleAutocompleteChange(arg0: string, val: string): void {
+    throw new Error("Function not implemented.");
+  }
+
   return (
     <Container
       maxWidth="md"
@@ -95,32 +102,28 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     >
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3} alignItems="stretch">
-          <Box>
-          <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
-            Purchased precursors
-          </Typography>
-          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            รายะเอียดของวัตถุดิบที่ซื้อเข้ามาใช้ในกระบวนการผลิต
-          </Typography>
+          <Box width="100%">
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
+              Purchased precursors
+            </Typography>
+            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+              รายละเอียดของวัตถุดิบที่ซื้อเข้ามาใช้ในกระบวนการผลิต
+            </Typography>
           </Box>
-          
           {/* SECTION 1: Specific embedded emissions*/}
           <Section
             title="(c) Specific embedded emissions"
             subtitle="ปริมาณการปล่อยก๊าซเรือนกระจก"
             defaultExpanded={true}
-            hasError={
-              !!formErrors.auth_rep ||
-              !!formErrors.email ||
-              !!formErrors.tel ||
-              !!formErrors.fax
-            }
+            hasError={Object.keys(formErrors).length > 0}
           >
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
-              <strong>
-                {" "}
-                Specific embedded direct emissions (SEE (direct)){" "}
-              </strong>
+              <strong>Specific embedded direct emissions (SEE (direct))</strong>
             </div>
             <Box mb={3}>
               <div
@@ -128,27 +131,27 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
               >
                 <div style={{ flex: 1 }}>
                   <LabeledTextField
-                    type="text"
-                    caption=""
+                    type="number"
+                    caption="Amount"
                     defination="กรอกเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
-                    label="Name"
-                    name="auth_rep"
-                    value={formValues.auth_rep}
+                    label=""
+                    name="embedded_direct_amount"
+                    value={formValues.embedded_direct_amount}
                     onChange={handleInputChange}
-                    error={formErrors.auth_rep}
+                    error={formErrors.embedded_direct_amount}
                   />
                 </div>
 
                 <div style={{ flex: 1 }}>
                   <LabeledTextField
-                    type="email"
-                    caption=""
+                    type="text"
+                    caption="Source"
                     defination="ระบุแหล่งที่มาของข้อมูล"
                     label=""
-                    name="email"
-                    value={formValues.email}
+                    name="embedded_direct_source"
+                    value={formValues.embedded_direct_source}
                     onChange={handleInputChange}
-                    error={formErrors.email}
+                    error={formErrors.embedded_direct_source}
                   />
                 </div>
               </div>
@@ -156,8 +159,7 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
 
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
               <strong>
-                {" "}
-                Specific electricity consumption (for SEE (indirect)){" "}
+                Specific electricity consumption (for SEE (indirect))
               </strong>
             </div>
             <Box mb={3}>
@@ -166,37 +168,39 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
               >
                 <div style={{ flex: 1 }}>
                   <LabeledTextField
-                    type="text"
-                    caption=""
+                    type="number"
+                    caption="Amount"
                     defination="กรอกเป็นค่าตัวเลขของ SEE indirect ของวัตถุดิบตั้งต้น"
-                    label="Name"
-                    name="auth_rep"
-                    value={formValues.auth_rep}
+                    label=""
+                    name="electric_consumption_amount"
+                    value={formValues.electric_consumption_amount}
                     onChange={handleInputChange}
-                    error={formErrors.auth_rep}
+                    error={formErrors.electric_consumption_amount}
                   />
                 </div>
 
                 <div style={{ flex: 1 }}>
-                  <LabeledTextField
-                    type="email"
-                    caption=""
+                  <LabeledAutocomplete
+                    caption="Source"
                     defination="ระบุแหล่งที่มาของข้อมูล"
                     label=""
-                    name="email"
-                    value={formValues.email}
-                    onChange={handleInputChange}
-                    error={formErrors.email}
+                    name="electric_consumption_source"
+                    value={formValues.electric_consumption_source}
+                    options={eleconsumption.map((c) => c.name)}
+                    onChange={(val) =>
+                      handleAutocompleteChange(
+                        "electric_consumption_source",
+                        val
+                      )
+                    }
+                    error={formErrors.electric_consumption_source}
                   />
                 </div>
               </div>
             </Box>
 
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
-              <strong>
-                {" "}
-                Electricity emission factor (for SEE (indirect)){" "}
-              </strong>
+              <strong>Electricity emission factor (for SEE (indirect))</strong>
             </div>
             <Box mb={3}>
               <div
@@ -204,63 +208,69 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
               >
                 <div style={{ flex: 1 }}>
                   <LabeledTextField
-                    type="text"
-                    caption=""
+                    type="number"
+                    caption="Amount"
                     defination="กรอกเป็นค่าตัวเลขของ SEE indirect ของไฟฟ้าที่ใช้ในการผลิตวัตถุดิบตั้งต้น"
-                    label="Name"
-                    name="auth_rep"
-                    value={formValues.auth_rep}
-                    onChange={handleInputChange}
-                    error={formErrors.auth_rep}
-                  />
-                  <LabeledTextField
-                    type="email"
-                    caption=""
-                    defination="Specific embedded indirect emissions (SEE (indirect))"
                     label=""
-                    name="email"
-                    value={formValues.email}
+                    name="electricity_emission_amount"
+                    value={formValues.electricity_emission_amount}
                     onChange={handleInputChange}
-                    error={formErrors.email}
+                    error={formErrors.electricity_emission_amount}
                   />
-                </div>
-
-                <div style={{ flex: 1 }}>
-                  <LabeledTextField
-                    type="email"
-                    caption=""
-                    defination="ระบุแหล่งที่มาของข้อมูล"
-                    label=""
-                    name="email"
-                    value={formValues.email}
-                    onChange={handleInputChange}
-                    error={formErrors.email}
-                  />
+                  <div style={{ flex: 1 }}>
+                    <LabeledAutocomplete
+                      caption="Specific embedded indirect emissions (SEE (indirect))"
+                      defination="การปล่อยก๊าซเรือนกระจกทางอ้อมเฉพาะ"
+                      label=""
+                      name="electricity_emission_source"
+                      value={formValues.electricity_emission_source}
+                      options={electricitys.map((c) => c.name)}
+                      onChange={(val) =>
+                        handleAutocompleteChange("electricity_emission_source", val)
+                      }
+                      error={formErrors.electricity_emission_source}
+                    />
+                  </div>
                 </div>
               </div>
             </Box>
-
             <Box mb={3}>
-              <div
-                style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
-              >
-                <div style={{ flex: 1 }}>
-                  <LabeledTextField
-                    type="text"
-                    caption=" Justification for use of default values (if relevant) "
-                    defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
-                    label="Name"
-                    name="auth_rep"
-                    value={formValues.auth_rep}
-                    onChange={handleInputChange}
-                    error={formErrors.auth_rep}
-                  />
-                </div>
-              </div>
+              <LabeledTextField
+                caption="Source"
+                defination="ระบุแหล่งที่มาของข้อมูล"
+                label=""
+                name="embedded_indirect_amount"
+                value={formValues.embedded_indirect_amount}
+                onChange={handleInputChange}
+                error={formErrors.electricity_emission_source}
+                readOnly
+              />
+
+              <LabeledAutocomplete
+                caption="Justification for use of default values (if relevant)"
+                defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
+                label=""
+                name="justification"
+                value={formValues.justification}
+                options={justification.map((c) => c.name)}
+                onChange={(val) =>
+                  handleAutocompleteChange("justification", val)
+                }
+                error={formErrors.justification}
+              />
             </Box>
           </Section>
 
-          <PGButton />
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: 2,
+            }}
+          >
+            <PGButton />
+          </Box>
         </Grid>
       </form>
     </Container>

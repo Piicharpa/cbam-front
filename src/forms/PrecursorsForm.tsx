@@ -6,6 +6,7 @@ import Section from "../components/Section";
 import PrecursorFields from "./formsections/Precursors_sec1";
 import { fetchCountries, CountryOption } from "../components/dropdown/contriesmap";
 import { fetchGoodsData, getPrecursorsOptions, IndustryGroup } from "../components/dropdown/goods";
+import PGButton from "../components/FormButton_v2";
 
 interface PrecursorsFormProps {
   redirectPath?: string;
@@ -148,9 +149,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = () => {
         </Section>
 
         <Box sx={{ mt: 3, textAlign: "right" }}>
-          <Button type="submit" variant="contained" color="primary">
-            บันทึกข้อมูล
-          </Button>
+          <PGButton onClick={() => { handleSubmit(new Event('submit') as unknown as React.FormEvent); }}>SAVE</PGButton>
         </Box>
       </form>
     </Container>

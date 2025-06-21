@@ -14,6 +14,7 @@ interface Props {
   helperText?: string;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>; 
   required?: boolean
+  multiline?:boolean
 }
 
 const LabeledTextField: React.FC<Props> = ({
@@ -28,7 +29,8 @@ const LabeledTextField: React.FC<Props> = ({
   type = "text",
   readOnly = false,
   inputProps, 
-  required = true
+  required = true,
+  multiline = false
 }) => (
   <>
     {caption && (

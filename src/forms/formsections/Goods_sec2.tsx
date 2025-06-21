@@ -73,7 +73,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             onChange={onChange}
             error={errors.total_consumed_within_installation}  // Pass the error for the helper text
             helperText={errors.total_consumed_within_installation} // Show error as helper text
-            readOnly
           />
           <LabeledTextField
             type="number"

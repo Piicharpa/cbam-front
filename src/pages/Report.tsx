@@ -12,19 +12,16 @@ import {
   styled,
   alpha,
   Fade,
-  Divider
 } from "@mui/material";
 import Section from "../components/Section";
 import LabeledTextField from "../components/LabeledTextField";
-
 // Icons for tabs
-import FactoryIcon from '@mui/icons-material/Factory';
-import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
-import BoltIcon from '@mui/icons-material/Bolt';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ShoppingCartIcon from '@mui/icons-material/ShoppingCart';
+import FactoryIcon from "@mui/icons-material/Factory";
+import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
+import BoltIcon from "@mui/icons-material/Bolt";
+import SettingsIcon from "@mui/icons-material/Settings";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useMediaQuery } from "@mui/material";
-
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -36,33 +33,33 @@ interface TabPanelProps {
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#0190c3',
-      light: '#07b8dd',
-      dark: '#0290c4',
+      main: "#0190c3",
+      light: "#07b8dd",
+      dark: "#0290c4",
     },
     secondary: {
-      light: '#f3f7e7',
-      main: '#74aa15',
-      dark: '#6aaa33',
+      light: "#f3f7e7",
+      main: "#74aa15",
+      dark: "#6aaa33",
     },
     error: {
-      main: '#c72121',
+      main: "#c72121",
     },
     warning: {
-      main: '#eb810f',
+      main: "#eb810f",
     },
     success: {
-      main: '#6aaa33',
+      main: "#6aaa33",
     },
     text: {
-      primary: '#313837',
-      secondary: '#6f6f6f',
+      primary: "#313837",
+      secondary: "#6f6f6f",
     },
     grey: {
-      200: '#f7f7f7',
-      300: '#d5d5d5',
-      500: '#939393',
-      700: '#5f5f5f',
+      200: "#f7f7f7",
+      300: "#d5d5d5",
+      500: "#939393",
+      700: "#5f5f5f",
     },
   },
   typography: {
@@ -72,60 +69,60 @@ const theme = createTheme({
     },
     h5: {
       fontWeight: 600,
-      fontSize: '1.5rem',
+      fontSize: "1.5rem",
     },
     h6: {
       fontWeight: 600,
-      fontSize: '1.2rem',
-    }
+      fontSize: "1.2rem",
+    },
   },
   components: {
     MuiPaper: {
       styleOverrides: {
         root: {
           borderRadius: 16,
-          boxShadow: '0 8px 20px rgba(0, 0, 0, 0.06)',
+          boxShadow: "0 8px 20px rgba(0, 0, 0, 0.06)",
         },
       },
     },
     MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: 'none',
+          textTransform: "none",
           fontWeight: 500,
-          fontSize: '0.95rem',
-          transition: 'all 0.2s ease-in-out',
-          '&:hover': {
-            backgroundColor: alpha('#0190c3', 0.05),
+          fontSize: "0.95rem",
+          transition: "all 0.2s ease-in-out",
+          "&:hover": {
+            backgroundColor: alpha("#0190c3", 0.05),
           },
-          '&.Mui-selected': {
+          "&.Mui-selected": {
             fontWeight: 600,
-          }
-        }
-      }
-    }
+          },
+        },
+      },
+    },
   },
 });
 
 // Styled Tab component
 const StyledTab = styled(Tab)(({ theme }) => ({
   minHeight: 64,
-  display: 'flex',
-  alignItems: 'center',
-  flexDirection: 'row',
-  justifyContent: 'flex-start',
-  textAlign: 'left',
+  display: "flex",
+  alignItems: "center",
+  flexDirection: "row",
+  justifyContent: "flex-start",
+  textAlign: "left",
   paddingLeft: 16,
   paddingRight: 16,
   gap: 10,
-  '& .MuiTab-iconWrapper': {
+  "& .MuiTab-iconWrapper": {
     marginBottom: 0,
     marginRight: 8,
   },
-  '&.Mui-selected': {
+  "&.Mui-selected": {
     color: theme.palette.primary.main,
     backgroundColor: alpha(theme.palette.primary.main, 0.08),
-  }
+  },
 }));
 
 const TabPanel = (props: TabPanelProps) => {
@@ -152,67 +149,206 @@ const a11yProps = (index: number) => {
   };
 };
 
+// เครื่องมือช่วยสร้าง Component สำหรับแสดง Summary Box
+const SummaryBox = ({ data, title }: { data: any; title: string }) => {
+  return (
+    <Box
+      sx={{
+        mt: 4,
+        p: 3,
+        borderRadius: 2,
+        backgroundColor: alpha(theme.palette.secondary.light, 0.5),
+        border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+        position: "relative",
+        overflow: "hidden",
+      }}
+    >
+      <Typography
+        variant="subtitle1"
+        color="secondary.dark"
+        fontWeight={600}
+        gutterBottom
+      >
+        {title}
+      </Typography>
 
+      <Grid container spacing={2}>
+        <Grid size={12}>
+          <Typography variant="body2" color="text.secondary">
+            <strong>Installation Name:</strong> {data.installationName || "-"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            <strong>Product:</strong> {data.product || "-"}
+          </Typography>
+        </Grid>
+        <Grid size={12}>
+          <Typography variant="body2" color="text.secondary">
+            <strong>Carbon Footprint:</strong> {data.carbonFootprint || "-"}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+            <strong>Date:</strong> {data.date || "-"}
+          </Typography>
+        </Grid>
+      </Grid>
+
+      {/* Decorative elements */}
+      <Box
+        sx={{
+          position: "absolute",
+          bottom: -15,
+          right: -15,
+          width: 80,
+          height: 80,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${alpha(
+            "#74aa15",
+            0.1
+          )} 0%, transparent 70%)`,
+          zIndex: 0,
+        }}
+      />
+    </Box>
+  );
+};
+
+// Interface สำหรับ Form Fields Pattern
+interface FormFieldsData {
+  installationName: string;
+  product: string;
+  carbonFootprint: string;
+  date: string;
+  [key: string]: string; // สำหรับฟิลด์พิเศษที่อาจมีเพิ่มในแต่ละแท็บ
+}
 
 const Report = () => {
   const [tabValue, setTabValue] = useState(0);
-  const [formValues, setFormValues] = useState({
+
+  // แยก state สำหรับแต่ละแท็บ
+  const [tabAData, setTabAData] = useState<FormFieldsData>({
     installationName: "",
     product: "",
     carbonFootprint: "",
     date: "",
   });
 
-  const isDesktop = useMediaQuery('(min-width:900px)');
+  const [tabBData, setTabBData] = useState<FormFieldsData>({
+    installationName: "",
+    product: "",
+    carbonFootprint: "",
+    date: "",
+  });
+
+  const [tabCData, setTabCData] = useState<FormFieldsData>({
+    installationName: "",
+    product: "",
+    carbonFootprint: "",
+    date: "",
+  });
+
+  const [tabDData, setTabDData] = useState<FormFieldsData>({
+    installationName: "",
+    product: "",
+    carbonFootprint: "",
+    date: "",
+  });
+
+  const [tabEData, setTabEData] = useState<FormFieldsData>({
+    installationName: "",
+    product: "",
+    carbonFootprint: "",
+    date: "",
+  });
+
+  const isDesktop = useMediaQuery("(min-width:900px)");
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // สร้างฟังก์ชันสำหรับแต่ละแท็บเพื่อจัดการ input changes
+  const handleTabAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setTabAData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const renderCommonFields = (title: string) => (
-    <Box sx={{ 
-      position: 'relative',
-      '&::before': {
-        content: '""',
-        position: 'absolute',
-        right: -20,
-        top: 20,
-        width: 150,
-        height: 150,
-        borderRadius: '50%',
-        background: `radial-gradient(circle, ${alpha('#f3f7e7', 0.7)} 0%, ${alpha('#e7f9cd', 0.3)} 50%, transparent 70%)`,
-        zIndex: 0,
-        pointerEvents: 'none'
-      }
-    }}>
-      <Typography 
-        variant="h5" 
-        gutterBottom 
+  const handleTabBChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTabBData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTabCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTabCData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTabDChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTabDData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const handleTabEChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setTabEData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // เปลี่ยนจาก renderCommonFields เป็น renderFieldsForTab ที่สามารถรองรับฟิลด์เพิ่มเติมได้
+  const renderFieldsForTab = (
+    title: string,
+    data: FormFieldsData,
+    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+    additionalFields?: Array<{
+      name: string;
+      caption: string;
+      defination: string;
+    }>
+  ) => (
+    <Box
+      sx={{
+        position: "relative",
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          right: -20,
+          top: 20,
+          width: 150,
+          height: 150,
+          borderRadius: "50%",
+          background: `radial-gradient(circle, ${alpha(
+            "#f3f7e7",
+            0.7
+          )} 0%, ${alpha("#e7f9cd", 0.3)} 50%, transparent 70%)`,
+          zIndex: 0,
+          pointerEvents: "none",
+        },
+      }}
+    >
+      <Typography
+        variant="h5"
+        gutterBottom
         color="primary.main"
         sx={{
-          position: 'relative',
+          position: "relative",
           pb: 1,
-          '&::after': {
+          "&::after": {
             content: '""',
-            position: 'absolute',
+            position: "absolute",
             bottom: 0,
             left: 0,
-            width: '60px',
-            height: '3px',
-            borderRadius: '2px',
-            background: theme.palette.primary.main
-          }
+            width: "60px",
+            height: "3px",
+            borderRadius: "2px",
+            background: theme.palette.primary.main,
+          },
         }}
       >
         {title}
       </Typography>
-      
-      <Grid container spacing={3} sx={{ mt: 2, position: 'relative', zIndex: 1 }}>
+
+      <Grid
+        container
+        spacing={3}
+        sx={{ mt: 2, position: "relative", zIndex: 1 }}
+      >
         <Grid size={12}>
           <LabeledTextField
             type="text"
@@ -220,12 +356,12 @@ const Report = () => {
             defination="ชื่อสถานประกอบการ"
             label=""
             name="installationName"
-            value={formValues.installationName}
-            onChange={handleInputChange}
+            value={data.installationName}
+            onChange={handleChange}
             required
           />
         </Grid>
-        
+
         <Grid size={12}>
           <LabeledTextField
             type="text"
@@ -233,12 +369,12 @@ const Report = () => {
             defination="ผลิตภัณฑ์"
             label=""
             name="product"
-            value={formValues.product}
-            onChange={handleInputChange}
+            value={data.product}
+            onChange={handleChange}
             required
           />
         </Grid>
-        
+
         <Grid size={12}>
           <LabeledTextField
             type="text"
@@ -246,12 +382,12 @@ const Report = () => {
             defination="คาร์บอนฟุตพริ้นท์"
             label=""
             name="carbonFootprint"
-            value={formValues.carbonFootprint}
-            onChange={handleInputChange}
+            value={data.carbonFootprint}
+            onChange={handleChange}
             required
           />
         </Grid>
-        
+
         <Grid size={12}>
           <LabeledTextField
             type="date"
@@ -259,60 +395,31 @@ const Report = () => {
             defination="วันที่"
             label=""
             name="date"
-            value={formValues.date}
-            onChange={handleInputChange}
+            value={data.date}
+            onChange={handleChange}
             required
           />
-               </Grid>
+        </Grid>
+
+        {/* แสดงฟิลด์เพิ่มเติมตามที่กำหนด */}
+        {additionalFields &&
+          additionalFields.map((field) => (
+            <Grid size={12} key={field.name}>
+              <LabeledTextField
+                type="text"
+                caption={field.caption}
+                defination={field.defination}
+                label=""
+                name={field.name}
+                value={data[field.name] || ""}
+                onChange={handleChange}
+              />
+            </Grid>
+          ))}
       </Grid>
 
       {/* Summary Box */}
-      <Box 
-        sx={{ 
-          mt: 4, 
-          p: 3, 
-          borderRadius: 2, 
-          backgroundColor: alpha(theme.palette.secondary.light, 0.5),
-          border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-          position: 'relative',
-          overflow: 'hidden'
-        }}
-      >
-        <Typography variant="subtitle1" color="secondary.dark" fontWeight={600} gutterBottom>
-          Summary Information
-        </Typography>
-        
-        <Grid container spacing={2}>
-          <Grid size={12}>
-            <Typography variant="body2" color="text.secondary">
-              <strong>Installation Name:</strong> {formValues.installationName || '-'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              <strong>Product:</strong> {formValues.product || '-'}
-            </Typography>
-          </Grid>
-          <Grid size={12}>
-            <Typography variant="body2" color="text.secondary">
-              <strong>Carbon Footprint:</strong> {formValues.carbonFootprint || '-'}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              <strong>Date:</strong> {formValues.date || '-'}
-            </Typography>
-          </Grid>
-        </Grid>
-
-        {/* Decorative elements */}
-        <Box sx={{
-          position: 'absolute',
-          bottom: -15,
-          right: -15,
-          width: 80,
-          height: 80,
-          borderRadius: '50%',
-          background: `radial-gradient(circle, ${alpha('#74aa15', 0.1)} 0%, transparent 70%)`,
-          zIndex: 0
-        }} />
-      </Box>
+      <SummaryBox data={data} title="Summary Information" />
     </Box>
   );
 
@@ -320,125 +427,156 @@ const Report = () => {
     <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
         {/* Header Banner */}
-        <Paper elevation={0} sx={{ 
-          p: 4, 
-          mb: 4, 
-          background: 'linear-gradient(to right, #f3f7e7, #e7f9cd)',
-          borderLeft: '6px solid #74aa15',
-          position: 'relative',
-          overflow: 'hidden'
-        }}>
-          <Box sx={{
-            position: 'absolute',
-            top: -15,
-            right: -15,
-            width: 120,
-            height: 120,
-            borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(7,184,221,0.1) 0%, rgba(1,144,195,0) 70%)',
-            zIndex: 0
-          }} />
-          
-          <Typography variant="h4" color="primary.main" gutterBottom sx={{ position: 'relative', zIndex: 1 }}>
+        <Paper
+          elevation={0}
+          sx={{
+            p: 4,
+            mb: 4,
+            background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
+            borderLeft: "6px solid #74aa15",
+            position: "relative",
+            overflow: "hidden",
+          }}
+        >
+          <Box
+            sx={{
+              position: "absolute",
+              top: -15,
+              right: -15,
+              width: 120,
+              height: 120,
+              borderRadius: "50%",
+              background:
+                "radial-gradient(circle, rgba(7,184,221,0.1) 0%, rgba(1,144,195,0) 70%)",
+              zIndex: 0,
+            }}
+          />
+
+          <Typography
+            variant="h4"
+            color="primary.main"
+            gutterBottom
+            sx={{ position: "relative", zIndex: 1 }}
+          >
             CBAM Reports
           </Typography>
-          <Typography variant="body1" color="text.secondary" sx={{ position: 'relative', zIndex: 1 }}>
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
             รายงานข้อมูล CBAM
           </Typography>
         </Paper>
-
         {/* Main Content Paper */}
-        <Paper 
-          elevation={1} 
-          sx={{ 
-            width: "100%", 
+        <Paper
+          elevation={1}
+          sx={{
+            width: "100%",
             mt: 3,
             borderRadius: 3,
-            overflow: 'hidden',
-            position: 'relative'
+            overflow: "hidden",
+            position: "relative",
           }}
         >
           {/* Background pattern */}
-          <Box sx={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'radial-gradient(#f3f7e7 1px, transparent 1px)',
-            backgroundSize: '20px 20px',
-            opacity: 0.3,
-            pointerEvents: 'none',
-            zIndex: 0
-          }} />
-          
+          <Box
+            sx={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage: "radial-gradient(#f3f7e7 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+              opacity: 0.3,
+              pointerEvents: "none",
+              zIndex: 0,
+            }}
+          />
+
           {/* Tabs section */}
-          <Box sx={{ 
-            display: 'flex', 
-            flexDirection: { xs: 'column', md: 'row' },
-            minHeight: 550
-          }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              minHeight: 550,
+            }}
+          >
             {/* Left sidebar with tabs */}
-            <Box sx={{ 
-              width: { xs: '100%', md: '280px' },
-              borderRight: { xs: 'none', md: `1px solid ${theme.palette.grey[300]}` },
-              borderBottom: { xs: `1px solid ${theme.palette.grey[300]}`, md: 'none' },
-              backgroundColor: alpha(theme.palette.grey[200], 0.4),
-              position: 'relative',
-              zIndex: 1
-            }}>
+            <Box
+              sx={{
+                width: { xs: "100%", md: "280px" },
+                borderRight: {
+                  xs: "none",
+                  md: `1px solid ${theme.palette.grey[300]}`,
+                },
+                borderBottom: {
+                  xs: `1px solid ${theme.palette.grey[300]}`,
+                  md: "none",
+                },
+                backgroundColor: alpha(theme.palette.grey[200], 0.4),
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
               <Tabs
-               orientation={isDesktop ? "vertical" : "horizontal"}
+                orientation={isDesktop ? "vertical" : "horizontal"}
                 variant="scrollable"
                 value={tabValue}
                 onChange={handleTabChange}
                 aria-label="report tabs"
-                sx={{ 
-                  minHeight: '100%',
+                sx={{
+                  minHeight: "100%",
                   borderRight: 0,
-                  '& .MuiTabs-indicator': {
-                    right: 'auto',
-                    left: 0,
-                    width: '4px',
-                    borderRadius: '0 4px 4px 0'
+                  "& .MuiTabs-indicator": {
+                    ...(isDesktop
+                      ? {
+                          right: "auto",
+                          left: 0,
+                          width: "4px",
+                          borderRadius: "0 4px 4px 0",
+                        }
+                      : {}),
                   },
                 }}
               >
-                <StyledTab 
+                <StyledTab
                   icon={<FactoryIcon />}
-                  label="A. Installation Data" 
-                  {...a11yProps(0)} 
+                  label="A. Installation Data"
+                  {...a11yProps(0)}
                 />
-                <StyledTab 
+                <StyledTab
                   icon={<LocalFireDepartmentIcon />}
-                  label="B. Emission Installation" 
-                  {...a11yProps(1)} 
+                  label="B. Emission Installation"
+                  {...a11yProps(1)}
                 />
-                <StyledTab 
+                <StyledTab
                   icon={<BoltIcon />}
-                  label="C. Emission of Energy" 
-                  {...a11yProps(2)} 
+                  label="C. Emission of Energy"
+                  {...a11yProps(2)}
                 />
-                <StyledTab 
+                <StyledTab
                   icon={<SettingsIcon />}
-                  label="D. Process" 
-                  {...a11yProps(3)} 
+                  label="D. Process"
+                  {...a11yProps(3)}
                 />
-                <StyledTab 
+                <StyledTab
                   icon={<ShoppingCartIcon />}
-                  label="E. Purchased Precursors" 
-                  {...a11yProps(4)} 
+                  label="E. Purchased Precursors"
+                  {...a11yProps(4)}
                 />
               </Tabs>
             </Box>
-
             {/* Right content area */}
-            <Box sx={{ 
-              flexGrow: 1,
-              backgroundColor: '#fff',
-              position: 'relative',
-              zIndex: 1
-            }}>
+            <Box
+              sx={{
+                flexGrow: 1,
+                backgroundColor: "#fff",
+                position: "relative",
+                zIndex: 1,
+              }}
+            >
               {/* Tab A: Installation Data */}
               <TabPanel value={tabValue} index={0}>
                 <Section
@@ -447,7 +585,12 @@ const Report = () => {
                   defaultExpanded={true}
                   icon={<FactoryIcon fontSize="small" />}
                 >
-                  {renderCommonFields("Installation Information")}
+                  {renderFieldsForTab(
+                    "Installation Information",
+                    tabAData,
+                    handleTabAChange,
+                    [])
+                  }
                 </Section>
               </TabPanel>
 
@@ -459,7 +602,12 @@ const Report = () => {
                   defaultExpanded={true}
                   icon={<LocalFireDepartmentIcon fontSize="small" />}
                 >
-                  {renderCommonFields("Emission Installation Details")}
+                  {renderFieldsForTab(
+                    "Emission Installation Details",
+                    tabBData,
+                    handleTabBChange,
+                    []
+                  )}
                 </Section>
               </TabPanel>
 
@@ -471,19 +619,29 @@ const Report = () => {
                   defaultExpanded={true}
                   icon={<BoltIcon fontSize="small" />}
                 >
-                  {renderCommonFields("Energy Emission Details")}
+                  {renderFieldsForTab(
+                    "Energy Emission Details",
+                    tabCData,
+                    handleTabCChange,
+                    []
+                  )}
                 </Section>
               </TabPanel>
 
               {/* Tab D: Process */}
-                            <TabPanel value={tabValue} index={3}>
+              <TabPanel value={tabValue} index={3}>
                 <Section
                   title="D. Process"
                   subtitle="กระบวนการ"
                   defaultExpanded={true}
                   icon={<SettingsIcon fontSize="small" />}
                 >
-                  {renderCommonFields("Process Details")}
+                  {renderFieldsForTab(
+                    "Process Details",
+                    tabDData,
+                    handleTabDChange,
+                    []
+                  )}
                 </Section>
               </TabPanel>
 
@@ -495,53 +653,77 @@ const Report = () => {
                   defaultExpanded={true}
                   icon={<ShoppingCartIcon fontSize="small" />}
                 >
-                  {renderCommonFields("Purchased Precursors Details")}
+                  {renderFieldsForTab(
+                    "Purchased Precursors Details",
+                    tabEData,
+                    handleTabEChange,
+                    []
+                  )}
                 </Section>
               </TabPanel>
             </Box>
           </Box>
 
           {/* Footer section with current tab info */}
-          <Box sx={{ 
-            p: 2, 
-            borderTop: `1px solid ${theme.palette.grey[300]}`,
-            backgroundColor: alpha(theme.palette.grey[200], 0.4),
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
+          <Box
+            sx={{
+              p: 2,
+              borderTop: `1px solid ${theme.palette.grey[300]}`,
+              backgroundColor: alpha(theme.palette.grey[200], 0.4),
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
             <Typography variant="body2" color="text.secondary">
-              Currently viewing: <strong>{
-                tabValue === 0 ? "Installation Data" :
-                tabValue === 1 ? "Emission Installation" :
-                tabValue === 2 ? "Emission of Energy" :
-                tabValue === 3 ? "Process" : "Purchased Precursors"
-              }</strong>
+              Currently viewing:{" "}
+              <strong>
+                {tabValue === 0
+                  ? "Installation Data"
+                  : tabValue === 1
+                  ? "Emission Installation"
+                  : tabValue === 2
+                  ? "Emission of Energy"
+                  : tabValue === 3
+                  ? "Process"
+                  : "Purchased Precursors"}
+              </strong>
             </Typography>
-            
-            <Box sx={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: 2
-            }}>
-              <Box 
-                sx={{ 
-                  width: 10, 
-                  height: 10, 
-                  borderRadius: '50%', 
+
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 2,
+              }}
+            >
+              <Box
+                sx={{
+                  width: 10,
+                  height: 10,
+                  borderRadius: "50%",
                   backgroundColor: theme.palette.success.main,
-                  animation: 'pulse 2s infinite',
-                  '@keyframes pulse': {
-                    '0%': {
-                      boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0.7)}`
+                  animation: "pulse 2s infinite",
+                  "@keyframes pulse": {
+                    "0%": {
+                      boxShadow: `0 0 0 0 ${alpha(
+                        theme.palette.success.main,
+                        0.7
+                      )}`,
                     },
-                    '70%': {
-                      boxShadow: `0 0 0 6px ${alpha(theme.palette.success.main, 0)}`
+                    "70%": {
+                      boxShadow: `0 0 0 6px ${alpha(
+                        theme.palette.success.main,
+                        0
+                      )}`,
                     },
-                    '100%': {
-                      boxShadow: `0 0 0 0 ${alpha(theme.palette.success.main, 0)}`
-                    }
-                  }
+                    "100%": {
+                      boxShadow: `0 0 0 0 ${alpha(
+                        theme.palette.success.main,
+                        0
+                      )}`,
+                    },
+                  },
                 }}
               />
               <Typography variant="body2" color="text.secondary">
@@ -551,113 +733,180 @@ const Report = () => {
           </Box>
         </Paper>
 
-        {/* Helpful options section */}
-        <Box sx={{ 
-          mt: 4, 
-          display: 'flex', 
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: 2
-        }}>
+        {/* ปุ่มดำเนินการต่างๆ */}
+        <Box
+          sx={{
+            mt: 4,
+            display: "flex",
+            justifyContent: "space-between",
+            flexDirection: { xs: "column", sm: "row" },
+            gap: 2,
+          }}
+        >
+          {/* ปุ่มบันทึกข้อมูล */}
           <Box>
-            <Typography variant="body2" color="text.secondary">
-              Need help with your report?{' '}
-              <Box 
-                component="a" 
-                href="#"
-                sx={{ 
-                  color: theme.palette.primary.main,
-                  textDecoration: 'none',
-                  fontWeight: 500,
-                  '&:hover': {
-                    textDecoration: 'underline'
-                  }
-                }}
-              >
-                Contact support
-              </Box>
-            </Typography>
+            <button
+              onClick={() => {
+                // รวบรวมข้อมูลทั้งหมดเพื่อบันทึก
+                const allData = {
+                  installationData: tabAData,
+                  emissionInstallation: tabBData,
+                  energyEmission: tabCData,
+                  process: tabDData,
+                  purchasedPrecursors: tabEData,
+                };
+
+                console.log("บันทึกข้อมูลรายงานทั้งหมด:", allData);
+                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
+              }}
+              style={{
+                backgroundColor: theme.palette.primary.main,
+                color: "#fff",
+                padding: "10px 20px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                transition: "all 0.2s ease-in-out",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                boxShadow: `0 4px 8px ${alpha("#0190c3", 0.25)}`,
+              }}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  theme.palette.primary.dark;
+                e.currentTarget.style.transform = "translateY(-2px)";
+                e.currentTarget.style.boxShadow = `0 6px 12px ${alpha(
+                  "#0190c3",
+                  0.3
+                )}`;
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor =
+                  theme.palette.primary.main;
+                e.currentTarget.style.transform = "translateY(0)";
+                e.currentTarget.style.boxShadow = `0 4px 8px ${alpha(
+                  "#0190c3",
+                  0.25
+                )}`;
+              }}
+            >
+              <span style={{ fontSize: "1.2rem" }}>💾</span> บันทึกข้อมูลรายงาน
+            </button>
           </Box>
-          
-          <Box sx={{ 
-            display: 'flex', 
-            gap: 3,
-            flexWrap: 'wrap'
-          }}>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: theme.palette.grey[600],
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                cursor: 'pointer',
-                '&:hover': {
-                  color: theme.palette.primary.main
-                }
+
+          {/* Helpful options section */}
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                Need help with your report?{" "}
+                <Box
+                  component="a"
+                  href="#"
+                  sx={{
+                    color: theme.palette.primary.main,
+                    textDecoration: "none",
+                    fontWeight: 500,
+                    "&:hover": {
+                      textDecoration: "underline",
+                    },
+                  }}
+                >
+                  Contact support
+                </Box>
+              </Typography>
+            </Box>
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 3,
+                flexWrap: "wrap",
               }}
             >
-              <Box 
-                component="span" 
-                sx={{ 
-                  fontSize: '1.2rem',
-                  lineHeight: 1  
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.grey[600],
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: theme.palette.primary.main,
+                  },
                 }}
               >
-                ↓
-              </Box>
-              Download Report
-            </Typography>
-            
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: theme.palette.grey[600],
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                cursor: 'pointer',
-                '&:hover': {
-                  color: theme.palette.primary.main
-                }
-              }}
-            >
-              <Box 
-                component="span" 
-                sx={{ 
-                  fontSize: '1.2rem',
-                  lineHeight: 1  
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: "1.2rem",
+                    lineHeight: 1,
+                  }}
+                >
+                  ↓
+                </Box>
+                Download Report
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.grey[600],
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: theme.palette.primary.main,
+                  },
                 }}
               >
-                ⟳
-              </Box>
-              Refresh Data
-            </Typography>
-            
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: theme.palette.grey[600],
-                display: 'flex',
-                alignItems: 'center',
-                gap: 0.5,
-                cursor: 'pointer',
-                '&:hover': {
-                  color: theme.palette.primary.main
-                }
-              }}
-            >
-              <Box 
-                component="span" 
-                sx={{ 
-                  fontSize: '1.2rem',
-                  lineHeight: 1  
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: "1.2rem",
+                    lineHeight: 1,
+                  }}
+                >
+                  ⟳
+                </Box>
+                Refresh Data
+              </Typography>
+
+              <Typography
+                variant="body2"
+                sx={{
+                  color: theme.palette.grey[600],
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 0.5,
+                  cursor: "pointer",
+                  "&:hover": {
+                    color: theme.palette.primary.main,
+                  },
                 }}
               >
-                ☆
-              </Box>
-              Save as Favorite
-            </Typography>
+                <Box
+                  component="span"
+                  sx={{
+                    fontSize: "1.2rem",
+                    lineHeight: 1,
+                  }}
+                >
+                  ☆
+                </Box>
+                Save as Favorite
+              </Typography>
+            </Box>
           </Box>
         </Box>
       </Container>

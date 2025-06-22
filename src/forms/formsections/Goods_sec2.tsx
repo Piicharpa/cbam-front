@@ -5,13 +5,13 @@ import SectionButton from "../../components/SectionButton";
 
 interface Props {
   values: {
-    total_consumed_within_installation: string;
+    total_production_amounts: string;
     consumed_in_others_amounts: string;
     produced_for_market_amount: string;
     condumed_non_cbam_goods_amounts: string;
   };
   errors: {
-    total_consumed_within_installation?: string;
+    total_production_amounts?: string;
     consumed_in_others_amounts?: string;
     produced_for_market_amount?: string;
     condumed_non_cbam_goods_amounts?: string;
@@ -26,8 +26,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
     const validationErrors: { [key: string]: string } = {};
 
     // Validation logic
-    if (!values.total_consumed_within_installation) {
-      validationErrors.total_consumed_within_installation = "กรุณากรอกปริมาณการผลิตทั้งหมด"; // Required
+    if (!values.total_production_amounts) {
+      validationErrors.total_production_amounts = "กรุณากรอกปริมาณการผลิตทั้งหมด"; // Required
     }
     if (!values.consumed_in_others_amounts) {
       validationErrors.consumed_in_others_amounts = "กรุณากรอกปริมาณการใช้ในกระบวนการผลิตอื่น"; // Required
@@ -59,20 +59,25 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
     <Section
       title="(b) Amount of aggregated goods"
       subtitle="ปริมาณการผลิต"
-      hasError={!!(errors.total_consumed_within_installation || errors.consumed_in_others_amounts || errors.produced_for_market_amount || errors.condumed_non_cbam_goods_amounts)}
+      hasError={!!(errors.total_production_amounts || errors.consumed_in_others_amounts || errors.produced_for_market_amount || errors.condumed_non_cbam_goods_amounts)}
     >
       <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
         <div style={{ flex: 1 }}>
           <LabeledTextField
-            type="text"
+            type="number"
             caption="Total production levels"
             defination="กรอกปริมาณการผลิตทั้งหมด"
             label=""
-            name="total_consumed_within_installation"
-            value={values.total_consumed_within_installation}
+            name="total_production_amounts"
+            value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_consumed_within_installation}  // Pass the error for the helper text
-            helperText={errors.total_consumed_within_installation} // Show error as helper text
+            error={errors.total_production_amounts}  // Pass the error for the helper text
+            helperText={errors.total_production_amounts} // Show error as helper text
+            inputProps={{
+              step: "any",
+              placeholder: "Enter amount",
+              className: "appearance-none",
+            }}
           />
           <LabeledTextField
             type="number"

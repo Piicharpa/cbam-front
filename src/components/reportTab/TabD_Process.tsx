@@ -19,32 +19,53 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 interface TabAProps {
     formValues: {
         id: string;
+        table_db: string;
+        variable: string;
         name: string;
         cell: string;
+        sheet: string;
+        title: string;
+        subtitle: string;
         value: string;
     };
     setFormValues: React.Dispatch<React.SetStateAction<any>>;
+    reportId: string | null;
 }
 
-const TabB_EmissionInstallation = ({ formValues, setFormValues }: TabAProps) => {
+const TabD_Process = ({ formValues, setFormValues, reportId }: TabAProps) => {
+    useEffect(() => {
+        if (reportId) {
+            // เรียก API หรือโหลดข้อมูลตาม reportId
+            console.log("Report ID:", reportId);
+        }
+    }, [reportId]);
     const InstDataTable = () => {
         interface TableRowData {
             id: string;
+            table_db: string;
+            variable: string;
             name: string;
             cell: string;
+            sheet: string;
+            title: string;
+            subtitle: string;
+            value: string;
         }
         const [tableData, setTableData] = useState<TableRowData[]>([]);
         const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
         useEffect(() => {
-            fetch("http://178.128.123.212:5000/api/cbam/excelreport/D_Processes")
-                .then((res) => res.json())
-                .then((data) => setTableData(data))
-                .catch((err) => console.error("Failed to fetch:", err));
+            if (reportId) {
+                fetch(`http://178.128.123.212:5000/api/cbam/excelreport/D_Processes/${reportId}`)
+                    .then((res) => res.json())
+                    .then((data) => setTableData(data.metadata))
+                    .catch((err) => console.error("Failed to fetch:", err));
+            }
         }, []);
 
-        const handleCopy = (cell: string) => {
-            const text = inputValues[cell] || "";
-            navigator.clipboard.writeText(text);
+        const handleCopy = (value: string) => {
+            navigator.clipboard.writeText(value || "").then(() => {
+                // console.log("Copied:", value);
+            });
         };
 
 
@@ -64,7 +85,6 @@ const TabB_EmissionInstallation = ({ formValues, setFormValues }: TabAProps) => 
                 <Typography variant="h6" gutterBottom color="success">
                     กระบวนการ
                 </Typography>
-
 
                 <TableContainer component={Paper}>
                     <Table size="small">
@@ -87,11 +107,17 @@ const TabB_EmissionInstallation = ({ formValues, setFormValues }: TabAProps) => 
                                             <TextField
                                                 fullWidth
                                                 size="small"
-                                                value={inputValues[row.cell] || ""}
-                                                onChange={handleInputChange}
+                                                value={row.value || ""}
+                                                InputProps={{
+                                                    readOnly: true,
+                                                }}
                                             />
                                             <Tooltip title="Copy">
-                                                <IconButton onClick={() => handleCopy(row.cell)} size="small" sx={{ ml: 1 }}>
+                                                <IconButton
+                                                    onClick={() => handleCopy(row.value)}
+                                                    size="small"
+                                                    sx={{ ml: 1 }}
+                                                >
                                                     <ContentCopyIcon fontSize="small" />
                                                 </IconButton>
                                             </Tooltip>
@@ -105,10 +131,10 @@ const TabB_EmissionInstallation = ({ formValues, setFormValues }: TabAProps) => 
             </>
         );
 
-        return <>{renderCommonFields("D. Process (Sheet: D_Processes!L67)")}</>;
+        return <>{renderCommonFields("D. Process (Sheet: D_Processes)")}</>;
     };
 
     return <InstDataTable />;
 };
 
-export default TabB_EmissionInstallation;
+export default TabD_Process;

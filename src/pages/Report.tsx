@@ -27,6 +27,7 @@ import TabBEmissionInstallation from "../components/reportTab/TabB_EmissionInsta
 import TabCEnergyEmission from "../components/reportTab/TabC_EnergyEmissions";
 import TabDProcess from "../components/reportTab/TabD_Process";
 import TabEPurchasedPrecursors from "../components/reportTab/TabE_PurchasedPrecursors";
+import { useLocation } from "react-router-dom";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -226,66 +227,119 @@ interface FormFieldsData {
 }
 
 const Report = () => {
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const reportId = queryParams.get("reportId");
   const [tabValue, setTabValue] = useState(0);
 
   // แยก state สำหรับแต่ละแท็บ
   const [tabAData, setTabAData] = useState<{
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   }>({
     id: "",
+    table_db: "",
+    variable: "",
     name: "",
     cell: "",
+    sheet: "",
+    title: "",
+    subtitle: "",
     value: "",
   });
 
   const [tabBData, setTabBData] = useState<{
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   }>({
     id: "",
+    table_db: "",
+    variable: "",
     name: "",
     cell: "",
+    sheet: "",
+    title: "",
+    subtitle: "",
     value: "",
   });
 
   const [tabCData, setTabCData] = useState<{
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   }>({
     id: "",
+    table_db: "",
+    variable: "",
     name: "",
     cell: "",
+    sheet: "",
+    title: "",
+    subtitle: "",
     value: "",
   });
 
   const [tabDData, setTabDData] = useState<{
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   }>({
     id: "",
+    table_db: "",
+    variable: "",
     name: "",
     cell: "",
+    sheet: "",
+    title: "",
+    subtitle: "",
     value: "",
   });
 
   const [tabEData, setTabEData] = useState<{
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   }>({
     id: "",
+    table_db: "",
+    variable: "",
     name: "",
     cell: "",
+    sheet: "",
+    title: "",
+    subtitle: "",
     value: "",
   });
 
@@ -614,18 +668,21 @@ const Report = () => {
               <Paper sx={{ width: "100%", mt: 3 }}>
                 <TabPanel value={tabValue} index={0}>
                   <TabAInstallationData
+                    reportId={reportId}
                     formValues={tabAData}
                     setFormValues={setTabAData}
                   />
                 </TabPanel>
                 <TabPanel value={tabValue} index={1}>
                   <TabBEmissionInstallation
+                    reportId={reportId}
                     formValues={tabBData}
                     setFormValues={setTabBData}
                   />
                 </TabPanel>
                 <TabPanel value={tabValue} index={2}>
                   <TabCEnergyEmission
+                    reportId={reportId}
                     formValues={tabCData}
                     setFormValues={setTabCData}
                   />
@@ -633,6 +690,7 @@ const Report = () => {
 
                 <TabPanel value={tabValue} index={3}>
                   <TabDProcess
+                    reportId={reportId}
                     formValues={tabDData}
                     setFormValues={setTabDData}
                   />
@@ -640,6 +698,7 @@ const Report = () => {
 
                 <TabPanel value={tabValue} index={4}>
                   <TabEPurchasedPrecursors
+                    reportId={reportId}
                     formValues={tabEData}
                     setFormValues={setTabEData}
                   />

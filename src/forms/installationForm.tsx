@@ -185,7 +185,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       // navigate("/verifier", { state: { installationId } });
     } catch (error) {
       console.error("❌ Error submitting form:", error);
-      alert("เกิดข้อผิดพลาดขณะส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
+      // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
     }
     onNextStep?.();
   };

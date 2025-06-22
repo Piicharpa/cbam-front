@@ -19,32 +19,53 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 interface TabAProps {
   formValues: {
     id: string;
+    table_db: string;
+    variable: string;
     name: string;
     cell: string;
+    sheet: string;
+    title: string;
+    subtitle: string;
     value: string;
   };
   setFormValues: React.Dispatch<React.SetStateAction<any>>;
+  reportId: string | null;
 }
 
-const TabA_InstallationData = ({ formValues, setFormValues }: TabAProps) => {
+const TabA_InstallationData = ({ formValues, setFormValues, reportId }: TabAProps) => {
+  useEffect(() => {
+    if (reportId) {
+      // เรียก API หรือโหลดข้อมูลตาม reportId
+      console.log("Report ID:", reportId);
+    }
+  }, [reportId]);
+
   const InstDataTable = () => {
     interface TableRowData {
       id: string;
+      table_db: string;
+      variable: string;
       name: string;
       cell: string;
+      sheet: string;
+      title: string;
+      subtitle: string;
+      value: string;
     }
+
     const [tableData, setTableData] = useState<TableRowData[]>([]);
     const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
     useEffect(() => {
-      fetch("http://178.128.123.212:5000/api/cbam/excelreport/A_InstData")
+      fetch(`http://178.128.123.212:5000api/cbam/excelreport/A_InstData/${reportId}`)
         .then((res) => res.json())
-        .then((data) => setTableData(data))
+        .then((data) => setTableData(data.metadata))
         .catch((err) => console.error("Failed to fetch:", err));
     }, []);
 
-    const handleCopy = (cell: string) => {
-      const text = inputValues[cell] || "";
-      navigator.clipboard.writeText(text);
+    const handleCopy = (value: string) => {
+      navigator.clipboard.writeText(value || "").then(() => {
+        // console.log("Copied:", value);
+      });
     };
 
 
@@ -86,11 +107,17 @@ const TabA_InstallationData = ({ formValues, setFormValues }: TabAProps) => {
                       <TextField
                         fullWidth
                         size="small"
-                        value={inputValues[row.cell] || ""}
-                        onChange={handleInputChange}
+                        value={row.value || ""}
+                        InputProps={{
+                          readOnly: true,
+                        }}
                       />
                       <Tooltip title="Copy">
-                        <IconButton onClick={() => handleCopy(row.cell)} size="small" sx={{ ml: 1 }}>
+                        <IconButton
+                          onClick={() => handleCopy(row.value)}
+                          size="small"
+                          sx={{ ml: 1 }}
+                        >
                           <ContentCopyIcon fontSize="small" />
                         </IconButton>
                       </Tooltip>

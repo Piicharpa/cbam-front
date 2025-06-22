@@ -238,7 +238,7 @@ const Formdev: React.FC = () => {
     goods_category: "",
     routes: {},
     amounts: {},
-    total_consumed_within_installation: "",
+    total_consumed_within_installation: 0,
     consumed_in_others_amounts: "",
     condumed_non_cbam_goods_amounts: "",
     has_heat: "",
@@ -253,13 +253,13 @@ const Formdev: React.FC = () => {
     source_of_ef_electricity: "",
     exported_electricity_value: "",
     ef_exported_electricity: "",
-    total_production_amounts: "",
     produced_for_market_amount: "",
     imported_wgases_amount: "",
     ef_imported_wgases: "",
     exported_wgases_amount: "",
     ef_exported_wgases: "",
-    industry_type: ""
+    industry_type: "",
+    total_production_amounts: ""
   });
 
   const [precursorsData, setPrecursorsData] = useState({});
@@ -390,6 +390,7 @@ const Formdev: React.FC = () => {
   const progress = ((activeStep + 1) / steps.length) * 100;
   
   return (
+
      <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ py: 5 }}>
         {/* Header Banner */}
@@ -555,7 +556,7 @@ const Formdev: React.FC = () => {
             }
           }}
         >
-        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+        <React.Fragment>
           <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">
             Back
           </Button>
@@ -615,7 +616,7 @@ const Formdev: React.FC = () => {
               }}
             />
           </Box>
-        </Box>
+        </React.Fragment>
         </Box>
         
         {/* Progress indicator */}

@@ -24,7 +24,6 @@ const Section3: React.FC<Props> = ({
   onChange,
   // onNext,
   setValues,
-  countries,
 }) => {
   const [electricitySources, setElectricitySources] = useState<
     { id: number; name: string }[]
@@ -33,7 +32,9 @@ const Section3: React.FC<Props> = ({
   useEffect(() => {
     const fetchElectricitySources = async () => {
       try {
-        const res = await fetch("http://178.128.123.212:5000/api/cbam/srcefelectricitys");
+        const res = await fetch(
+          "http://178.128.123.212:5000/api/cbam/srcefelectricitys"
+        );
         const name = await res.json();
         setElectricitySources(name);
       } catch (error) {
@@ -43,6 +44,10 @@ const Section3: React.FC<Props> = ({
 
     fetchElectricitySources();
   }, []);
+
+  function onNext(): void {
+    throw new Error("Function not implemented.");
+  }
 
   return (
     <Section
@@ -60,18 +65,18 @@ const Section3: React.FC<Props> = ({
               caption="Measurable heat"
               defination="ความร้อนที่สามารถวัดได้"
               name="has_heat"
-              checked={values.has_heat === "True"}
+              checked={values.has_heat === 1}
               onChange={(e) =>
                 setValues((prev: any) => ({
                   ...prev,
-                  has_heat: e.target.checked ? "True" : "False",
+                  has_heat: e.target.checked ? 1 : 0, // Changed from "True"/"False" to 1/0
                 }))
               }
             />
           </div>
         </div>
 
-        {values.has_heat === "True" && (
+        {values.has_heat === 1 && (
           <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
               <LabeledTextField
@@ -79,20 +84,20 @@ const Section3: React.FC<Props> = ({
                 caption="Emissions factor (Imported)"
                 label=""
                 defination="ค่า Emission factor ของค่าความร้อน (จากการซื้อมาใช้)"
-                name="measurable_emission_imported"
-                value={values.measurable_emission_imported}
+                name="ef_imported_heat"
+                value={values.ef_imported_heat}
                 onChange={onChange}
-                error={errors.measurable_emission_imported}
+                error={errors.ef_imported_heat}
               />
               <LabeledTextField
                 type="number"
                 caption="Emissions factor (Exported)"
                 defination="ค่า Emission factor ของค่าความร้อน (จากการขาย)"
                 label=""
-                name="measurable_emission_exported"
-                value={values.measurable_emission_exported}
+                name="ef_exported_heat"
+                value={values.ef_exported_heat}
                 onChange={onChange}
-                error={errors.measurable_emission_exported}
+                error={errors.ef_exported_heat}
               />
             </div>
 
@@ -102,20 +107,20 @@ const Section3: React.FC<Props> = ({
                 caption="Amount of net measurable heat (Imported)"
                 defination="กรอกปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการซื้อมาใช้)"
                 label=""
-                name="measurable_heat_imported"
-                value={values.measurable_heat_imported}
+                name="imported_heat_value"
+                value={values.imported_heat_value}
                 onChange={onChange}
-                error={errors.measurable_heat_imported}
+                error={errors.imported_heat_value}
               />
               <LabeledTextField
                 type="number"
                 caption="Amount of net measurable heat (Exported)"
                 defination="กรอกปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการขาย)"
                 label=""
-                name="measurable_heat_exported"
-                value={values.measurable_heat_exported}
+                name="exported_heat_value"
+                value={values.exported_heat_value}
                 onChange={onChange}
-                error={errors.measurable_heat_exported}
+                error={errors.exported_heat_value}
               />
             </div>
           </div>
@@ -129,17 +134,17 @@ const Section3: React.FC<Props> = ({
             caption="Waste gases"
             defination="ก๊าซไอเสีย"
             name="has_waste_gases"
-            checked={values.has_waste_gases === "True"}
+            checked={values.has_waste_gases === 1} // Use numeric comparison
             onChange={(e) =>
               setValues((prev: any) => ({
                 ...prev,
-                has_waste_gases: e.target.checked ? "True" : "False",
+                has_waste_gases: e.target.checked ? 1 : 0, // Change to use numeric values
               }))
             }
           />
         </div>
 
-        {values.has_waste_gases === "True" && (
+        {values.has_waste_gases === 1 && (
           <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
               <LabeledTextField
@@ -147,20 +152,20 @@ const Section3: React.FC<Props> = ({
                 caption="Emissions factor (Imported)"
                 defination="ค่า Emission factor ของค่าความร้อนทิ้ง (จากการซื้อมาใช้)"
                 label=""
-                name="waste_emission_imported"
-                value={values.waste_emission_imported}
+                name="ef_imported_wgases"
+                value={values.ef_imported_wgases}
                 onChange={onChange}
-                error={errors.waste_emission_imported}
+                error={errors.ef_imported_wgases}
               />
               <LabeledTextField
                 type="number"
                 caption="Emissions factor (Exported)"
                 defination="ค่า Emission factor ของค่าความร้อนทิ้ง (จากการขาย)"
                 label=""
-                name="waste_emission_exported"
-                value={values.waste_emission_exported}
+                name="ef_exported_wgases"
+                value={values.ef_exported_wgases}
                 onChange={onChange}
-                error={errors.waste_emission_exported}
+                error={errors.ef_exported_wgases}
               />
             </div>
 
@@ -170,20 +175,20 @@ const Section3: React.FC<Props> = ({
                 caption="Amount of waste gas (Imported)"
                 defination="กรอกค่าปริมาณความร้อนทิ้ง (จากการซื้อมาใช้)"
                 label=""
-                name="waste_amount_imported"
-                value={values.waste_amount_imported}
+                name="imported_wgases_amount"
+                value={values.imported_wgases_amount}
                 onChange={onChange}
-                error={errors.waste_amount_imported}
+                error={errors.imported_wgases_amount}
               />
               <LabeledTextField
                 type="number"
                 caption="Amount of waste gas (Exported)"
                 defination="กรอกค่าปริมาณความร้อนทิ้ง (จากการขาย)"
                 label=""
-                name="waste_amount_exported"
-                value={values.waste_amount_exported}
+                name="exported_wgases_amount"
+                value={values.exported_wgases_amount}
                 onChange={onChange}
-                error={errors.waste_amount_exported}
+                error={errors.exported_wgases_amount}
               />
               <LabeledTextField
                 type="number"
@@ -227,10 +232,10 @@ const Section3: React.FC<Props> = ({
               caption="Emission factor of the electricity"
               defination="กรอกค่า Emission factor ของไฟฟ้า"
               label=""
-              name="electricity_emission_factor_2"
-              value={values.electricity_emission_factor_2}
+              name="ef_exported_electricity"
+              value={values.ef_exported_electricity}
               onChange={onChange}
-              error={errors.electricity_emission_factor_2}
+              error={errors.ef_exported_electricity}
             />
           </div>
 
@@ -239,12 +244,15 @@ const Section3: React.FC<Props> = ({
               caption="Source of the emission factor"
               defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
               label=""
-              name="electricity_source"
+              name="source_of_ef_electricity"
               options={electricitySources.map((item) => item.name)}
-              value={values.electricity_source}
-              error={errors.electricity_source}
+              value={values.source_of_ef_electricity}
+              error={errors.source_of_ef_electricity}
               onChange={(val) =>
-                setValues((prev: any) => ({ ...prev, electricity_source: val }))
+                setValues((prev: any) => ({
+                  ...prev,
+                  source_of_ef_electricity: val,
+                }))
               }
             />
           </div>
@@ -267,10 +275,10 @@ const Section3: React.FC<Props> = ({
               caption="Emission factor of the electricity"
               defination="กรอกค่า Emission factor ของไฟฟ้าที่ส่งออกจากกระบวนการผลิต"
               label=""
-              name="electricity_emission_factor"
-              value={values.electricity_emission_factor}
+              name="ef_electricity"
+              value={values.ef_electricity}
               onChange={onChange}
-              error={errors.electricity_emission_factor}
+              error={errors.ef_electricity}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -279,10 +287,10 @@ const Section3: React.FC<Props> = ({
               caption="Amounts exported"
               defination="กรอกค่าไฟฟ้าที่ส่งออกจากกระบวนการผลิต"
               label=""
-              name="electricity_exported"
-              value={values.electricity_exported}
+              name="exported_electricity_value"
+              value={values.exported_electricity_value}
               onChange={onChange}
-              error={errors.electricity_exported}
+              error={errors.exported_electricity_value}
             />
           </div>
         </div>

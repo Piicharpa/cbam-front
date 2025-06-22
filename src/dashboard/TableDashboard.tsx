@@ -11,19 +11,27 @@ import {
   Typography,
   Box,
   Chip,
+  IconButton,
+  Tooltip
 } from "@mui/material";
+
 import axios from "axios";
 import dayjs from "dayjs";
+
+import DescriptionIcon from "@mui/icons-material/Description";
+import { Link } from "react-router-dom";
+
 // import "dayjs/locale/th";
 // dayjs.locale("th");
 
 interface CBAMData {
   product: string;
-  category: string;
+  cncode: string;
   volume?: string;
   carbon?: string;
   date: string;
   ref: string;
+  id: number; // ✅ เพิ่มตรงนี้ด้วย
 }
 
 const TableDashboard = () => {
@@ -33,7 +41,7 @@ const TableDashboard = () => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://178.128.123.212:5000/api/cbam/report/company/1"
+          "http://localhost:5000/api/cbam/report/company/1"
         );
 
         const raw = response.data;
@@ -44,10 +52,10 @@ const TableDashboard = () => {
         const mapped: CBAMData[] = items.map((item: any) => ({
           product: item.industry_type_name,
           category: item.goods_category_name?.trim(),
-          volume: "-", // ยังไม่มีใน API
-          carbon: "-", // ยังไม่มีใน API
+          cncode: item.cncode?.trim(),
           date: dayjs(item.reporting_period_start).format("D MMM YYYY"),
           ref: item.cn_code_name,
+          id: item.id, // ✅ เพิ่มตรงนี้
         }));
 
         setData(mapped);
@@ -73,19 +81,13 @@ const TableDashboard = () => {
                 <strong>ชื่อผลิตภัณฑ์</strong>
               </TableCell>
               <TableCell>
-                <strong>หมวดหมู่</strong>
+                <strong>CN code</strong>
               </TableCell>
               <TableCell>
-                <strong>ปริมาณ (Tonnes)</strong>
+                <strong>วันลงทะเบียน</strong>
               </TableCell>
               <TableCell>
-                <strong>Carbon Footprint (tCO₂eq)</strong>
-              </TableCell>
-              <TableCell>
-                <strong>วันที่ส่งไป EU</strong>
-              </TableCell>
-              <TableCell>
-                <strong>รหัสอ้างอิง EU</strong>
+                <strong>รายงาน</strong>
               </TableCell>
             </TableRow>
           </TableHead>
@@ -93,9 +95,7 @@ const TableDashboard = () => {
             {data.map((row, idx) => (
               <TableRow key={idx}>
                 <TableCell>{row.product}</TableCell>
-                <TableCell>{row.category}</TableCell>
-                <TableCell>{row.volume}</TableCell>
-                <TableCell>{row.carbon}</TableCell>
+                <TableCell>{row.cncode}</TableCell>
                 <TableCell>
                   <Chip
                     label={row.date}
@@ -104,7 +104,17 @@ const TableDashboard = () => {
                     sx={{ fontWeight: 500 }}
                   />
                 </TableCell>
-                <TableCell>{row.ref}</TableCell>
+                <TableCell>
+                  <Tooltip title="ดูรายงาน">
+                    <IconButton
+                      component={Link}
+                      to={`/report?reportId=${row.id}`}
+                      color="primary"
+                    >
+                      <DescriptionIcon />
+                    </IconButton>
+                  </Tooltip>
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>

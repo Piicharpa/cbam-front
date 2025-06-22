@@ -13,6 +13,7 @@ import LabeledAutocompleteMap from "../../components/LabeledAutoCompleteMap";
 import LabeledTextField from "../../components/LabeledTextField";
 
 interface FormValues {
+  name: string;
   industry_type: string;
   goods_category: string;
   routes: { [key: number]: string };
@@ -23,6 +24,7 @@ interface FormErrors {
   industry_type?: string;
   goods_category?: string;
   routes?: string;
+  name?: string;
 }
 
 interface Props {
@@ -41,7 +43,9 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
   const [routesOptions, setRoutesOptions] = useState<OptionType[]>([]);
-  const [routeCount, setRouteCount] = useState(Math.min(Object.keys(values.routes || {}).length || 1, 6));
+  const [routeCount, setRouteCount] = useState(
+    Math.min(Object.keys(values.routes || {}).length || 1, 6)
+  );
 
   // Fetch goods data and set industry options on mount
   useEffect(() => {
@@ -70,7 +74,11 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   // Update routes options when goods category changes
   useEffect(() => {
     if (values.goods_category && values.industry_type) {
-      const options = getRoutesOptions(goodsData, +values.industry_type, +values.goods_category);
+      const options = getRoutesOptions(
+        goodsData,
+        +values.industry_type,
+        +values.goods_category
+      );
       setRoutesOptions(options);
       const routeValues = Object.values(values.routes || {});
       if (!options.some((opt) => routeValues.includes(String(opt.value)))) {
@@ -108,24 +116,27 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   //     return;
   //   }
 
-  //   // Save data to local storage
-  //   localStorage.setItem("precursorData", JSON.stringify({
-  //     routes: values.routes || [],
-  //     amounts: values.amounts || {},
-  //     industry_type: values.industry_type,
-  //     goods_category: values.goods_category,
-  //     precursors: values.routes.map((r) => {
-  //       const found = routesOptions.find((opt) => String(opt.value) === r);
-  //       return found?.label || r;
-  //     }),
-  //   }));
+  // Save data to local storage
+  localStorage.setItem(
+    "precursorData",
+    JSON.stringify({
+      routes: values.routes || [],
+      amounts: values.amounts || {},
+      industry_type: values.industry_type,
+      goods_category: values.goods_category,
+      precursors: Object.values(values.routes).map((r) => {
+        const found = routesOptions.find((opt) => String(opt.value) === r);
+        return found?.label || r;
+      }),
+    })
+  );
 
-  //   console.log("Section 1 data saved:", {
-  //     routes: values.routes,
-  //     amounts: values.amounts,
-  //     industry_type: values.industry_type,
-  //     goods_category: values.goods_category,
-  //   });
+  console.log("Section 1 data saved:", {
+    routes: values.routes,
+    amounts: values.amounts,
+    industry_type: values.industry_type,
+    goods_category: values.goods_category,
+  });
 
   //   // Call onNext to navigate to the next section
   //   // onNext();
@@ -157,7 +168,9 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
       defaultExpanded={true}
       title="(a) List of aggregated goods categories and corresponding production routes"
       subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
-      hasError={!!(errors.industry_type || errors.goods_category || errors.routes)}
+      hasError={
+        !!(errors.industry_type || errors.goods_category || errors.routes)
+      }
     >
       <div style={{ marginBottom: "1rem" }}>
         {/* Industry Type and Goods Category Input */}
@@ -196,6 +209,19 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               }}
             />
           </div>
+          <div style={{ flex: 1 }}>
+            <LabeledTextField
+              caption="Name"
+              defination="ชื่อ"
+              label=""
+              name="ืname"
+              type="text"
+              value={values.name}
+              onChange={(e) => onChange("name", e.target.value)}
+              error={errors.name} // Pass the error for the helper text
+              helperText={errors.name}
+            />
+          </div>
         </div>
 
         {/* Production Routes Input */}
@@ -203,12 +229,24 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
           {routesOptions.length > 0 ? (
             <>
               <h4>Production Routes</h4>
-              <p style={{ color: "#666", fontSize: "0.9rem", marginBottom: "10px" }}>
+              <p
+                style={{
+                  color: "#666",
+                  fontSize: "0.9rem",
+                  marginBottom: "10px",
+                }}
+              >
                 Please select up to 6 routes that apply
               </p>
               {[...Array(routeCount)].map((_, index) => (
                 <div key={index} style={{ marginBottom: "12px" }}>
-                  <div style={{ display: "flex", gap: "15px", alignItems: "flex-start" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      gap: "15px",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <div style={{ flex: 3 }}>
                       <LabeledAutocompleteMap
                         caption={`Route ${index + 1}`}
@@ -220,9 +258,16 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
                           value: String(opt.value),
                         }))}
                         value={values.routes?.[index] || ""}
-                        error={index === 0 && errors.routes ? errors.routes : undefined}
+                        error={
+                          index === 0 && errors.routes
+                            ? errors.routes
+                            : undefined
+                        }
                         onChange={(val) => {
-                          const updatedRoutes = { ...values.routes, [index]: String(val) };
+                          const updatedRoutes = {
+                            ...values.routes,
+                            [index]: String(val),
+                          };
                           onChange("routes", updatedRoutes);
                         }}
                       />
@@ -272,22 +317,33 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
                 </button>
               )}
               {routesOptions.length > 6 && (
-                <p style={{ color: "#e67e22", fontSize: "0.9rem", marginTop: "5px" }}>
+                <p
+                  style={{
+                    color: "#e67e22",
+                    fontSize: "0.9rem",
+                    marginTop: "5px",
+                  }}
+                >
                   Note: มีวัตถุดิบมากกว่า 6 รายการ แต่จำกัดให้เลือกได้ไม่เกิน 6
                 </p>
               )}
             </>
           ) : (
-            <p style={{ color: "#e74c3c", padding: "10px", backgroundColor: "#fceae9", borderRadius: "4px" }}>
+            <p
+              style={{
+                color: "#e74c3c",
+                padding: "10px",
+                backgroundColor: "#fceae9",
+                borderRadius: "4px",
+              }}
+            >
               ไม่มีตัวเลือกวัตถุดิบที่เกี่ยวข้อง
             </p>
           )}
         </div>
 
         {/* Section Button for transitioning to the next step */}
-        <div style={{ display: "flex", justifyContent: "right" }}>
-
-        </div>
+        <div style={{ display: "flex", justifyContent: "right" }}></div>
       </div>
     </Section>
   );

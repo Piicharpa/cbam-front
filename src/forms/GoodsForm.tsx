@@ -5,9 +5,9 @@ import {
   Grid,
   Box,
 } from "@mui/material";
+import { useNavigate, useLocation } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton_v2";
-import { useNavigate } from "react-router-dom";
 import {
   fetchCountries,
   CountryOption,
@@ -15,84 +15,81 @@ import {
 import Section1 from "./formsections/Goods_sec1";
 import Section2 from "./formsections/Goods_sec2";
 import Section3 from "./formsections/Goods_sec3";
-import axios from "axios";
+
 
 interface GoodsFormProps {
-  data: {
-    report_id: number;
+  formValues: {
+    report_id: string;
     name: string;
-    route_1: string;
-    route_1_amounts: number;
-    route_2: string | null;
-    route_2_amounts: number | null;
-    route_3: string | null;
-    route_3_amounts: number | null;
-    route_4: string | null;
-    route_4_amounts: number | null;
-    route_5: string | null;
-    route_5_amounts: number | null;
-    route_6: string | null;
-    route_6_amounts: number | null;
-    total_consumed_within_installation: number;
-    consumed_in_others_amounts: number;
-    condumed_non_cbam_goods_amounts: number;
-    has_heat: number;
-    has_waste_gases: number;
-    direct_emissions: number;
-    imported_heat_value: number;
-    exported_heat_value: number;
-    ef_imported_heat: number;
-    ef_exported_heat: number;
-    electricity_consumption_value: number;
-    ef_electricity: number;
+    goods_category: string;
+    routes: { [key: number]: string }; // เปลี่ยนจาก string[] เป็นแบบ object ตามที่คุณปรับ
+    amounts: { [key: number]: string };
+    total_consumed_within_installation: string;
+    consumed_in_others_amounts: string;
+    condumed_non_cbam_goods_amounts: string;
+    has_heat: string;
+    has_waste_gases: string;
+    direct_emissions: string;
+    imported_heat_value: string;
+    exported_heat_value: string;
+    ef_imported_heat: string;
+    ef_exported_heat: string;
+    electricity_consumption_value: string;
+    ef_electricity: string;
     source_of_ef_electricity: string;
-    exported_electricity_value: number | null;
-    ef_exported_electricity: number | null;
-    total_production_amounts: number;
-    produced_for_market_amount: number;
-    imported_wgases_amount: number;
-    ef_imported_wgases: number;
-    exported_wgases_amount: number;
-    ef_exported_wgases: number;
+    exported_electricity_value: string;
+    ef_exported_electricity: string;
+    total_production_amounts: string;
+    produced_for_market_amount: string;
+    imported_wgases_amount: string;
+    ef_imported_wgases: string;
+    exported_wgases_amount: string;
+    ef_exported_wgases: string;
+    industry_type: string;
   };
-  onChange: (data: GoodsFormProps["data"]) => void;
+  onChange: (formValues: GoodsFormProps["formValues"]) => void;
   redirectPath?: string;
+  onNextStep: () => void;
 }
 
-const GoodsForm: React.FC<GoodsFormProps> = ({ data, onChange, redirectPath = "/" }) => {
-  const navigate = useNavigate();
 
-  const [formValues, set] = useState({
-    installation: "",
-    economic_activity: "",
-    address: "",
-    post_code: "",
-    po_box: "",
-    city: "",
-    country: "",
-    unlocode: "",
-    lat: "",
-    long: "",
-    auth_rep: "",
-    email: "",
-    tel: "",
-    fax: "",
-    accre_mem_state: "",
-    nat_accre: "",
-    reg_num: "",
-    industry_type: "",
+const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep }) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const reportIdRaw = (location.state as { reportId?: number } | undefined)?.reportId || null;
+  const reportId = reportIdRaw ? Number(reportIdRaw) : null;
+
+  const [localFormValues, setLocalFormValues] = useState<GoodsFormProps["formValues"]>({
+    report_id: "",
+    name: "",
     goods_category: "",
-    precursors: [] as string[],
-    amounts: {} as { [key: number]: string },
-    route: "",
-    routes: [] as string[],
+    routes: {},
+    amounts: {},
     total_consumed_within_installation: "",
     consumed_in_others_amounts: "",
-    produced_for_market: "",
-    consumed_non_cbam_goods: "",
+    condumed_non_cbam_goods_amounts: "",
+    has_heat: "",
+    has_waste_gases: "",
+    direct_emissions: "",
+    imported_heat_value: "",
+    exported_heat_value: "",
+    ef_imported_heat: "",
+    ef_exported_heat: "",
+    electricity_consumption_value: "",
+    ef_electricity: "",
+    source_of_ef_electricity: "",
+    exported_electricity_value: "",
+    ef_exported_electricity: "",
+    total_production_amounts: "",
+    produced_for_market_amount: "",
+    imported_wgases_amount: "",
+    ef_imported_wgases: "",
+    exported_wgases_amount: "",
+    ef_exported_wgases: "",
+    industry_type: "",
   });
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const [activeStep, setActiveStep] = useState(1);
   const [countries, setCountries] = useState<CountryOption[]>([]);
 
   useEffect(() => {
@@ -103,94 +100,68 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ data, onChange, redirectPath = "/
     loadCountries();
   }, []);
 
-  const handleFirstSubmit = () => {
-    const requiredFieldsSection1 = ["installation", "economic_activity"];
-    const newErrors: { [key: string]: string } = {};
-    requiredFieldsSection1.forEach((field) => {
-      if (!formValues[field as keyof typeof formValues]) {
-        newErrors[field] = "กรุณากรอกข้อมูล";
-      }
-    });
+  useEffect(() => {
+    setLocalFormValues(formValues);
+  }, [formValues]);
 
-    if (Object.keys(newErrors).length > 0) {
-      setFormErrors(newErrors);
-      return;
-    }
-    setActiveStep(2);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    set((prev) => ({ ...prev, [name]: value }));
+    setLocalFormValues((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const requiredFields = [
-      "report_id",
-      "name",
-      "route_1",
-      "route_1_amounts",
-      "route_2",
-      "route_2_amounts",
-      "route_3",
-      "route_3_amounts",
-      "route_4",
-      "route_4_amounts",
-      "route_5",
-      "route_5_amounts",
-      "route_6",
-      "route_6_amounts",
-      "total_consumed_within_installation",
-      "consumed_in_others_amounts",
-      "condumed_non_cbam_goods_amounts",
-      "has_heat",
-      "has_waste_gases",
-      "direct_emissions",
-      "imported_heat_value",
-      "exported_heat_value",
-      "ef_imported_heat",
-      "ef_exported_heat",
-      "electricity_consumption_value",
-      "ef_electricity",
-      "source_of_ef_electricity",
-      "exported_electricity_value",
-      "ef_exported_electricity",
-      "total_production_amounts",
-      "produced_for_market_amount",
-      "imported_wgases_amount",
-      "ef_imported_wgases",
-      "exported_wgases_amount",
-      "ef_exported_wgases"
-    ];
-    const newErrors: { [key: string]: string } = {};
-    requiredFields.forEach((field) => {
-      if (data[field as keyof typeof data] === undefined || data[field as keyof typeof data] === null) {
-        newErrors[field] = "กรุณากรอกข้อมูล";
-      }
-    });
-    if (Object.keys(newErrors).length > 0) {
-      setFormErrors(newErrors);
-      const firstErrorField = Object.keys(newErrors)[0];
-      const errorElement = document.getElementsByName(firstErrorField)[0];
-      if (errorElement) errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
+  const handleSubmit = async (e?: React.FormEvent) => {
+
+    if (e) e.preventDefault();
+    console.log("✅ handleSubmit called");
+    console.log("📦 formValues ที่จะส่ง:", localFormValues); // <<==== ใส่ตรงนี้
+
+    // ✅ validate (เฉพาะตัวอย่าง)
+    // const requiredFields = ["report_id", "name", "route_1"];
+    // const errors: { [key: string]: string } = {};
+    // for (const field of requiredFields) {
+    //   if (!localFormValues[field as keyof typeof localFormValues]) {
+    //     errors[field] = "กรุณากรอกข้อมูล";
+    //   }
+    // }
+    // if (Object.keys(errors).length > 0) {
+    //   setFormErrors(errors);
+    //   return;
+    // }
+
+    const payload = {
+      ...localFormValues,
+      name: localFormValues.goods_category || "",   // เปลี่ยน name เป็น goods_category
+      amounts: JSON.stringify(localFormValues.amounts), // ✅ แก้ตรงนี้
+      routes: JSON.stringify(localFormValues.routes),   // ✅ ถ้า routes เป็น object ด้วย
+      report_id: reportId || "", // 🔍 ต้องเป็นค่าที่ตรงกับ `reports.id`
+
+    };
 
     try {
-      const res = await axios.post("http://localhost:5000/api/cbam/d_goods", data);
-      const insertedId = res.data?.insertId || res.data?.id;
+      console.log("💬 ส่งข้อมูล:", localFormValues);
+      console.log("📦 report_id ที่จะส่ง:", reportId);
 
-      if (insertedId) {
-        const getRes = await axios.get(`http://localhost:5000/api/cbam/installation/${insertedId}`);
-        console.log("✅ ข้อมูลที่เพิ่งบันทึก:", getRes.data);
+      const response = await fetch("http://localhost:5000/api/cbam/d_goods/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Server error: ${errorText}`);
       }
 
-      navigate(redirectPath);
+      const data = await response.json();
+      console.log("✅ บันทึกสำเร็จ:", data);
+
+      onNextStep?.();
     } catch (err: any) {
-      console.error("❌ เกิดข้อผิดพลาดระหว่างส่งข้อมูล:", err.response?.data || err.message);
+      console.error("❌ POST error:", err.message || err);
     }
+
   };
 
   return (
@@ -207,38 +178,32 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ data, onChange, redirectPath = "/
           </Box>
 
           <Section1
-            values={formValues}
+            values={localFormValues}
             errors={formErrors}
             onChange={(field, val) => {
-              set((prev) => ({ ...prev, [field]: val }));
+              setLocalFormValues((prev) => ({ ...prev, [field]: val }));
               setFormErrors((prev) => ({ ...prev, [field]: "" }));
             }}
-          // onNext={handleFirstSubmit}
           />
-
           <Section2
-            values={formValues}
+            values={localFormValues}
             errors={formErrors}
             onChange={handleInputChange}
           // onNext={() => setActiveStep(3)}
           />
 
           <Section3
-            values={formValues}
+            values={localFormValues}
             errors={formErrors}
             onChange={handleInputChange}
             // onNext={() => setActiveStep(4)}
-            setValues={set}
+            setValues={setLocalFormValues}
             countries={countries}
           />
 
-          <PGButton onClick={() => { handleSubmit(new Event('submit') as unknown as React.FormEvent); }}>SAVE</PGButton>
+          <PGButton type="submit">SAVE</PGButton>
         </Grid>
       </form>
-
-      {/* <Box mt={4} textAlign="center">
-          <PGButton onClick={handleSubmit}>บันทึกและส่งข้อมูล</PGButton>
-        </Box> */}
     </Container>
   );
 };

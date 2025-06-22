@@ -208,7 +208,7 @@ const Formdev: React.FC = () => {
     po_box: '',
     latitude: '',
     longitude: '',
-    author_represent_id: '',
+    author_represent: '',
     email: '',
     tel: '',
     unlocode: '',
@@ -233,41 +233,33 @@ const Formdev: React.FC = () => {
   });
   
   const [goodsData, setGoodsData] = useState({
-    report_id: 0,
+    report_id: "",
     name: "",
-    route_1: "",
-    route_1_amounts: 0,
-    route_2: null as string | null,
-    route_2_amounts: null as number | null,
-    route_3: null as string | null,
-    route_3_amounts: null as number | null,
-    route_4: null as string | null,
-    route_4_amounts: null as number | null,
-    route_5: null as string | null,
-    route_5_amounts: null as number | null,
-    route_6: null as string | null,
-    route_6_amounts: null as number | null,
-    total_consumed_within_installation: 0,
-    consumed_in_others_amounts: 0,
-    condumed_non_cbam_goods_amounts: 0,
-    has_heat: 0,
-    has_waste_gases: 0,
-    direct_emissions: 0,
-    imported_heat_value: 0,
-    exported_heat_value: 0,
-    ef_imported_heat: 0,
-    ef_exported_heat: 0,
-    electricity_consumption_value: 0,
-    ef_electricity: 0,
+    goods_category: "",
+    routes: {},
+    amounts: {},
+    total_consumed_within_installation: "",
+    consumed_in_others_amounts: "",
+    condumed_non_cbam_goods_amounts: "",
+    has_heat: "",
+    has_waste_gases: "",
+    direct_emissions: "",
+    imported_heat_value: "",
+    exported_heat_value: "",
+    ef_imported_heat: "",
+    ef_exported_heat: "",
+    electricity_consumption_value: "",
+    ef_electricity: "",
     source_of_ef_electricity: "",
-    exported_electricity_value: null as number | null,
-    ef_exported_electricity: null as number | null,
-    total_production_amounts: 0,
-    produced_for_market_amount: 0,
-    imported_wgases_amount: 0,
-    ef_imported_wgases: 0,
-    exported_wgases_amount: 0,
-    ef_exported_wgases: 0,
+    exported_electricity_value: "",
+    ef_exported_electricity: "",
+    total_production_amounts: "",
+    produced_for_market_amount: "",
+    imported_wgases_amount: "",
+    ef_imported_wgases: "",
+    exported_wgases_amount: "",
+    ef_exported_wgases: "",
+    industry_type: ""
   });
 
   const [precursorsData, setPrecursorsData] = useState({});
@@ -373,19 +365,20 @@ const Formdev: React.FC = () => {
     }
   };
 
-  // Render form content based on active step
+
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
-        return <InstallationForm data={installationData} onChange={setInstallationData} />;
+        return <InstallationForm data={installationData} onChange={setInstallationData} onNextStep={handleNext} />
       case 1:
-        return <VerifierForm  data={verifierData} onChange={setVerifierData} />;
+        return <VerifierForm data={verifierData} onChange={setVerifierData} onNextStep={handleNext} />;
       case 2:
-        return <GoodsForm data={goodsData} onChange={setGoodsData} />;
+        return <GoodsForm formValues={goodsData} onChange={setGoodsData} onNextStep={handleNext} />
       case 3:
-        return <PrecursorsForm  />;
+
+        return <PrecursorsForm onNextStep={handleNext} />;
       case 4:
-        return <AmountForm  />;
+        return <AmountForm onNextStep={handleNext} />;
       case 5:
         return <SourceForm />;
       default:
@@ -397,7 +390,7 @@ const Formdev: React.FC = () => {
   const progress = ((activeStep + 1) / steps.length) * 100;
   
   return (
-    <ThemeProvider theme={theme}>
+     <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ py: 5 }}>
         {/* Header Banner */}
         <Paper elevation={0} sx={{ 
@@ -479,9 +472,9 @@ const Formdev: React.FC = () => {
             ))}
           </Stepper>
         </Paper>
-        
-        {/* Form content with animation */}
-        <Fade in={fadeIn} timeout={500}>
+
+      {/* 🟢 Form content */}
+      <Fade in={fadeIn} timeout={500}>
           <Box sx={{ minHeight: '450px', position: 'relative' }}>
             {/* Decorative elements */}
             <Box sx={{
@@ -543,9 +536,9 @@ const Formdev: React.FC = () => {
             </Paper>
           </Box>
         </Fade>
-        
-        {/* Navigation buttons with enhanced styling */}
-        <Box 
+
+      {/* 🔘 Navigation buttons */}
+       <Box 
           mt={4} 
           display="flex" 
           justifyContent="space-between"
@@ -562,22 +555,10 @@ const Formdev: React.FC = () => {
             }
           }}
         >
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-            variant="outlined"
-            startIcon={<span>←</span>}
-            sx={{
-              borderWidth: '2px',
-              '&:not(:disabled)': {
-                borderColor: 'primary.main',
-                color: 'primary.main'
-              }
-            }}
-          >
-            Previous Step
+        <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
+          <Button disabled={activeStep === 0} onClick={handleBack} variant="outlined">
+            Back
           </Button>
-          
           <Box sx={{ position: 'relative' }}>
             {activeStep === steps.length - 1 ? (
               <Button 
@@ -634,6 +615,7 @@ const Formdev: React.FC = () => {
               }}
             />
           </Box>
+        </Box>
         </Box>
         
         {/* Progress indicator */}

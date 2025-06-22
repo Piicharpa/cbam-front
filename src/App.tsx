@@ -200,7 +200,6 @@ function App() {
                 userStatus="Welcome to CBAM System!"
               />
             </Paper>
-
             {/* Main Content */}
             
               {/* Content Container with glass effect */}
@@ -275,6 +274,7 @@ function App() {
                     />
                   </Routes>
                 </Box>
+
 
                 {/* Decorative elements */}
                 <Box

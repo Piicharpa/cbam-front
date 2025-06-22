@@ -119,10 +119,11 @@ const SumupForm: React.FC<InstallationFormProps> = ({
       const reportId = responseData.id;
       setReportId(String(reportId));
       localStorage.setItem("reportId", responseData.id);
+      console.log("reportId", responseData.id);
 
       navigate("/Form", { state: { reportId } });
 
-      console.log("reportId", responseData.id);
+
 
     } catch (error) {
       console.error("Failed to submit report:", error);

@@ -22,6 +22,11 @@ import BoltIcon from "@mui/icons-material/Bolt";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import { useMediaQuery } from "@mui/material";
+import TabAInstallationData from "../components/reportTab/TabA_InstallationData";
+import TabBEmissionInstallation from "../components/reportTab/TabB_EmissionInstallation";
+import TabCEnergyEmission from "../components/reportTab/TabC_EnergyEmissions";
+import TabDProcess from "../components/reportTab/TabD_Process";
+import TabEPurchasedPrecursors from "../components/reportTab/TabE_PurchasedPrecursors";
 
 interface TabPanelProps {
   children?: React.ReactNode;

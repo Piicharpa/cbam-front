@@ -32,11 +32,12 @@ interface VerifierFormProps {
 
   }
   onChange: (data: any) => void;
+  onNextStep: () => void;
 }
 
 
 
-const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange }) => {
+const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const reportId = location.state?.reportId;
@@ -189,6 +190,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange }) => {
     } catch (error) {
       console.error("❌ Error:", error);
     }
+    onNextStep?.();
   };
 
   return (

@@ -2,29 +2,35 @@ import React, { useEffect, useState } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
-import { useNavigate } from "react-router-dom";
-import LabeledTextField from "../components/LabeledTextField";
-import { justification } from "../components/dropdown/justification";
-import { eleconsumption } from "../components/dropdown/eleconsumption";
-import { electricitys } from "../components/dropdown/electricitys";
+
+import { useNavigate, useLocation } from "react-router-dom";
 import LabeledAutocomplete from "../components/LabeledAutoComplete";
+import LabeledTextField from "../components/LabeledTextField";
+import LabeledAutocompleteMap from "../components/LabeledAutoCompleteMap";
+
 
 interface VerifierFormProps {
   redirectPath?: string;
+  onNextStep: () => void;
 }
 
-const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
+const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const reportId = location.state?.reportId || null;
+  // const percursorId = location.state?.percursorId || null;
+  const percursorId = location.state?.precursorId || localStorage.getItem("precursorId");
+
 
   const [formValues, setFormValues] = useState({
-    embedded_direct_amount: "",
-    embedded_direct_source: "",
-    electric_consumption_amount: "",
-    electric_consumption_source: "", // Fixed typo in property name
-    electricity_emission_amount: "",
-    electricity_emission_source: "",
-    embedded_indirect_amount: "", // Fixed typo in property name
-    justification: "",
+
+    id: "",
+    embedded_direct_emissions_value: "",
+    source_embedded_direct_emissions: "",
+    embedded_indirection_emissions_value: "",
+    source_embedded_indirect_emissions: "",
+    justification_for_use_default_values: "",
+
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -35,39 +41,19 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const calculateIndirectEmission = () => {
-    const ec = parseFloat(formValues.electric_consumption_amount) || 0;
-    const ef = parseFloat(formValues.electricity_emission_amount) || 0;
 
-    if (!ec|| !ef) {
-      return 0;
-    }
-
-    return (ec*ef).toFixed(4);
-  };
-
-   useEffect(() => {
-      setFormValues((prev) => ({
-        ...prev,
-        embedded_indirect_amount: calculateIndirectEmission().toString()
-      }));
-    }, [
-      formValues.embedded_indirect_amount
-    ]);
-
-    
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    console.log("Submit formValues:", formValues); //
+
     const requiredFields = [
-      "embedded_direct_amount",
-      "embedded_direct_source",
-      "electric_consumption_amount",
-      "electric_consumption_source",
-      "electricity_emission_amount",
-      "electricity_emission_source",
-      "embedded_indirect_amount", 
-      "justification",
+      "id",
+      "embedded_direct_emissions_value",
+      "source_embedded_direct_emissions",
+      "embedded_indirection_emissions_value",
+      "source_embedded_indirect_emissions",
+      "justification_for_use_default_values"
     ];
 
     const newErrors: { [key: string]: string } = {};
@@ -87,21 +73,69 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
       return;
     }
 
+    try {
+      const updateId = percursorId; // 👈 ใส่ ID ที่จะอัปเดตตรงนี้ (อาจได้มาจาก POST ก่อนหน้า)
+      console.log("📦 PUT updateId:", updateId);
+
+
+      const payload = {
+        id: updateId,
+        embedded_direct_emissions_value: formValues.embedded_direct_emissions_value || "",
+        source_embedded_direct_emissions: formValues.source_embedded_direct_emissions || "",
+        embedded_indirection_emissions_value: formValues.embedded_indirection_emissions_value || "",
+        source_embedded_indirect_emissions: formValues.source_embedded_indirect_emissions || "",
+        justification_for_use_default_values: formValues.justification_for_use_default_values || "",
+      };
+
+      console.log("📦 PUT Payload:", payload);
+      console.log("📦 PUT updateId:", updateId);
+
+      // 🔄 PUT เพื่ออัปเดต
+      const response = await fetch(`http://localhost:5000/api/cbam/e_precursors/${updateId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`PUT Error: ${errText}`);
+      }
+
+      console.log("✅ PUT สำเร็จ");
+
+      // 🔍 ดึงข้อมูลล่าสุดจาก ID นั้น
+      const getRes = await fetch(`http://localhost:5000/api/cbam/e_precursors/${updateId}`);
+      if (!getRes.ok) {
+        const errText = await getRes.text();
+        throw new Error(`GET Error: ${errText}`);
+      }
+
+      const detailData = await getRes.json();
+      console.log("📄 ข้อมูลหลังอัปเดต:", detailData);
+
+    } catch (error: any) {
+      console.error("❌ Error ใน PUT หรือ GET:", error.message || error);
+    }
+    onNextStep?.();
+
     // console.log('✅ Submitted:', formValues);
-    navigate(redirectPath);
+    // navigate(redirectPath);
   };
 
-  const handleAutocompleteChange = (name: string, value: string) => {
-  setFormValues((prev) => ({
-    ...prev,
-    [name]: value,
-  }));
+//   const handleAutocompleteChange = (name: string, value: string) => {
+//   setFormValues((prev) => ({
+//     ...prev,
+//     [name]: value,
+//   }));
 
-  setFormErrors((prev) => ({
-    ...prev,
-    [name]: "", // เคลียร์ error เมื่อมีการเลือกใหม่
-  }));
-};
+//   setFormErrors((prev) => ({
+//     ...prev,
+//     [name]: "", // เคลียร์ error เมื่อมีการเลือกใหม่
+//   }));
+// };
 
   return (
     <Container
@@ -110,19 +144,16 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
     >
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3} alignItems="stretch">
-          <Box width="100%">
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              gutterBottom
-              color="#1976d2"
-            >
+          <Box>
+            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
               Purchased precursors
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              รายละเอียดของวัตถุดิบที่ซื้อเข้ามาใช้ในกระบวนการผลิต
+              รายะเอียดของวัตถุดิบที่ซื้อเข้ามาใช้ในกระบวนการผลิต
             </Typography>
           </Box>
+
+
           {/* SECTION 1: Specific embedded emissions*/}
           <Section
             title="(c) Specific embedded emissions"
@@ -131,77 +162,111 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
             hasError={Object.keys(formErrors).length > 0}
           >
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
-              <strong>Specific embedded direct emissions (SEE (direct))</strong>
+              <strong>
+                {" "}
+                Specific embedded direct emissions (SEE (direct)) Unit: tCO2e/t {" "}
+              </strong>
+
             </div>
             <Box mb={3}>
-              <div
-                style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
-              >
-                <div style={{ flex: 1 }}>
+              <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <LabeledTextField
                     type="number"
-                    caption="Amount"
+
+                    caption=""
                     defination="กรอกเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
-                    label=""
-                    name="embedded_direct_amount"
-                    value={formValues.embedded_direct_amount}
+                    label="Value"
+                    name="embedded_direct_emissions_value"
+                    value={formValues.embedded_direct_emissions_value}
                     onChange={handleInputChange}
-                    error={formErrors.embedded_direct_amount}
+                    error={formErrors.embedded_direct_emissions_value}
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
-                  <LabeledTextField
-                    type="text"
-                    caption="Source"
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <LabeledAutocompleteMap
+                    caption=""
                     defination="ระบุแหล่งที่มาของข้อมูล"
-                    label=""
-                    name="embedded_direct_source"
-                    value={formValues.embedded_direct_source}
-                    onChange={handleInputChange}
-                    error={formErrors.embedded_direct_source}
+                    label="Source"
+                    name="source_embedded_direct_emissions"
+                    options={[
+                      { label: "", value: "Source" },
+                      { label: "Measured", value: "Measured" },
+                      { label: "Default", value: "Default" },
+                      { label: "Unknown", value: "Unknown" },
+                    ]}
+                    value={formValues.source_embedded_direct_emissions}
+                    error={formErrors.source_embedded_direct_emissions}
+                    onChange={(val: string | number) => {
+                      const value = typeof val === "string" ? val : String(val);
+                      setFormValues((prev) => ({
+                        ...prev,
+                        source_embedded_direct_emissions: value,
+                      }));
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        source_embedded_direct_emissions: "",
+                      }));
+                    }}
                   />
                 </div>
               </div>
             </Box>
 
+
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
               <strong>
-                Specific electricity consumption (for SEE (indirect))
+                {" "}
+                Specific electricity consumption (for SEE (indirect)) Unit: MWh/t {" "}
+
               </strong>
             </div>
             <Box mb={3}>
               <div
                 style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
               >
-                <div style={{ flex: 1 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
                   <LabeledTextField
                     type="number"
                     caption="Amount"
                     defination="กรอกเป็นค่าตัวเลขของ SEE indirect ของวัตถุดิบตั้งต้น"
-                    label=""
-                    name="electric_consumption_amount"
-                    value={formValues.electric_consumption_amount}
+
+                    label="Value"
+                    name="embedded_indirection_emissions_value"
+                    value={formValues.embedded_indirection_emissions_value}
+
                     onChange={handleInputChange}
                     error={formErrors.electric_consumption_amount}
                   />
                 </div>
 
-                <div style={{ flex: 1 }}>
-                  <LabeledAutocomplete
-                    caption="Source"
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <LabeledAutocompleteMap
+                    caption=""
                     defination="ระบุแหล่งที่มาของข้อมูล"
-                    label=""
-                    name="electric_consumption_source"
-                    value={formValues.electric_consumption_source}
-                    options={eleconsumption.map((c) => c.name)}
-                    onChange={(val) =>
-                      handleAutocompleteChange(
-                        "electric_consumption_source",
-                        val
-                      )
-                    }
-                    error={formErrors.electric_consumption_source}
+                    label="Source"
+                    name="source_embedded_indirect_emissions"
+                    options={[
+                      { label: "", value: "Source" },
+                      { label: "Measured", value: "Measured" },
+                      { label: "Default", value: "Default" },
+                      { label: "Unknown", value: "Unknown" },
+                    ]}
+                    value={formValues.source_embedded_indirect_emissions}
+                    error={formErrors.source_embedded_indirect_emissions}
+                    onChange={(val: string | number) => {
+                      const value = typeof val === "string" ? val : String(val);
+                      setFormValues((prev) => ({
+                        ...prev,
+                        source_embedded_indirect_emissions: value,
+                      }));
+                      setFormErrors((prev) => ({
+                        ...prev,
+                        source_embedded_indirect_emissions: "",
+                      }));
+                    }}
+
                   />
                 </div>
               </div>
@@ -210,7 +275,7 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
             <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
               <strong>Electricity emission factor (for SEE (indirect))</strong>
             </div>
-            <Box mb={3}>
+            {/* <Box mb={3}>
               <div
                 style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
               >
@@ -241,31 +306,26 @@ const AmountForm: React.FC<VerifierFormProps> = ({ redirectPath = "/" }) => {
                   </div>
                 </div>
               </div>
-            </Box>
-            <Box mb={3}>
-              <LabeledTextField
-                caption="Source"
-                defination="ระบุแหล่งที่มาของข้อมูล"
-                label=""
-                name="embedded_indirect_amount"
-                value={formValues.embedded_indirect_amount}
-                onChange={handleInputChange}
-                error={formErrors.electricity_emission_source}
-                readOnly
-              />
 
-              <LabeledAutocomplete
-                caption="Justification for use of default values (if relevant)"
-                defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
-                label=""
-                name="justification"
-                value={formValues.justification}
-                options={justification.map((c) => c.name)}
-                onChange={(val) =>
-                  handleAutocompleteChange("justification", val)
-                }
-                error={formErrors.justification}
-              />
+            </Box> */}
+
+            <Box mb={3}>
+              <div
+                style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
+              >
+                <div style={{ flex: 1 }}>
+                  <LabeledTextField
+                    type="text"
+                    caption=" Justification for use of default values (if relevant) "
+                    defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
+                    label="Name"
+                    name="justification_for_use_default_values"
+                    value={formValues.justification_for_use_default_values}
+                    onChange={handleInputChange}
+                    error={formErrors.auth_justification_for_use_default_valuesrep}
+                  />
+                </div>
+              </div>
             </Box>
           </Section>
 

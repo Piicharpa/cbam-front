@@ -464,7 +464,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
           section_type: "direct_emissions"
         };
         
-        const response = await fetch("http://localhost:5000/api/cbam/b_emission", {
+        const response = await fetch("http://178.128.123.212:5000/api/cbam/b_emission", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -496,7 +496,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
           section_type: "process_emissions"
         };
         
-                const response = await fetch("http://localhost:5000/api/cbam/b_emission", {
+                const response = await fetch("http://178.128.123.212:5000/api/cbam/b_emission", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -526,7 +526,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
           section_type: "mass_balance"
         };
         
-        const response = await fetch("http://localhost:5000/api/cbam/b_emission", {
+        const response = await fetch("http://178.128.123.212:5000/api/cbam/b_emission", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -547,7 +547,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
         manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
       };
       
-      const emissionsDataResponse = await fetch("http://localhost:5000/api/cbam/c_emission", {
+      const emissionsDataResponse = await fetch("http://178.128.123.212:5000/api/cbam/c_emission", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(emissionsDataPayload),

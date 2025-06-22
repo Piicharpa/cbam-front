@@ -143,7 +143,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
       console.log("💬 ส่งข้อมูล:", localFormValues);
       console.log("📦 report_id ที่จะส่ง:", reportId);
 
-      const response = await fetch("http://localhost:5000/api/cbam/d_goods/", {
+      const response = await fetch("http://178.128.123.212:5000/api/cbam/d_goods/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

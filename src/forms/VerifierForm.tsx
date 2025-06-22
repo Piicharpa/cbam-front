@@ -131,7 +131,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
 
     try {
       // POST authorised representative
-      const authorisedRes = await fetch("http://localhost:5000/api/cbam/authorised", {
+      const authorisedRes = await fetch("http://178.128.123.212:5000/api/cbam/authorised", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -148,7 +148,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
       console.log("✅ Authorised Representative Created:", authorisedId);
 
       // POST verifier with authorised_rep_id
-      const verifierRes = await fetch("http://localhost:5000/api/cbam/verifier/", {
+      const verifierRes = await fetch("http://178.128.123.212:5000/cbam/verifier/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -171,13 +171,13 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
 
       // GET verifier details
       const getVerifier = await fetch(
-        `http://localhost:5000/api/cbam/verifier/detail/${verifierId}`
+        `http://178.128.123.212:5000/api/cbam/verifier/detail/${verifierId}`
       );
       const verifierDetails = await getVerifier.json();
       console.log("📥 Verifier Details:", verifierDetails);
 
       // PUT update report
-      const putRes = await fetch(`http://localhost:5000/api/cbam/report/${reportId}`, {
+      const putRes = await fetch(`http://178.128.123.212:5000/api/cbam/report/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ verifier_id: verifierId }),

@@ -144,7 +144,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({ onNextStep }) => {
 
         console.log("📦 POST Payload:", payload);
 
-        const response = await fetch("http://localhost:5000/api/cbam/e_precursors", {
+        const response = await fetch("http://178.128.123.212:5000/api/cbam/e_precursors", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
@@ -167,7 +167,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({ onNextStep }) => {
         const newId = resData.id; // 👈 ได้ id ที่สร้างใหม่
 
         // 🔄 Fetch รายละเอียดจาก ID ที่สร้าง
-        const getRes = await fetch(`http://localhost:5000/api/cbam/e_precursors/${newId}`);
+        const getRes = await fetch(`http://178.128.123.212:5000/api/cbam/e_precursors/${newId}`);
         if (!getRes.ok) {
           const errText = await getRes.text();
           throw new Error(`GET Error: ${errText}`);

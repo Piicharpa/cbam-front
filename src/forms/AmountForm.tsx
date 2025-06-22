@@ -91,7 +91,7 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
       console.log("📦 PUT updateId:", updateId);
 
       // 🔄 PUT เพื่ออัปเดต
-      const response = await fetch(`http://localhost:5000/api/cbam/e_precursors/${updateId}`, {
+      const response = await fetch(`http://178.128.123.212:5000/api/cbam/e_precursors/${updateId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -107,7 +107,7 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
       console.log("✅ PUT สำเร็จ");
 
       // 🔍 ดึงข้อมูลล่าสุดจาก ID นั้น
-      const getRes = await fetch(`http://localhost:5000/api/cbam/e_precursors/${updateId}`);
+      const getRes = await fetch(`http://178.128.123.212:5000/api/cbam/e_precursors/${updateId}`);
       if (!getRes.ok) {
         const errText = await getRes.text();
         throw new Error(`GET Error: ${errText}`);

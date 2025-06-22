@@ -149,7 +149,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
 
     try {
       // POST installation
-      const response = await fetch("http://localhost:5000/api/cbam/installation/", {
+      const response = await fetch("http://178.128.123.212:5000/api/cbam/installation/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -161,7 +161,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       console.log("✅ Installation submitted. ID:", installationId);
 
       // PUT update report with installation_id
-      const putResponse = await fetch(`http://localhost:5000/api/cbam/report/${reportId}`, {
+      const putResponse = await fetch(`http://178.128.123.212:5000/api/cbam/report/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -175,7 +175,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       console.log("✅ Report updated with installation_id ");
 
       // GET installation detail (optional)
-      const getResponse = await fetch(`http://localhost:5000/api/cbam/installation/${installationId}`);
+      const getResponse = await fetch(`http://178.128.123.212:5000/cbam/installation/${installationId}`);
       if (!getResponse.ok) throw new Error("❌ Failed to fetch installation");
       const installationData = await getResponse.json();
       console.log("📥 Installation Details:", installationData);
@@ -399,8 +399,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
                 />
               </div>
             </div>
-
-
           </Section>
           <PGButton />
         </Grid>

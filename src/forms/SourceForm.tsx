@@ -17,6 +17,7 @@ import LabeledAutocomplete from "../components/LabeledAutoComplete";
 import { generalinfo } from "../components/dropdown/generalinfo";
 import { justification } from "../components/dropdown/justification";
 import { qualityassurance } from "../components/dropdown/qualityassurance";
+import { useNavigate, useLocation } from "react-router-dom";
 
 // Proper type for the ref
 type SourceFormRef = {
@@ -25,6 +26,8 @@ type SourceFormRef = {
 
 const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
   const [formValues, setFormValues] = useState({
+    report_id: "",
+    // Specific embedded 
     c_method: "",
     c_source_stream_name: "",
     c_activity_data: "",
@@ -35,6 +38,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
     c_ef_unit: "",
     c_oxidation_factor: "",
     c_biomass_content: "",
+    //Process emissions
     p_method: "",
     p_source_stream_name: "",
     p_activity_data: "",
@@ -49,6 +53,7 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
     p_co2e_bio: "",
     p_energy_content_fossil: "",
     p_energy_content_bio: "",
+    //Process emissions
     m_method: "",
     m_source_stream_name: "",
     m_activity_data: "",
@@ -62,10 +67,13 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
     m_energy_content_fossil: "",
     m_energy_content_bio: "",
 
-    fuel_balance: "",
-    greenhous_emission: "",
-    general_info: "",
-    justification: "",
+
+    // c_emission_energies
+    manual_total_indirect_emissions: "",
+    manual_fuel_balance: "",
+    manual_GHG_emissions_balance: "",
+    generatl_info_on_data_quality: "",
+    justification_for_use_default_values: "",
     information_quality_ssurance: "",
   });
 
@@ -201,87 +209,111 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
     formValues.p_biomass_content,
   ]);
 
+  const location = useLocation();
+  const reportId = location.state?.reportId || null;
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormValues((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  // Allow Form.tsx to trigger submit
-  useImperativeHandle(ref, () => ({
-    async submit() {
-      const newErrors: { [key: string]: string } = {};
-
-      // Add validation logic here if needed
-
-      if (Object.keys(newErrors).length > 0) {
-        setFormErrors(newErrors);
-        const firstError = Object.keys(newErrors)[0];
-        const el = document.getElementsByName(firstError)[0];
-        if (el) el.scrollIntoView({ behavior: "smooth", block: "center" });
-        return false;
-      }
-
-      const payload = {
-        c_method: formValues.c_method,
-        c_source_stream_name: formValues.c_source_stream_name,
-        c_activity_data: formValues.c_activity_data,
-        c_ad_unit: formValues.c_ad_unit,
-        c_net_calorific_value: formValues.c_net_calorific_value,
-        c_ncv_unit: formValues.c_ncv_unit,
-        c_emission_factor: formValues.c_emission_factor,
-        c_ef_unit: formValues.c_ef_unit,
-        c_oxidation_factor: formValues.c_oxidation_factor,
-        c_biomass_content: formValues.c_biomass_content,
-        p_method: formValues.p_method,
-        p_source_stream_name: formValues.p_source_stream_name,
-        p_activity_data: formValues.p_activity_data,
-        p_ad_unit: formValues.p_ad_unit,
-        p_net_calorific_value: formValues.p_net_calorific_value,
-        p_ncv_unit: formValues.p_ncv_unit,
-        p_emission_factor: formValues.p_emission_factor,
-        p_ef_unit: formValues.p_ef_unit,
-        p_oxidation_factor: formValues.p_oxidation_factor,
-        p_biomass_content: formValues.p_biomass_content,
-        p_co2e_fossil: formValues.p_co2e_fossil,
-        p_energy_content_fossil: formValues.p_energy_content_fossil,
-        m_method: formValues.m_method,
-        m_source_stream_name: formValues.m_source_stream_name,
-        m_activity_data: formValues.m_activity_data,
-        m_ad_unit: formValues.m_ad_unit,
-        m_net_calorific_value: formValues.m_net_calorific_value,
-        m_ncv_unit: formValues.m_ncv_unit,
-        m_carbon_content: formValues.m_carbon_content,
-        m_biomass_content: formValues.m_biomass_content,
-        m_co2e_fossil: formValues.m_co2e_fossil,
-        m_energy_content_fossil: formValues.m_energy_content_fossil,
-
-        generalinfo: formValues.general_info,
-        
-      };
-
-      try {
-        const res = await fetch("http://178.128.123.212:5000/api/cbam/source", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-
-        if (!res.ok) throw new Error("Submit failed");
-        console.log("✅ Installations submitted");
-        return true;
-      } catch (err) {
-        console.error("❌ Submit error:", err);
-        return false;
-      }
-    },
-  }));
-
   // Fixed handleSubmit function
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    // You can add form validation logic here if needed
-    console.log("Form submitted");
+    const cPayload = {
+      report_id: reportId,
+      method: formValues.c_method,
+      source_stream_name: formValues.c_source_stream_name,
+      activity_data: formValues.c_activity_data,
+      AD_Unit: formValues.c_ad_unit,
+      net_calorific_value: formValues.c_net_calorific_value,
+      NCV_unit: formValues.c_ncv_unit,
+      ef: formValues.c_emission_factor,
+      ef_unit: formValues.c_ef_unit,
+      oxidation_factor_percentage: formValues.c_oxidation_factor,
+      biomass_content_percentage: formValues.c_biomass_content,
+    };
+
+    const pPayload = {
+      report_id: reportId,
+      method: formValues.p_method,
+      source_stream_name: formValues.p_source_stream_name,
+      activity_data: formValues.p_activity_data,
+      AD_Unit: formValues.p_ad_unit,
+      net_calorific_value: formValues.p_net_calorific_value,
+      NCV_unit: formValues.p_ncv_unit,
+      ef: formValues.p_emission_factor,
+      ef_unit: formValues.p_ef_unit,
+      oxidation_factor_percentage: formValues.p_oxidation_factor,
+      biomass_content_percentage: formValues.p_biomass_content,
+      CO2e_fossil: formValues.p_co2e_fossil,
+      CO2e_bio: formValues.p_co2e_bio,
+      energy_content_fossil: formValues.p_energy_content_fossil,
+      energy_content_bio: formValues.p_energy_content_bio,
+    };
+
+    const mPayload = {
+      report_id: reportId,
+      method: formValues.m_method,
+      source_stream_name: formValues.m_source_stream_name,
+      activity_data: formValues.m_activity_data,
+      AD_Unit: formValues.m_ad_unit,
+      net_calorific_value: formValues.m_net_calorific_value,
+      NCV_unit: formValues.m_ncv_unit,
+      biomass_content_percentage: formValues.m_biomass_content,
+      CO2e_fossil: formValues.m_co2e_fossil,
+      CO2e_bio: formValues.m_co2e_bio,
+      energy_content_fossil: formValues.m_energy_content_fossil,
+      energy_content_bio: formValues.m_energy_content_bio,
+    };
+
+    // c_emission_energies
+    const cmissionPayload = {
+      report_id: reportId,
+      manual_total_indirect_emissions: formValues.manual_total_indirect_emissions,
+      generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+      justification_for_use_default_values: formValues.justification_for_use_default_values,
+      manual_fuel_balance: formValues.manual_fuel_balance,
+      manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
+    };
+    try {
+      const cRes = await fetch("http://localhost:5000/api/cbam/b_emission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cPayload),
+      });
+      if (!cRes.ok) throw new Error("b_emission POST failed");
+
+      const pRes = await fetch("http://localhost:5000/api/cbam/b_emission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pPayload),
+      });
+      if (!pRes.ok) throw new Error("b_emission POST failed");
+
+      const mRes = await fetch("http://localhost:5000/api/cbam/b_emission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pPayload),
+      });
+      if (!mRes.ok) throw new Error("b_emission POST failed");
+
+
+
+      const cmisRes = await fetch("http://localhost:5000/api/cbam/c_emission", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(cmissionPayload),
+      });
+      if (!cmisRes.ok) throw new Error("c_emission POST failed");
+
+      alert("✅ ส่งข้อมูลสำเร็จ");
+    } catch (err: any) {
+      alert("❌ เกิดข้อผิดพลาด: " + err.message);
+    }
+
   };
 
   return (
@@ -306,12 +338,6 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
             title="(a) Source streams and emission sources "
             subtitle="แหล่งปล่อยก๊าซเรือนกระจก"
             defaultExpanded={true}
-            // hasError={
-            //   !!formErrors.auth_rep ||
-            //   !!formErrors.email ||
-            //   !!formErrors.tel ||
-            //   !!formErrors.fax
-            // }
           >
             {/* Box1: Specific embedded direct emissions */}
             <Box mb={3}>
@@ -400,8 +426,8 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                           value === "t"
                             ? "GJ/t"
                             : value === "1000Nm3"
-                            ? "GJ/1000Nm3"
-                            : prev.c_ncv_unit,
+                              ? "GJ/1000Nm3"
+                              : prev.c_ncv_unit,
                       }));
                       // Clear the error for c_ad_unit
                       setFormErrors((prev) => ({ ...prev, c_ad_unit: "" }));
@@ -526,8 +552,8 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                           value === "t"
                             ? "GJ/t"
                             : value === "1000Nm3"
-                            ? "GJ/1000Nm3"
-                            : prev.p_ncv_unit,
+                              ? "GJ/1000Nm3"
+                              : prev.p_ncv_unit,
                       }));
                       // Clear the error for p_ad_unit
                       setFormErrors((prev) => ({ ...prev, p_ad_unit: "" }));
@@ -708,8 +734,8 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                           value === "t"
                             ? "GJ/t"
                             : value === "1000Nm3"
-                            ? "GJ/1000Nm3"
-                            : prev.m_ncv_unit,
+                              ? "GJ/1000Nm3"
+                              : prev.m_ncv_unit,
                       }));
                       // Clear the error for m_ad_unit
                       setFormErrors((prev) => ({ ...prev, m_ad_unit: "" }));
@@ -799,12 +825,12 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
           <Section
             title="(b) Installation-level GHG emissions and energy consumption "
             subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
-            // hasError={
-            //   !!formErrors.auth_rep ||
-            //   !!formErrors.email ||
-            //   !!formErrors.tel ||
-            //   !!formErrors.fax
-            // }
+          // hasError={
+          //   !!formErrors.auth_rep ||
+          //   !!formErrors.email ||
+          //   !!formErrors.tel ||
+          //   !!formErrors.fax
+          // }
           >
             {/* Box1: GHG emissions and energy consumption */}
             <Box mb={3}>
@@ -814,41 +840,41 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
               {/* <div
                 style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
               > */}
-                {/* <div style={{ flex: 1 }}> */}
-                <LabeledTextField
-                  type="number"
-                  caption="Fuel balance"
-                  defination="กรอกปริมาณรวมของการปล่อย Emission ทางอ้อม"
-                  label=""
-                  name="fuel_balance"
-                  value={formValues.fuel_balance}
-                  onChange={handleInputChange}
-                  error={formErrors.fuel_balance} // Pass the error for the helper text
-                  helperText={formErrors.fuel_balance} // Show error as helper text
-                  inputProps={{
-                    step: "any",
-                    placeholder: "Enter amount",
-                    className: "appearance-none",
-                  }}
-                />
-                <LabeledTextField
-                  type="number"
-                  caption="Greenhouse gas emissions balance & information on data quality"
-                  defination=""
-                  label=""
-                  name="fuel_balance"
-                  value={formValues.fuel_balance}
-                  onChange={handleInputChange}
-                  error={formErrors.fuel_balance} // Pass the error for the helper text
-                  helperText={formErrors.fuel_balance} // Show error as helper text
-                  inputProps={{
-                    step: "any",
-                    placeholder: "Enter amount",
-                    className: "appearance-none",
-                  }}
-                  readOnly
-                />
-                {/* </div> */}
+              {/* <div style={{ flex: 1 }}> */}
+              <LabeledTextField
+                type="number"
+                caption="Fuel balance"
+                defination="กรอกปริมาณรวมของการปล่อย Emission ทางอ้อม"
+                label=""
+                name="manual_fuel_balance"
+                value={formValues.manual_fuel_balance}
+                onChange={handleInputChange}
+                error={formErrors.manual_fuel_balance} // Pass the error for the helper text
+                helperText={formErrors.manual_fuel_balance} // Show error as helper text
+                inputProps={{
+                  step: "any",
+                  placeholder: "Enter amount",
+                  className: "appearance-none",
+                }}
+              />
+              <LabeledTextField
+                type="number"
+                caption="Greenhouse gas emissions balance & information on data quality"
+                defination=""
+                label=""
+                name="manual_fuel_balance"
+                value={formValues.manual_fuel_balance}
+                onChange={handleInputChange}
+                error={formErrors.manual_fuel_balance} // Pass the error for the helper text
+                helperText={formErrors.manual_fuel_balance} // Show error as helper text
+                inputProps={{
+                  step: "any",
+                  placeholder: "Enter amount",
+                  className: "appearance-none",
+                }}
+                readOnly
+              />
+              {/* </div> */}
               {/* </div> */}
             </Box>
 
@@ -860,51 +886,51 @@ const SourceForm = forwardRef<SourceFormRef>((props, ref) => {
                   Information on the data quality and quality assurance{" "}
                 </strong>
               </div>
-                <LabeledAutocomplete
-                  caption="General information on data quality"
-                  defination="ข้อมููลทั่วไปเกี่ยวกับคุณภาพของข้อมูล"
-                  label=""
-                  name="general_info"
-                  value={formValues.general_info}
-                  onChange={(value: string) => {
-                    setFormValues((prev) => ({ ...prev, general_info: value }));
-                    // Clear any errors when the field is updated
-                    setFormErrors((prev) => ({ ...prev, general_info: "" }));
-                  }}
-                  error={formErrors.general_info} // Pass the error for the helper text
-                  helperText={formErrors.general_info} // Show error as helper text
-                  options={generalinfo.map((item) => item.name)}
-                />
-                <LabeledAutocomplete
-                  caption="Justification for use of default values (if relevant)"
-                  defination="หตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
-                  label=""
-                  name="justification"
-                  value={formValues.justification}
-                  onChange={(value: string) => {
-                    setFormValues((prev) => ({ ...prev, justification: value }));
-                    // Clear any errors when the field is updated
-                    setFormErrors((prev) => ({ ...prev, justification: "" }));
-                  }}
-                  error={formErrors.justification} // Pass the error for the helper text
-                  helperText={formErrors.justificationa} // Show error as helper text
-                  options={justification.map((item) => item.name)}
-                />
-                <LabeledAutocomplete
-                  caption="Information on quality assurance"
-                  defination="ข้อมูลการประกันคุณภาพ "
-                  label=""
-                  name="information_quality_assurance"
-                  value={formValues.information_quality_ssurance}
-                  onChange={(value: string) => {
-                    setFormValues((prev) => ({ ...prev, information_quality_ssurance: value }));
-                    // Clear any errors when the field is updated
-                    setFormErrors((prev) => ({ ...prev, information_quality_ssurance: "" }));
-                  }}
-                  error={formErrors.information_quality_ssurance} // Pass the error for the helper text
-                  helperText={formErrors.information_quality_ssurancea} // Show error as helper text
-                  options={qualityassurance.map((item) => item.name)}
-                />
+              <LabeledAutocomplete
+                caption="General information on data quality"
+                defination="ข้อมููลทั่วไปเกี่ยวกับคุณภาพของข้อมูล"
+                label=""
+                name="generatl_info_on_data_quality"
+                value={formValues.generatl_info_on_data_quality}
+                onChange={(value: string) => {
+                  setFormValues((prev) => ({ ...prev, generatl_info_on_data_quality: value }));
+                  // Clear any errors when the field is updated
+                  setFormErrors((prev) => ({ ...prev, generatl_info_on_data_quality: "" }));
+                }}
+                error={formErrors.generatl_info_on_data_quality} // Pass the error for the helper text
+                helperText={formErrors.generatl_info_on_data_quality} // Show error as helper text
+                options={generalinfo.map((item) => item.name)}
+              />
+              <LabeledAutocomplete
+                caption="Justification for use of default values (if relevant)"
+                defination="หตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
+                label=""
+                name="justification_for_use_default_values"
+                value={formValues.justification_for_use_default_values}
+                onChange={(value: string) => {
+                  setFormValues((prev) => ({ ...prev, justification_for_use_default_values: value }));
+                  // Clear any errors when the field is updated
+                  setFormErrors((prev) => ({ ...prev, justification_for_use_default_values: "" }));
+                }}
+                error={formErrors.justification_for_use_default_values} // Pass the error for the helper text
+                helperText={formErrors.justification_for_use_default_valuesa} // Show error as helper text
+                options={justification.map((item: { name: string }) => item.name)}
+              />
+              <LabeledAutocomplete
+                caption="Information on quality assurance"
+                defination="ข้อมูลการประกันคุณภาพ "
+                label=""
+                name="information_quality_assurance"
+                value={formValues.information_quality_ssurance}
+                onChange={(value: string) => {
+                  setFormValues((prev) => ({ ...prev, information_quality_ssurance: value }));
+                  // Clear any errors when the field is updated
+                  setFormErrors((prev) => ({ ...prev, information_quality_ssurance: "" }));
+                }}
+                error={formErrors.information_quality_ssurance} // Pass the error for the helper text
+                helperText={formErrors.information_quality_ssurancea} // Show error as helper text
+                options={qualityassurance.map((item) => item.name)}
+              />
             </Box>
           </Section>
 

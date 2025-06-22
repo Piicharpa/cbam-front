@@ -59,19 +59,19 @@ const Section3: React.FC<Props> = ({
             <LabeledCheckbox
               caption="Measurable heat"
               defination="ความร้อนที่สามารถวัดได้"
-              name="measurable_heat_source"
-              checked={values.measurable_heat_source === "True"}
+              name="has_heat"
+              checked={values.has_heat === "True"}
               onChange={(e) =>
                 setValues((prev: any) => ({
                   ...prev,
-                  measurable_heat_source: e.target.checked ? "True" : "False",
+                  has_heat: e.target.checked ? "True" : "False",
                 }))
               }
             />
           </div>
         </div>
 
-        {values.measurable_heat_source === "True" && (
+        {values.has_heat === "True" && (
           <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
               <LabeledTextField
@@ -128,18 +128,18 @@ const Section3: React.FC<Props> = ({
           <LabeledCheckbox
             caption="Waste gases"
             defination="ก๊าซไอเสีย"
-            name="waste_gas_source"
-            checked={values.waste_gas_source === "True"}
+            name="has_waste_gases"
+            checked={values.has_waste_gases === "True"}
             onChange={(e) =>
               setValues((prev: any) => ({
                 ...prev,
-                waste_gas_source: e.target.checked ? "True" : "False",
+                has_waste_gases: e.target.checked ? "True" : "False",
               }))
             }
           />
         </div>
 
-        {values.waste_gas_source === "True" && (
+        {values.has_waste_gases === "True" && (
           <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
             <div style={{ flex: 1 }}>
               <LabeledTextField
@@ -213,10 +213,10 @@ const Section3: React.FC<Props> = ({
           caption="Electricity consumption"
           defination="กรอกปริมาณการใช้ไฟฟ้ารวมของกระบวนการผลิต"
           label=""
-          name="electricity_consumption"
-          value={values.electricity_consumption}
+          name="electricity_consumption_value"
+          value={values.electricity_consumption_value}
           onChange={onChange}
-          error={errors.electricity_consumption}
+          error={errors.electricity_consumption_value}
         />
       </Box>
       <Box mb={3}>

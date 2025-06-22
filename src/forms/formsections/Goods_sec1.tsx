@@ -15,7 +15,7 @@ import LabeledTextField from "../../components/LabeledTextField";
 interface FormValues {
   industry_type: string;
   goods_category: string;
-  routes: string[];
+  routes: { [key: number]: string };
   amounts: { [key: number]: string };
 }
 
@@ -41,7 +41,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
   const [routesOptions, setRoutesOptions] = useState<OptionType[]>([]);
-  const [routeCount, setRouteCount] = useState(Math.min(values.routes?.length || 1, 6));
+  const [routeCount, setRouteCount] = useState(Math.min(Object.keys(values.routes || {}).length || 1, 6));
 
   // Fetch goods data and set industry options on mount
   useEffect(() => {
@@ -72,7 +72,8 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     if (values.goods_category && values.industry_type) {
       const options = getRoutesOptions(goodsData, +values.industry_type, +values.goods_category);
       setRoutesOptions(options);
-      if (!options.some((opt) => values.routes.includes(String(opt.value)))) {
+      const routeValues = Object.values(values.routes || {});
+      if (!options.some((opt) => routeValues.includes(String(opt.value)))) {
         onChange("routes", []);
       }
       if (options.length === 1) {
@@ -85,7 +86,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
   // Update count of routes when they change
   useEffect(() => {
-    setRouteCount(Math.min(values.routes?.length || 1, 6));
+    setRouteCount(Math.min(Object.keys(values.routes || {}).length || 1, 6));
   }, [values.routes]);
 
   // Handle submission for the section
@@ -218,12 +219,11 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
                           ...opt,
                           value: String(opt.value),
                         }))}
-                        value={values.routes[index] || ""}
+                        value={values.routes?.[index] || ""}
                         error={index === 0 && errors.routes ? errors.routes : undefined}
                         onChange={(val) => {
-                          const updatedRoutes = [...values.routes];
-                          updatedRoutes[index] = String(val);
-                          onChange("routes", updatedRoutes.filter((item) => item));
+                          const updatedRoutes = { ...values.routes, [index]: String(val) };
+                          onChange("routes", updatedRoutes);
                         }}
                       />
                     </div>

@@ -27,7 +27,7 @@ interface InstallationFormProps {
     po_box: string;
     latitude: string;
     longitude: string;
-    author_represent_id: string;
+    author_represent: string;
     email: string;
     tel: string;
     unlocode: string;
@@ -35,9 +35,10 @@ interface InstallationFormProps {
     reporting_period_end: Date;
   };
   onChange: (data: InstallationFormProps["data"]) => void;
+  onNextStep: () => void;
 }
 
-const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) => {
+const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onNextStep }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const reportIdRaw = location.state?.reportId || null;
@@ -56,7 +57,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
     po_box: data.po_box || "",
     latitude: data.latitude || "",
     longitude: data.longitude || "",
-    author_represent_id: data.author_represent_id || "",
+    author_represent: data.author_represent || "",
     email: data.email || "",
     tel: data.tel || "",
     unlocode: data.unlocode || "",
@@ -120,7 +121,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
 
     const requiredFields = [
       "name", "eco_activity", "address", "post_code", "city", "country_id",
-      "unlocode", "latitude", "longitude", "author_represent_id",
+      "unlocode", "latitude", "longitude", "author_represent",
       "email", "tel", "po_box", "reporting_period_start", "reporting_period_end"
     ];
 
@@ -137,7 +138,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
       po_box: formValues.po_box || "",
       latitude: formValues.latitude || null,
       longitude: formValues.longitude || null,
-      author_represent_id: Number(formValues.author_represent_id),
+      author_represent: formValues.author_represent || null,
       email: formValues.email || null,
       phone: formValues.tel || null,
 
@@ -185,6 +186,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
       console.error("❌ Error submitting form:", error);
       alert("เกิดข้อผิดพลาดขณะส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
     }
+    onNextStep?.();
   };
 
   return (
@@ -363,10 +365,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange }) =
               caption="Name of authorized representative"
               defination="ชื่อหน่วยงานมาฐานแห่งชาติที่ให้การรับรอง"
               label=""
-              name="author_represent_id"
-              value={formValues.author_represent_id}
+              name="author_represent"
+              value={formValues.author_represent}
               onChange={handleInputChange}
-              error={formErrors.author_represent_id}
+              error={formErrors.author_represent}
             />
 
             <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>

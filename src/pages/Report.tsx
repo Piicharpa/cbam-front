@@ -10,6 +10,11 @@ import {
 } from "@mui/material";
 import Section from "../components/Section";
 import LabeledTextField from "../components/LabeledTextField";
+import TabAInstallationData from "../components/reportTab/TabA_InstallationData";
+import TabBEmissionInstallation from "../components/reportTab/TabB_EmissionInstallation";
+import TabCEnergyEmission from "../components/reportTab/TabC_EnergyEmissions";
+import TabDProcess from "../components/reportTab/TabD_Process";
+import TabEPurchasedPrecursors from "../components/reportTab/TabE_PurchasedPrecursors";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -43,10 +48,10 @@ const a11yProps = (index: number) => {
 const Report = () => {
   const [tabValue, setTabValue] = useState(0);
   const [formValues, setFormValues] = useState({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -71,54 +76,12 @@ const Report = () => {
           caption="Name of Installation"
           defination="ชื่อสถานประกอบการ"
           label=""
-          name="installationName"
-          value={formValues.installationName}
+          name="id"
+          value={formValues.id}
           onChange={handleInputChange}
           required
         />
       </Grid>
-      <Grid>
-        <LabeledTextField
-          type="text"
-          caption="Product"
-          defination="ผลิตภัณฑ์"
-          label=""
-          name="product"
-          value={formValues.product}
-          onChange={handleInputChange}
-          required
-        />
-      </Grid>
-      <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-        <div style={{ flex: 1 }}>
-          <Grid>
-            <LabeledTextField
-              type="text"
-              caption="Carbon Footprint"
-              defination="คาร์บอนฟุตพริ้นท์"
-              label=""
-              name="carbonFootprint"
-              value={formValues.carbonFootprint}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
-        </div>
-        <div style={{ flex: 1 }}>
-          <Grid>
-            <LabeledTextField
-              type="date"
-              caption="Date"
-              defination="วันที่"
-              label=""
-              name="date"
-              value={formValues.date}
-              onChange={handleInputChange}
-              required
-            />
-          </Grid>
-        </div>
-      </div>
     </>
   );
 
@@ -141,6 +104,31 @@ const Report = () => {
       >
         รายงานข้อมูล CBAM
       </Typography>
+      <Typography
+        variant="h5"
+        gutterBottom
+        align="center"
+        fontWeight="bold"
+        color="#1976d2"
+      >
+        บริษัท เอบีซี จำกัด
+      </Typography>
+      <Typography
+        variant="subtitle1"
+        align="center"
+        color="text.secondary"
+        paragraph
+      >
+        ผลิตภัณฑ์:xxxxxxxx  | หมวดหมู่: xxxxxxxxxxx
+      </Typography>
+      <Typography
+        variant="subtitle1"
+        align="center"
+        color="text.secondary"
+        paragraph
+      >
+        Carbon Footprint: xxxxxxxx tCO₂eq/t | วันที่ส่ง: xxxxxxxx
+      </Typography>
 
       <Paper sx={{ width: "100%", mt: 3 }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
@@ -150,68 +138,47 @@ const Report = () => {
             aria-label="report tabs"
             variant="fullWidth"
           >
-            <Tab label="A. Installation Data" {...a11yProps(0)} />
-            <Tab label="B. Emission Installation" {...a11yProps(1)} />
-            <Tab label="C. Emission of Energy" {...a11yProps(2)} />
-            <Tab label="D. Process" {...a11yProps(3)} />
-            <Tab label="E. Purchased Precursors" {...a11yProps(4)} />
+            <Tab label="A_InstData Sheet" {...a11yProps(0)} />
+            <Tab label="B_EmInst Sheet" {...a11yProps(1)} />
+            <Tab label="C_Emissions&Energy Sheet" {...a11yProps(2)} />
+            <Tab label="D_Processes Sheet" {...a11yProps(3)} />
+            <Tab label="E_PurchPrec Sheet" {...a11yProps(4)} />
           </Tabs>
         </Box>
 
-        {/* Tab A: Installation Data */}
         <TabPanel value={tabValue} index={0}>
-          <Section
-            title="A. Installation Data"
-            subtitle="ข้อมูลสถานประกอบการ"
-            defaultExpanded={true}
-          >
-            {renderCommonFields("Installation Information")}
-          </Section>
+          <TabAInstallationData
+            formValues={formValues}
+            setFormValues={setFormValues}
+          />
         </TabPanel>
-
-        {/* Tab B: Emission Installation */}
         <TabPanel value={tabValue} index={1}>
-          <Section
-            title="B. Emission Installation"
-            subtitle="การปล่อยมลพิษของสถานประกอบการ"
-            defaultExpanded={true}
-          >
-            {renderCommonFields("Emission Installation Details")}
-          </Section>
+          <TabBEmissionInstallation
+            formValues={formValues}
+            setFormValues={setFormValues}
+          />
         </TabPanel>
-
-        {/* Tab C: Emission of Energy */}
         <TabPanel value={tabValue} index={2}>
-          <Section
-            title="C. Emission of Energy"
-            subtitle="การปล่อยมลพิษด้านพลังงาน"
-            defaultExpanded={true}
-          >
-            {renderCommonFields("Energy Emission Details")}
-          </Section>
+          <TabCEnergyEmission
+            formValues={formValues}
+            setFormValues={setFormValues}
+          />
         </TabPanel>
 
-        {/* Tab D: Process */}
         <TabPanel value={tabValue} index={3}>
-          <Section
-            title="D. Process"
-            subtitle="กระบวนการ"
-            defaultExpanded={true}
-          >
-            {renderCommonFields("Process Details")}
-          </Section>
+          <TabDProcess
+            formValues={formValues}
+            setFormValues={setFormValues}
+          />
         </TabPanel>
 
-        {/* Tab E: Purchased Precursors */}
         <TabPanel value={tabValue} index={4}>
-          <Section
-            title="E. Purchased Precursors"
-            subtitle="การซื้อสารตั้งต้น"
-            defaultExpanded={true}
-          >
-            {renderCommonFields("Purchased Precursors Details")}
-          </Section>
+          <TabEPurchasedPrecursors
+            formValues={formValues}
+            setFormValues={setFormValues}
+          />
         </TabPanel>
+
       </Paper>
     </Container>
   );

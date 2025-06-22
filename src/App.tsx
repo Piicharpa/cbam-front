@@ -221,7 +221,7 @@ function App() {
                   <Route path="/Form" element={<Form />} />
                   <Route path="/Formdev" element={<Form />} />
 
-                  <Route path="/Report" element={<Dashboard />} />
+                  <Route path="/Report" element={<Report />} />
 
 
 

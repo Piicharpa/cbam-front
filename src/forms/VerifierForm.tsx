@@ -42,7 +42,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
   const location = useLocation();
   const reportId = location.state?.reportId;
   const [formValues, setFormValues] = useState({
-    installation_name: "",
+    installation_name: "" ,
     address: "",
     city: "",
     country_id: "",
@@ -100,64 +100,64 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+    const apiUrl = process.env.REACT_APP_API_URL;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const requiredFields = [
-      "installation_name",
-      "address",
-      "city",
-      "post_code",
-      "country_id",
-      "name",
-      "email",
-      "phone",
-    ];
+    // const requiredFields = [
+    //   "installation_name",
+    //   "address",
+    //   "city",
+    //   "post_code",
+    //   "country_id",
+    //   "name",
+    //   "email",
+    //   "phone",
+    // ];
 
-    const newErrors: { [key: string]: string } = {};
-    requiredFields.forEach((field) => {
-      if (!formValues[field as keyof typeof formValues]) {
-        newErrors[field] = "กรุณากรอกข้อมูล";
-      }
-    });
+    // const newErrors: { [key: string]: string } = {};
+    // requiredFields.forEach((field) => {
+    //   if (!formValues[field as keyof typeof formValues]) {
+    //     newErrors[field] = "กรุณากรอกข้อมูล";
+    //   }
+    // });
 
-    if (Object.keys(newErrors).length > 0) {
-      setFormErrors(newErrors);
-      const firstErrorField = Object.keys(newErrors)[0];
-      const errorElement = document.getElementsByName(firstErrorField)[0];
-      if (errorElement) errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-      return;
-    }
+    // if (Object.keys(newErrors).length > 0) {
+    //   setFormErrors(newErrors);
+    //   const firstErrorField = Object.keys(newErrors)[0];
+    //   const errorElement = document.getElementsByName(firstErrorField)[0];
+    //   if (errorElement) errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+    //   return;
+    // }
 
     try {
       // POST authorised representative
-      const authorisedRes = await fetch("http://178.128.123.212:5000/api/cbam/authorised", {
+      const authorisedRes = await fetch(`${apiUrl}/api/cbam/authorised`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formValues.name,
-          email: formValues.email,
-          phone: formValues.phone,
-          fax: formValues.fax,
+          name: formValues.name || null,
+          email: formValues.email || null,
+          phone: formValues.phone || null,
+          fax: formValues.fax || null,
         }),
       });
 
       if (!authorisedRes.ok) throw new Error("Failed to create authorised representative");
       const authorisedData = await authorisedRes.json();
       const authorisedId = authorisedData.id;
-      console.log("✅ Authorised Representative Created:", authorisedId);
 
       // POST verifier with authorised_rep_id
-      const verifierRes = await fetch("http://178.128.123.212:5000/cbam/verifier/", {
+      const verifierRes = await fetch(`${apiUrl}/cbam/verifier/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: formValues.installation_name,
+          name: formValues.installation_name || null,
           address: formValues.address || null,
-          city: formValues.city,
-          country_id: Number(formValues.country_id),
-          post_code: formValues.post_code,
-          authorized_rep_id: authorisedId,
+          city: formValues.city ||null,
+          country_id: Number(formValues.country_id) || null,
+          post_code: formValues.post_code || null,
+          authorized_rep_id: authorisedId ||null,
           accreditation_state: formValues.accreditation_state || null,
           accreditation_national_body: formValues.accreditation_national_body || null,
           registration_no: formValues.registration_no || null,
@@ -167,24 +167,21 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
       if (!verifierRes.ok) throw new Error("Failed to create verifier");
       const verifierData = await verifierRes.json();
       const verifierId = verifierData.id;
-      console.log("✅ Verifier Created:", verifierId);
 
       // GET verifier details
       const getVerifier = await fetch(
-        `http://178.128.123.212:5000/api/cbam/verifier/detail/${verifierId}`
+        `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
       const verifierDetails = await getVerifier.json();
-      console.log("📥 Verifier Details:", verifierDetails);
 
       // PUT update report
-      const putRes = await fetch(`http://178.128.123.212:5000/api/cbam/report/${reportId}`, {
+      const putRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ verifier_id: verifierId }),
       });
 
       if (!putRes.ok) throw new Error("Failed to update report with verifier_id");
-      console.log("✅ Report updated with verifier_id");
 
       // navigate(redirectPath);
     } catch (error) {
@@ -242,7 +239,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
             <LabeledAutocompleteMap
               caption="Country"
               label=""
-              defination="ประเทศ"
+              defination=""
               name="country_id"
               options={countries.map((c) => ({ ...c, value: String(c.value) }))}
               value={formValues.country_id}

@@ -53,9 +53,13 @@ const TabC_EnergyEmissions = ({ formValues, setFormValues, reportId }: TabAProps
         }
         const [tableData, setTableData] = useState<TableRowData[]>([]);
         const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
+
+         const apiUrl = process.env.REACT_APP_API_URL;
+
+         
         useEffect(() => {
             if (reportId) {
-                fetch(`http://178.128.123.212:5000api/cbam/excelreport/C_Emissions&Energy/${reportId}`)
+                fetch(`${apiUrl} api/cbam/excelreport/C_Emissions&Energy/${reportId}`)
                     .then((res) => res.json())
                     .then((data) => setTableData(data.metadata))
                     .catch((err) => console.error("Failed to fetch:", err));

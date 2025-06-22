@@ -17,13 +17,14 @@ export interface ElectricitySource {
  * @returns Array of electricity source objects
  */
 export const ElectricitySources = async (): Promise<ElectricitySource[]> => {
+
+      const apiUrl = process.env.REACT_APP_API_URL;
   try {
-    const response = await fetch("http://178.128.123.212:5000/api/cbam/srcefelectricitys");
+    const response = await fetch(`${apiUrl}/ api/cbam/srcefelectricitys`);
     if (!response.ok) {
       throw new Error("Failed to fetch electricity sources");
     }
     const data = await response.json();
-    console.log("Fetched electricity sources:", data);
     return data;
   } catch (err) {
     console.error("Error fetching electricity sources:", err);

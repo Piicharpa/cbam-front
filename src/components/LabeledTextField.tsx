@@ -15,6 +15,7 @@ interface Props {
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>; 
   required?: boolean
   multiline?:boolean
+  
 }
 
 const LabeledTextField: React.FC<Props> = ({
@@ -30,11 +31,12 @@ const LabeledTextField: React.FC<Props> = ({
   readOnly = false,
   inputProps, 
   required = true,
-  multiline = false
+  multiline = false,
+ 
 }) => (
   <>
     {caption && (
-      <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 }}>
+      <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600, fontSize: 13 }}>
         {caption}
       </Typography>
     )}
@@ -42,7 +44,7 @@ const LabeledTextField: React.FC<Props> = ({
       <Typography
         variant="caption"
         color="#74aa15"
-        style={{ marginBottom: "0.25rem", display: "block" }}
+        style={{ marginBottom: "0.25rem", display: "block" ,fontSize: 10 }}
       >
         {defination}
       </Typography>

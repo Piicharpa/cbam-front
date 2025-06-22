@@ -1,10 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Container,
-  Typography,
-  Grid,
-  Box,
-} from "@mui/material";
+import { Container, Typography, Grid, Box } from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
@@ -39,12 +34,16 @@ interface InstallationFormProps {
   onNextStep: () => void;
 }
 
-const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onNextStep }) => {
+const InstallationForm: React.FC<InstallationFormProps> = ({
+  data,
+  onChange,
+  onNextStep,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const reportIdRaw = location.state?.reportId || null;
-  const reportId = reportIdRaw ? Number(reportIdRaw) : null;
-
+  const reportId = localStorage.getItem("reportId");
+  const apiUrl = process.env.REACT_APP_API_URL;
 
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [formValues, setFormValues] = useState({
@@ -70,7 +69,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       : new Date(),
   });
 
-
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const formatDate = (date: any): string => {
     if (!date) return "";
@@ -79,13 +77,16 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     return "";
   };
 
-
-
   useEffect(() => {
     if (!reportId) {
-      console.error("❌ reportId ไม่ถูกส่งมา");
+      console.error(
+        "❌ reportId ไม่ถูกส่งมา - ไม่พบใน localStorage หรือ state"
+      );
+      // หากต้องการแสดงการแจ้งเตือน
+      alert("ไม่พบรหัสรายงาน กรุณากลับไปเลือกรายงานก่อน");
+      navigate("/dashboard"); // นำทางกลับหน้า dashboard
     }
-  }, [reportId]);
+  }, [reportId, navigate]);
 
   useEffect(() => {
     const loadCountries = async () => {
@@ -104,7 +105,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     loadCountries();
   }, []);
 
-
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
@@ -121,35 +121,38 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     }
 
     const requiredFields = [
-      "name", "eco_activity", "address", "post_code", "city", "country_id",
-      "unlocode", "latitude", "longitude", "author_represent",
-      "email", "tel", "po_box", "reporting_period_start", "reporting_period_end"
+      "name",
+      "eco_activity",
+      "address",
+      "post_code",
+      "city",
+      "country_id",
+      "unlocode",
+      "latitude",
+      "longitude",
+      "reporting_period_start",
+      "reporting_period_end",
     ];
 
-
-
     const payload = {
-      name: formValues.name || null,
+      name: formValues.name,
       name_specific: formValues.name_specific || null,
       eco_activity: formValues.eco_activity || null,
-      address: formValues.address || null,
-      city: formValues.city || null,
+      address: formValues.address,
+      city: formValues.city,
       country_id: Number(formValues.country_id),
-      post_code: formValues.post_code || null,
-      po_box: formValues.po_box || "",
-      latitude: formValues.latitude || null,
-      longitude: formValues.longitude || null,
-      author_represent: formValues.author_represent || null,
-      email: formValues.email || null,
-      phone: formValues.tel || null,
-
+      post_code: formValues.post_code,
+      po_box: formValues.po_box,
+      latitude: formValues.latitude,
+      longitude: formValues.longitude,
+      author_represent: formValues.author_represent,
+      email: formValues.email,
+      phone: formValues.tel,
     };
-
-    console.log("data:", payload);
 
     try {
       // POST installation
-      const response = await fetch("http://178.128.123.212:5000/api/cbam/installation/", {
+      const response = await fetch(`${apiUrl}/api/cbam/installation/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -158,28 +161,31 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       if (!response.ok) throw new Error("❌ Installation submission failed");
       const result = await response.json();
       const installationId = result.id;
-      console.log("✅ Installation submitted. ID:", installationId);
 
       // PUT update report with installation_id
-      const putResponse = await fetch(`http://178.128.123.212:5000/api/cbam/report/${reportId}`, {
+      const putResponse = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           installation_id: installationId,
-          reporting_period_start: formValues.reporting_period_start.toISOString().split("T")[0],
-          reporting_period_end: formValues.reporting_period_end.toISOString().split("T")[0],
+          reporting_period_start: formValues.reporting_period_start
+            .toISOString()
+            .split("T")[0],
+          reporting_period_end: formValues.reporting_period_end
+            .toISOString()
+            .split("T")[0],
         }),
       });
 
-      if (!putResponse.ok) throw new Error("❌ Failed to update report with installation_id");
-      console.log("✅ Report updated with installation_id ");
+      if (!putResponse.ok)
+        throw new Error("❌ Failed to update report with installation_id");
 
       // GET installation detail (optional)
-      const getResponse = await fetch(`http://178.128.123.212:5000/cbam/installation/${installationId}`);
+      const getResponse = await fetch(
+        `${apiUrl}/cbam/installation/${installationId}`
+      );
       if (!getResponse.ok) throw new Error("❌ Failed to fetch installation");
       const installationData = await getResponse.json();
-      console.log("📥 Installation Details:", installationData);
-
 
       // navigate ไปหน้าต่อไป (ถ้าต้องการ)
       // navigate("/verifier", { state: { installationId } });
@@ -191,11 +197,19 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
   };
 
   return (
-    <Container maxWidth="md" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
+    <Container
+      maxWidth="md"
+      style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
+    >
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3} alignItems="stretch">
           <Box>
-            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
               About the installation
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
@@ -203,9 +217,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
             </Typography>
           </Box>
 
-          <Section title="Reporting Period" subtitle="" hasError={false} defaultExpanded>
-
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+          <Section
+            title="Reporting Period"
+            subtitle=""
+            hasError={false}
+            defaultExpanded
+          >
+            <div
+              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
+            >
               <div style={{ flex: 1 }}>
                 <LabeledTextField
                   caption="Start Time"
@@ -229,7 +249,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
                   onChange={handleInputChange}
                   error={formErrors.reporting_period_end}
                 />
-
               </div>
             </div>
           </Section>
@@ -285,7 +304,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
               error={formErrors.city}
             />
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+            <div
+              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
+            >
               <div style={{ flex: 1 }}>
                 <LabeledAutocompleteMap
                   caption="Country"
@@ -298,7 +319,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
                   value={formValues.country_id}
                   name="country_id"
                   onChange={(val) => {
-                    const selected = countries.find((c) => String(c.value) === val);
+                    const selected = countries.find(
+                      (c) => String(c.value) === val
+                    );
                     setFormValues((prev) => ({
                       ...prev,
                       country_id: String(val),
@@ -336,7 +359,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
                   name="unlocode"
                   value={formValues.unlocode}
                   readOnly
-                  onChange={() => { }}
+                  onChange={() => {}}
                   error={formErrors.unlocode}
                 />
                 <div style={{ marginBottom: "1.5rem" }}></div>
@@ -373,7 +396,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
               error={formErrors.author_represent}
             />
 
-            <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+            <div
+              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
+            >
               <div style={{ flex: 1 }}>
                 <LabeledTextField
                   type="email"

@@ -77,7 +77,7 @@ const Section: React.FC<SectionProps> = ({
                 <ExpandMoreIcon 
                   sx={{ 
                     color: hasError ? theme.palette.error.main : theme.palette.primary.main,
-                    fontSize: '1.5rem'
+                    fontSize: '2rem'
                   }} 
                 />
               }
@@ -109,7 +109,7 @@ const Section: React.FC<SectionProps> = ({
                     sx={{ 
                       fontWeight: 600,
                       color: hasError ? theme.palette.error.main : theme.palette.primary.main,
-                      fontSize: '1.1rem'
+                      fontSize: 20
                     }}
                   >
                     {title}

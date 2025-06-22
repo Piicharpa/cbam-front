@@ -11,7 +11,6 @@ const Header: React.FC<HeaderProps> = ({
   userStatus = "ยืนยันแล้ว"
 }) => {
   const handleLogout = () => {
-    console.log('Logout clicked');
   };
 
   return (

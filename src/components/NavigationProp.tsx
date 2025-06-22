@@ -37,12 +37,12 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
       icon: <EditIcon fontSize="small" />,
       tooltip: "Fill CBAM Form",
     },
-    {
-      label: "สรุป",
-      path: "/Report",
-      icon: <BarChartIcon fontSize="small" />,
-      tooltip: "View Reports",
-    },
+    // {
+    //   label: "สรุป",
+    //   path: "/Report",
+    //   icon: <BarChartIcon fontSize="small" />,
+    //   tooltip: "View Reports",
+    // },
   ];
 
   // Handle navigation directly

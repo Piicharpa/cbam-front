@@ -18,33 +18,33 @@ import Section3 from "./formsections/Goods_sec3";
 
 interface GoodsFormProps {
   formValues: {
-    report_id: string;
+    report_id: number;
     name: string;
     goods_category: string;
     routes: { [key: number]: string }; 
     amounts: { [key: number]: string };
     total_consumed_within_installation: number;
-    consumed_in_others_amounts: string;
-    condumed_non_cbam_goods_amounts: string;
-    has_heat: string;
-    has_waste_gases: string;
-    direct_emissions: string;
-    imported_heat_value: string;
-    exported_heat_value: string;
-    ef_imported_heat: string;
-    ef_exported_heat: string;
-    electricity_consumption_value: string;
-    ef_electricity: string;
+    consumed_in_others_amounts: number;
+    condumed_non_cbam_goods_amounts: number;
+    has_heat: number;
+    has_waste_gases: number;
+    direct_emissions: number;
+    imported_heat_value: number;
+    exported_heat_value: number;
+    ef_imported_heat: number;
+    ef_exported_heat: number;
+    electricity_consumption_value:number;
+    ef_electricity:number;
     source_of_ef_electricity: string;
-    exported_electricity_value: string;
-    ef_exported_electricity: string;
-    produced_for_market_amount: string;
-    imported_wgases_amount: string;
-    ef_imported_wgases: string;
-    exported_wgases_amount: string;
-    ef_exported_wgases: string;
+    exported_electricity_value: number;
+    ef_exported_electricity: number;
+    produced_for_market_amount: number;
+    imported_wgases_amount: number;
+    ef_imported_wgases: number;
+    exported_wgases_amount: number;
+    ef_exported_wgases: number;
     industry_type: string;
-    total_production_amounts: string;
+    total_production_amounts: number;
   };
   onChange: (formValues: GoodsFormProps["formValues"]) => void;
   redirectPath?: string;
@@ -55,41 +55,42 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
   const navigate = useNavigate();
   const location = useLocation();
   const reportIdRaw = (location.state as { reportId?: number } | undefined)?.reportId || null;
-  const reportId = reportIdRaw ? Number(reportIdRaw) : null;
+    const reportId = localStorage.getItem('reportId');
   
   const [localFormValues, setLocalFormValues] = useState<GoodsFormProps["formValues"]>({
-    report_id: "",
+    report_id:0,
     name: "",
     goods_category: "",
     routes: {},
     amounts: {},
     total_consumed_within_installation: 0 ,
-    consumed_in_others_amounts: "",
-    condumed_non_cbam_goods_amounts: "",
-    has_heat: "",
-    has_waste_gases: "",
-    direct_emissions: "",
-    imported_heat_value: "",
-    exported_heat_value: "",
-    ef_imported_heat: "",
-    ef_exported_heat: "",
-    electricity_consumption_value: "",
-    ef_electricity: "",
+    consumed_in_others_amounts: 0,
+    condumed_non_cbam_goods_amounts: 0,
+    has_heat: 0,
+    has_waste_gases: 0,
+    direct_emissions: 0,
+    imported_heat_value: 0,
+    exported_heat_value: 0,
+    ef_imported_heat: 0,
+    ef_exported_heat: 0,
+    electricity_consumption_value: 0,
+    ef_electricity: 0,
     source_of_ef_electricity: "",
-    exported_electricity_value: "",
-    ef_exported_electricity: "",
-    produced_for_market_amount: "",
-    imported_wgases_amount: "",
-    ef_imported_wgases: "",
-    exported_wgases_amount: "",
-    ef_exported_wgases: "",
+    exported_electricity_value: 0,
+    ef_exported_electricity: 0,
+    produced_for_market_amount: 0,
+    imported_wgases_amount: 0,
+    ef_imported_wgases: 0,
+    exported_wgases_amount: 0,
+    ef_exported_wgases: 0,
     industry_type: "",
-    total_production_amounts: "",
+    total_production_amounts: 0,
   });
   
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [countries, setCountries] = useState<CountryOption[]>([]);
   
+    const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
     const loadCountries = async () => {
       const fetched = await fetchCountries();
@@ -102,16 +103,43 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
     setLocalFormValues(formValues);
   }, [formValues]);
 
+  // Move requiredFields to component scope
+  const requiredFields = [
+    "name",
+    "goods_category",
+    "routes",
+    "amounts",
+    "total_consumed_within_installation",
+    "consumed_in_others_amounts",
+    "condumed_non_cbam_goods_amounts",
+    "has_heat",
+    "has_waste_gases",
+    "direct_emissions",
+    "electricity_consumption_value",
+    "ef_electricity",
+    "source_of_ef_electricity",
+    "exported_electricity_value",
+    "ef_exported_electricity",
+    "produced_for_market_amount",
+    "industry_type",
+    "total_production_amounts",
+  ];
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setLocalFormValues((prev) => ({ ...prev, [name]: value }));
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
+  const newErrors: { [key: string]: string } = {};
+  requiredFields.forEach((field) => {
+    if (!formValues[field as keyof typeof formValues]) {
+      newErrors[field] = "กรุณากรอกข้อมูล";
+    }
+  });
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    console.log("✅ handleSubmit called");
-    console.log("📦 formValues ที่จะส่ง:", localFormValues);
     
     const payload = {
       ...localFormValues,
@@ -120,13 +148,10 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
       routes: JSON.stringify(localFormValues.routes),   
       report_id: reportId || "", 
     };
-    console.log("data", payload);
     
     try {
-      console.log("💬 ส่งข้อมูล:", localFormValues);
-      console.log("📦 report_id ที่จะส่ง:", reportId);
       
-      const response = await fetch("http://178.128.123.212:5000/api/cbam/d_goods/", {
+      const response = await fetch(`${apiUrl}/api/cbam/d_goods/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -138,7 +163,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
       }
 
       const data = await response.json();
-      console.log("✅ บันทึกสำเร็จ:", data);
       
       // Navigate to the next page
       // navigate('/next-page'); // Replace '/next-page' with your desired redirect path
@@ -170,7 +194,12 @@ const GoodsForm: React.FC<GoodsFormProps> = ({ formValues, onChange, onNextStep 
             }}
           />
           <Section2
-            values={localFormValues}
+            values={{
+              total_production_amounts: String(localFormValues.total_production_amounts ?? ""),
+              consumed_in_others_amounts: String(localFormValues.consumed_in_others_amounts ?? ""),
+              produced_for_market_amount: String(localFormValues.produced_for_market_amount ?? ""),
+              condumed_non_cbam_goods_amounts: String(localFormValues.condumed_non_cbam_goods_amounts ?? ""),
+            }}
             errors={formErrors}
             onChange={handleInputChange}
           />

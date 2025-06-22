@@ -28,12 +28,12 @@ const Section3: React.FC<Props> = ({
   const [electricitySources, setElectricitySources] = useState<
     { id: number; name: string }[]
   >([]);
-
+ const apiUrl = process.env.REACT_APP_API_URL
   useEffect(() => {
     const fetchElectricitySources = async () => {
       try {
         const res = await fetch(
-          "http://178.128.123.212:5000/api/cbam/srcefelectricitys"
+         `${apiUrl} ctricitys`
         );
         const name = await res.json();
         setElectricitySources(name);
@@ -190,19 +190,26 @@ const Section3: React.FC<Props> = ({
                 onChange={onChange}
                 error={errors.exported_wgases_amount}
               />
-              <LabeledTextField
-                type="number"
-                caption="Directly attributable emissions (DirEm*)"
-                defination="กรอกตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
-                label=""
-                name="direct_emissions"
-                value={values.direct_emissions}
-                onChange={onChange}
-                error={errors.direct_emissions}
-              />
             </div>
           </div>
         )}
+      </Box>
+      
+       <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+        <strong> Directly attributable emissions (DirEm*) </strong>
+      </div>
+      <Box mb={3}>
+          <LabeledTextField
+            type="number"
+            caption="Directly attributable emissions (DirEm*)"
+            defination="กรอกตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
+            label=""
+            name="direct_emissions"
+            value={values.direct_emissions}
+            onChange={onChange}
+            error={errors.direct_emissions}
+          />
+
       </Box>
 
       {/* Box 3: Indirect emissions from electricity consumption"*/}

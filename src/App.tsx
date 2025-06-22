@@ -127,6 +127,7 @@ function App() {
         <Box
           sx={{
             minHeight: "100vh",
+            minWidth:"100vh",
             pb: 6,
             pt: 2,
             px: { xs: 2, sm: 3, md: 4 },
@@ -187,6 +188,7 @@ function App() {
             <Paper
               elevation={0}
               sx={{
+                flexGrow: 1, // ขยายให้เต็มพื้นที่ที่เหลือ
                 p: 2,
                 mb: 4,
                 background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",

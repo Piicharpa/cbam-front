@@ -16,6 +16,7 @@ interface Props {
   disabled?: boolean;
   readonly?: boolean;
   multiple?: boolean;
+  fontSize?: string | number; // เพิ่มพร็อพสำหรับปรับขนาดตัวอักษร
   
 }
 
@@ -32,10 +33,11 @@ const LabeledAutocomplete: React.FC<Props> = ({
   disabled = false,
   readonly = false,
   type = "text",
+  fontSize = "1.2rem", // ค่าเริ่มต้นสำหรับขนาดตัวอักษร
 }) => (
   <>
     {caption && (
-      <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 }}>
+      <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 , fontSize:13}}>
         {caption}
       </Typography>
     )}
@@ -43,7 +45,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
         <Typography
             variant="caption"
             color="#74aa15"
-            style={{ marginBottom: "0.25rem", display: "block" }}
+            style={{ marginBottom: "0.25rem", display: "block",fontSize:11 }}
         >
             {defination}
         </Typography>

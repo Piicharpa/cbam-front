@@ -112,7 +112,6 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
   //   // If validation fails, log errors and exit
   //   if (Object.keys(validationErrors).length > 0) {
-  //     console.log("Validation errors:", validationErrors);
   //     return;
   //   }
 
@@ -131,12 +130,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     })
   );
 
-  console.log("Section 1 data saved:", {
-    routes: values.routes,
-    amounts: values.amounts,
-    industry_type: values.industry_type,
-    goods_category: values.goods_category,
-  });
+
 
   //   // Call onNext to navigate to the next section
   //   // onNext();
@@ -156,7 +150,6 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   //   }
 
   //   if (Object.keys(validationErrors).length > 0) {
-  //     console.log("Validation errors:", validationErrors);
   //     return false;
   //   }
 

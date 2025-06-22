@@ -5,8 +5,10 @@ export interface CountryOption {
 }
 
 export const fetchCountries = async (): Promise<CountryOption[]> => {
+
+      const apiUrl = process.env.REACT_APP_API_URL;
   try {
-    const res = await fetch("http://178.128.123.212:5000/api/cbam/countries");
+    const res = await fetch(`${apiUrl}/api/cbam/countries`);
     const data = await res.json();
 
     const mappedCountries = data.map((item: any) => ({

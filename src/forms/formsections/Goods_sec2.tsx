@@ -27,27 +27,26 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
 
     // Validation logic
     if (!values.total_production_amounts) {
-      validationErrors.total_production_amounts = "กรุณากรอกปริมาณการผลิตทั้งหมด"; // Required
+      validationErrors.total_production_amounts = "กรุณากรอกปริมาณการผลิตทั้งหมด"; 
     }
     if (!values.consumed_in_others_amounts) {
-      validationErrors.consumed_in_others_amounts = "กรุณากรอกปริมาณการใช้ในกระบวนการผลิตอื่น"; // Required
+      validationErrors.consumed_in_others_amounts = "กรุณากรอกปริมาณการใช้ในกระบวนการผลิตอื่น"; 
     } else if (isNaN(Number(values.consumed_in_others_amounts)) || Number(values.consumed_in_others_amounts) < 0) {
       validationErrors.consumed_in_others_amounts = "กรุณากรอกจำนวนที่ถูกต้อง"; // Must be a valid number
     }
     if (!values.produced_for_market_amount) {
-      validationErrors.produced_for_market_amount = "กรุณากรอกปริมาณการผลิตเพื่อจำหน่าย"; // Required
+      validationErrors.produced_for_market_amount = "กรุณากรอกปริมาณการผลิตเพื่อจำหน่าย";
     } else if (isNaN(Number(values.produced_for_market_amount)) || Number(values.produced_for_market_amount) < 0) {
       validationErrors.produced_for_market_amount = "กรุณากรอกจำนวนที่ถูกต้อง";
     }
     if (!values.condumed_non_cbam_goods_amounts) {
-      validationErrors.condumed_non_cbam_goods_amounts = "กรุณากรอกปริมาณการใช้ของสินค้าที่ไม่อยู่ภายใต้ CBAM"; // Required
+      validationErrors.condumed_non_cbam_goods_amounts = "กรุณากรอกปริมาณการใช้ของสินค้าที่ไม่อยู่ภายใต้ CBAM"; 
     } else if (isNaN(Number(values.condumed_non_cbam_goods_amounts)) || Number(values.condumed_non_cbam_goods_amounts) < 0) {
       validationErrors.condumed_non_cbam_goods_amounts = "กรุณากรอกจำนวนที่ถูกต้อง";
     }
 
     // If errors are present, set state and exit
     if (Object.keys(validationErrors).length > 0) {
-      console.log("Validation errors:", validationErrors);
       // You may want to set errors in state here if needed
       return false;
     }

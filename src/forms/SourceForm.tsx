@@ -52,9 +52,11 @@ type SourceFormRef = {
 const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
   const navigate = useNavigate(); // เรียกใช้ navigate สำหรับ redirect
   const { onNextStep } = props; // รับค่า onNextStep จาก props
-  
+
   // State สำหรับ section 1b: Process emissions
-  const [processEmissionSections, setProcessEmissionSections] = useState<ProcessEmissionSection[]>([
+  const [processEmissionSections, setProcessEmissionSections] = useState<
+    ProcessEmissionSection[]
+  >([
     {
       id: Date.now(),
       p_method: "",
@@ -71,22 +73,40 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
       p_co2e_bio: "",
       p_energy_content_fossil: "",
       p_energy_content_bio: "",
-    }
+    },
   ]);
-  
+  const requiredFields = [
+    "p_method",
+    "p_source_stream_name",
+    " p_activity_data",
+    " p_ad_unit",
+    "   p_net_calorific_value",
+    " p_ncv_unit",
+    "   p_emission_factor",
+    " p_ef_unit",
+    "   p_oxidation_factor",
+    "  p_biomass_content",
+    " p_co2e_fossil",
+    " p_co2e_bio",
+    "   p_energy_content_fossil",
+    " p_energy_content_bio",
+  ];
+
+  // Removed duplicate handleInputChange and related unused code
+
   // State สำหรับส่วนอื่นๆ
   const [formValues, setFormValues] = useState({
     reportId: "",
-    manual_total_indirect_emissions: "",
+    manual_total_indirect_emissions: 0,
     manual_fuel_balance: "",
     manual_GHG_emissions_balance: "",
     generatl_info_on_data_quality: "",
     justification_for_use_default_values: "",
     information_quality_ssurance: "",
   });
-  
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  
+
   // -- Section 1b: Process emissions --
   // เพิ่ม process section ใหม่
   const addNewProcessSection = () => {
@@ -108,32 +128,46 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
         p_co2e_bio: "",
         p_energy_content_fossil: "",
         p_energy_content_bio: "",
-      }
+      },
     ]);
   };
-  
+
   // ลบ process section
   const removeProcessSection = (idToRemove: number) => {
     if (processEmissionSections.length <= 1) return;
-    setProcessEmissionSections(processEmissionSections.filter(section => section.id !== idToRemove));
+    setProcessEmissionSections(
+      processEmissionSections.filter((section) => section.id !== idToRemove)
+    );
   };
-  
+
   // อัปเดต input ใน process section
-  const handleProcessInputChange = (id: number, field: string, value: string) => {
-    setProcessEmissionSections(prevSections => {
-      const updatedSections = prevSections.map(section => {
+  const handleProcessInputChange = (
+    id: number,
+    field: string,
+    value: string
+  ) => {
+    setProcessEmissionSections((prevSections) => {
+      const updatedSections = prevSections.map((section) => {
         if (section.id !== id) return section;
-        
+
         const updatedSection = { ...section, [field]: value };
-        
+
         // คำนวณค่าอัตโนมัติเมื่อข้อมูลที่เกี่ยวข้องเปลี่ยน
-        if (['p_activity_data', 'p_net_calorific_value', 'p_emission_factor', 'p_oxidation_factor', 'p_biomass_content'].includes(field)) {
+        if (
+          [
+            "p_activity_data",
+            "p_net_calorific_value",
+            "p_emission_factor",
+            "p_oxidation_factor",
+            "p_biomass_content",
+          ].includes(field)
+        ) {
           const ad = parseFloat(updatedSection.p_activity_data) || 0;
           const ncv = parseFloat(updatedSection.p_net_calorific_value) || 0;
           const ef = parseFloat(updatedSection.p_emission_factor) || 0;
           const of = parseFloat(updatedSection.p_oxidation_factor) || 0;
           const bioC = parseFloat(updatedSection.p_biomass_content) || 0;
-          
+
           if (ad && ncv && ef && of) {
             // คำนวณ CO2e fossil
             updatedSection.p_co2e_fossil = (
@@ -141,7 +175,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
               (of / 100) *
               ((100 - bioC) / 100)
             ).toFixed(4);
-            
+
             // คำนวณ CO2e bio
             updatedSection.p_co2e_bio = (
               ((ad * ncv * ef) / 1000) *
@@ -149,14 +183,14 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
               (bioC / 100)
             ).toFixed(4);
           }
-          
+
           if (ad && ncv) {
             // คำนวณ Energy Content fossil
             updatedSection.p_energy_content_fossil = (
               ((ad * ncv) / 1000) *
               ((100 - bioC) / 100)
             ).toFixed(4);
-            
+
             // คำนวณ Energy Content bio
             updatedSection.p_energy_content_bio = (
               ((ad * ncv) / 1000) *
@@ -164,32 +198,41 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
             ).toFixed(4);
           }
         }
-        
+
         return updatedSection;
       });
-      
+
       return updatedSections;
     });
-    
+
     if (formErrors[`p_${id}_${field}`]) {
-            setFormErrors(prev => ({ ...prev, [`p_${id}_${field}`]: "" }));
+      setFormErrors((prev) => ({ ...prev, [`p_${id}_${field}`]: "" }));
     }
   };
-  
+
   // อัปเดต AD Unit ใน process section
   const handleProcessADUnitChange = (id: number, value: string | number) => {
     const stringValue = typeof value === "string" ? value : String(value);
-    
-    setProcessEmissionSections(processEmissionSections.map(section => 
-      section.id === id ? { 
-        ...section, 
-        p_ad_unit: stringValue,
-        p_ncv_unit: stringValue === "t" ? "GJ/t" : stringValue === "1000Nm3" ? "GJ/1000Nm3" : section.p_ncv_unit,
-      } : section
-    ));
-    
+
+    setProcessEmissionSections(
+      processEmissionSections.map((section) =>
+        section.id === id
+          ? {
+              ...section,
+              p_ad_unit: stringValue,
+              p_ncv_unit:
+                stringValue === "t"
+                  ? "GJ/t"
+                  : stringValue === "1000Nm3"
+                  ? "GJ/1000Nm3"
+                  : section.p_ncv_unit,
+            }
+          : section
+      )
+    );
+
     if (formErrors[`p_${id}_p_ad_unit`]) {
-      setFormErrors(prev => ({ ...prev, [`p_${id}_p_ad_unit`]: "" }));
+      setFormErrors((prev) => ({ ...prev, [`p_${id}_p_ad_unit`]: "" }));
     }
   };
 
@@ -197,16 +240,16 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
   // อัปเดต input ใน form values (สำหรับส่วนอื่นๆ)
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormValues(prev => ({ ...prev, [name]: value }));
-    setFormErrors(prev => ({ ...prev, [name]: "" }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
-  
+
   // อัปเดต autocomplete
   const handleAutocompleteChange = (name: string, value: string) => {
-    setFormValues(prev => ({ ...prev, [name]: value }));
-    setFormErrors(prev => ({ ...prev, [name]: "" }));
+    setFormValues((prev) => ({ ...prev, [name]: value }));
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
-  
+
   // เพื่อให้ parent component สามารถเรียกใช้ submit ได้
   useImperativeHandle(ref, () => ({
     async submit() {
@@ -218,11 +261,13 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
       }
     },
   }));
-  
+
   // ดึง report ID จาก location state
   const location = useLocation();
-  const reportId = location.state?.reportId || null;
-  
+  const reportId = localStorage.getItem("reportId");
+    const apiUrl = process.env.REACT_APP_API_URL;
+  // const reportId = 3;
+
   // ฟังก์ชัน submit form
   const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
     if (event) {
@@ -230,14 +275,14 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
     }
     try {
       // แปลงข้อมูลสำหรับส่งไปยังเซิร์ฟเวอร์
- 
+
       // 2. ข้อมูล section 1b (Process emissions)
       for (const section of processEmissionSections) {
         const payload = {
-          reportId: reportId,
+          report_id: reportId,
           method: section.p_method,
           source_stream_name: section.p_source_stream_name,
-          activity_data: section.p_activity_data,
+          // activity_data: section.p_activity_data,
           AD_Unit: section.p_ad_unit,
           net_calorific_value: section.p_net_calorific_value,
           NCV_unit: section.p_ncv_unit,
@@ -249,57 +294,64 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
           CO2e_bio: section.p_co2e_bio,
           energy_content_fossil: section.p_energy_content_fossil,
           energy_content_bio: section.p_energy_content_bio,
-          section_type: "process_emissions"
+          // section_type: section.process_emission
         };
-        
-        const response = await fetch("http://178.128.123.212:5000/api/cbam/b_emission", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        
+        const response = await fetch(
+         `${apiUrl}/api/cbam/b_emission`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
+
         if (!response.ok) {
           throw new Error("Failed to submit process emissions data");
         }
       }
-      
+
       // 4. ข้อมูล section 2 (Installation-level GHG emissions)
       const emissionsDataPayload = {
-        reportId: reportId,
-        manual_total_indirect_emissions: formValues.manual_total_indirect_emissions,
+        report_id: reportId,
+        manual_total_indirect_emissions:
+          formValues.manual_total_indirect_emissions,
         generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
-        justification_for_use_default_values: formValues.justification_for_use_default_values,
+        justification_for_use_default_values:
+          formValues.justification_for_use_default_values,
         manual_fuel_balance: formValues.manual_fuel_balance,
         manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
-        information_quality_assurance: formValues.information_quality_ssurance // เพิ่มข้อมูลนี้เข้าไปในการส่ง API
+        info_qty_assurance: formValues.information_quality_ssurance, // เพิ่มข้อมูลนี้เข้าไปในการส่ง API
       };
-      
-      const emissionsDataResponse = await fetch("http://178.128.123.212:5000/api/cbam/c_emission", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(emissionsDataPayload),
-      });
-      
+
+      const emissionsDataResponse = await fetch(
+       `${apiUrl}/api/cbam/c_emission`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(emissionsDataPayload),
+        }
+      );
+
       if (!emissionsDataResponse.ok) {
         throw new Error("Failed to submit emissions data");
       }
-      
+
       alert("✅ ส่งข้อมูลสำเร็จ");
-      
+
       // แทนที่จะเรียก onNextStep ให้ redirect ไปยัง /Report พร้อมส่ง reportId
       if (reportId) {
-        navigate('/Report', { state: { reportId } });
+        navigate(`/Report?reportId=${reportId}`);
       } else {
         // กรณีไม่มี reportId ให้ redirect ไปยังหน้าหลัก หรือแจ้งเตือนผู้ใช้
         alert("ไม่พบ Report ID กรุณาลองใหม่อีกครั้ง");
-        navigate('/'); // redirect ไปยังหน้าหลัก
+        navigate("/"); // redirect ไปยังหน้าหลัก
       }
-      
+
       // // ถ้า onNextStep ยังมีประโยชน์อื่นๆ ก็สามารถเรียกใช้ได้
       // if (onNextStep) {
       //   onNextStep();
       // }
-      
+
       return true;
     } catch (err: any) {
       alert(`❌ เกิดข้อผิดพลาด: ${err.message}`);
@@ -324,8 +376,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
               การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
             </Typography>
           </Box>
-        
-           
+
           {/* SECTION 1b: Process emissions */}
           <Section
             title="Source stream and emission source"
@@ -333,37 +384,42 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
             defaultExpanded={true}
           >
             {processEmissionSections.map((section, index) => (
-              <Box 
-                key={section.id} 
-                mb={4} 
-                p={2} 
-                sx={{ 
-                  border: '1px solid #e0e0e0', 
-                  borderRadius: '8px',
-                  position: 'relative',
-                                    backgroundColor: index % 2 === 0 ? '#f9f9f9' : 'white'
+              <Box
+                key={section.id}
+                mb={4}
+                p={2}
+                sx={{
+                  border: "1px solid #e0e0e0",
+                  borderRadius: "8px",
+                  position: "relative",
+                  backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
                 }}
               >
-                
                 {processEmissionSections.length > 1 && (
-                  <Box 
-                    sx={{ 
-                      position: 'absolute', 
-                      right: '10px', 
-                      top: '10px',
-                      cursor: 'pointer',
-                      color: 'error.main',
-                      '&:hover': {
-                        color: 'error.dark'
-                      }
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      right: "10px",
+                      top: "10px",
+                      cursor: "pointer",
+                      color: "error.main",
+                      "&:hover": {
+                        color: "error.dark",
+                      },
                     }}
                     onClick={() => removeProcessSection(section.id)}
                   >
                     <DeleteIcon />
                   </Box>
                 )}
-                
-                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1.5rem",
+                    marginBottom: "1rem",
+                  }}
+                >
                   <div style={{ flex: 1 }}>
                     <LabeledAutocomplete
                       type="text"
@@ -373,7 +429,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       name={`p_method_${section.id}`}
                       options={emission.map((item) => item.name)}
                       value={section.p_method}
-                      onChange={(value: string) => 
+                      onChange={(value: string) =>
                         handleProcessInputChange(section.id, "p_method", value)
                       }
                       error={formErrors[`p_${section.id}_p_method`]}
@@ -385,8 +441,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_activity_data_${section.id}`}
                       value={section.p_activity_data}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_activity_data", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_activity_data",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_activity_data`]}
                     />
@@ -398,10 +458,16 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_net_calorific_value_${section.id}`}
                       value={section.p_net_calorific_value}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_net_calorific_value", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_net_calorific_value",
+                          e.target.value
+                        )
                       }
-                      error={formErrors[`p_${section.id}_p_net_calorific_value`]}
+                      error={
+                        formErrors[`p_${section.id}_p_net_calorific_value`]
+                      }
                     />
                     <LabeledTextField
                       type="number"
@@ -410,8 +476,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_emission_factor_${section.id}`}
                       value={section.p_emission_factor}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_emission_factor", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_emission_factor",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_emission_factor`]}
                     />
@@ -422,8 +492,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_oxidation_factor_${section.id}`}
                       value={section.p_oxidation_factor}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_oxidation_factor", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_oxidation_factor",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_oxidation_factor`]}
                     />
@@ -436,8 +510,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_source_stream_name_${section.id}`}
                       value={section.p_source_stream_name}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_source_stream_name", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_source_stream_name",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_source_stream_name`]}
                     />
@@ -452,7 +530,9 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       }))}
                       value={section.p_ad_unit}
                       error={formErrors[`p_${section.id}_p_ad_unit`]}
-                      onChange={(val: string | number) => handleProcessADUnitChange(section.id, val)}
+                      onChange={(val: string | number) =>
+                        handleProcessADUnitChange(section.id, val)
+                      }
                     />
                     <LabeledTextField
                       type="text"
@@ -461,8 +541,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_ncv_unit_${section.id}`}
                       value={section.p_ncv_unit}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_ncv_unit", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_ncv_unit",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_ncv_unit`]}
                       readOnly
@@ -475,7 +559,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       options={efunits.map((unit) => unit.name)}
                       value={section.p_ef_unit}
                       error={formErrors[`p_${section.id}_p_ef_unit`]}
-                      onChange={(value: string) => 
+                      onChange={(value: string) =>
                         handleProcessInputChange(section.id, "p_ef_unit", value)
                       }
                     />
@@ -486,16 +570,26 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       label=""
                       name={`p_biomass_content_${section.id}`}
                       value={section.p_biomass_content}
-                      onChange={(e) => 
-                        handleProcessInputChange(section.id, "p_biomass_content", e.target.value)
+                      onChange={(e) =>
+                        handleProcessInputChange(
+                          section.id,
+                          "p_biomass_content",
+                          e.target.value
+                        )
                       }
                       error={formErrors[`p_${section.id}_p_biomass_content`]}
                     />
                   </div>
                 </div>
-                
+
                 {/* Display calculated values for process emissions */}
-                <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+                <div
+                  style={{
+                    display: "flex",
+                    gap: "1.5rem",
+                    marginBottom: "1rem",
+                  }}
+                >
                   <div style={{ flex: 1 }}>
                     <LabeledTextField
                       type="text"
@@ -505,8 +599,10 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       name={`p_co2e_fossil_${section.id}`}
                       value={section.p_co2e_fossil}
                       readOnly
-                                            error={formErrors[`p_${section.id}_p_co2e_fossil`]} 
-                      onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
+                      error={formErrors[`p_${section.id}_p_co2e_fossil`]}
+                      onChange={function (
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ): void {
                         throw new Error("Function not implemented.");
                       }}
                     />
@@ -518,8 +614,10 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       name={`p_co2e_bio_${section.id}`}
                       value={section.p_co2e_bio}
                       readOnly
-                      error={formErrors[`p_${section.id}_p_co2e_bio`]} 
-                      onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
+                      error={formErrors[`p_${section.id}_p_co2e_bio`]}
+                      onChange={function (
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ): void {
                         throw new Error("Function not implemented.");
                       }}
                     />
@@ -533,8 +631,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       name={`p_energy_content_fossil_${section.id}`}
                       value={section.p_energy_content_fossil}
                       readOnly
-                      error={formErrors[`p_${section.id}_p_energy_content_fossil`]} 
-                      onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
+                      error={
+                        formErrors[`p_${section.id}_p_energy_content_fossil`]
+                      }
+                      onChange={function (
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ): void {
                         throw new Error("Function not implemented.");
                       }}
                     />
@@ -546,8 +648,10 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                       name={`p_energy_content_bio_${section.id}`}
                       value={section.p_energy_content_bio}
                       readOnly
-                      error={formErrors[`p_${section.id}_p_energy_content_bio`]} 
-                      onChange={function (e: React.ChangeEvent<HTMLInputElement>): void {
+                      error={formErrors[`p_${section.id}_p_energy_content_bio`]}
+                      onChange={function (
+                        e: React.ChangeEvent<HTMLInputElement>
+                      ): void {
                         throw new Error("Function not implemented.");
                       }}
                     />
@@ -555,7 +659,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                 </div>
               </Box>
             ))}
-            
+
             {/* ปุ่มเพิ่มส่วนใหม่สำหรับ Process emissions */}
             <Box textAlign="center" mb={2}>
               <button
@@ -572,29 +676,30 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                   alignItems: "center",
                   margin: "0 auto",
                   boxShadow: "0 2px 6px rgba(1, 144, 195, 0.3)",
-                  transition: "all 0.2s ease"
+                  transition: "all 0.2s ease",
                 }}
                 onClick={addNewProcessSection}
                 onMouseOver={(e) => {
                   e.currentTarget.style.backgroundColor = "#07b8dd";
-                  e.currentTarget.style.boxShadow = "0 4px 8px rgba(1, 144, 195, 0.4)";
+                  e.currentTarget.style.boxShadow =
+                    "0 4px 8px rgba(1, 144, 195, 0.4)";
                 }}
                 onMouseOut={(e) => {
                   e.currentTarget.style.backgroundColor = "#0190c3";
-                  e.currentTarget.style.boxShadow = "0 2px 6px rgba(1, 144, 195, 0.3)";
+                  e.currentTarget.style.boxShadow =
+                    "0 2px 6px rgba(1, 144, 195, 0.3)";
                 }}
               >
-                <span style={{ marginRight: "8px", fontSize: "20px" }}>+</span> 
+                <span style={{ marginRight: "8px", fontSize: "20px" }}>+</span>
                 เพิ่มแหล่งปล่อยมลพิษกระบวนการ
               </button>
             </Box>
           </Section>
-          
+
           {/* SECTION 2: Installation-level GHG emissions and energy consumption */}
           <Section
             title="(d) Installation-level GHG emissions and energy consumption"
             subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
-           
           >
             {/* Box1: GHG emissions and energy consumption */}
             <Box mb={3}>
@@ -613,7 +718,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                 helperText={formErrors.manual_fuel_balance}
                 inputProps={{
                   step: "any",
-                  placeholder: "Enter amount",
+                  placeholder: "",
                   className: "appearance-none",
                 }}
               />
@@ -629,13 +734,12 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                 helperText={formErrors.manual_GHG_emissions_balance}
                 inputProps={{
                   step: "any",
-                  placeholder: "Enter amount",
+                  placeholder: "",
                   className: "appearance-none",
                 }}
-                readOnly
               />
             </Box>
-            
+
             {/* Box2: Information on the data quality and quality assurance  */}
             <Box mb={3}>
               <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
@@ -682,7 +786,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
                     justification_for_use_default_values: "",
                   }));
                 }}
-                                error={formErrors.justification_for_use_default_values}
+                error={formErrors.justification_for_use_default_values}
                 helperText={formErrors.justification_for_use_default_values}
                 options={justification.map(
                   (item: { name: string }) => item.name
@@ -711,7 +815,7 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
               />
             </Box>
           </Section>
-          
+
           {/* ปุ่มบันทึก */}
           <PGButton />
         </Grid>

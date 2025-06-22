@@ -53,9 +53,12 @@ const TabE_PurchasedPrecursors = ({ formValues, setFormValues, reportId }: TabAP
         }
         const [tableData, setTableData] = useState<TableRowData[]>([]);
         const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
+         const apiUrl = process.env.REACT_APP_API_URL;
+
+         
         useEffect(() => {
             if (reportId) {
-                fetch(`http://178.128.123.212:5000/api/cbam/excelreport/E_PurchPrec/${reportId}`)
+                fetch(`${apiUrl} c/${reportId}`)
                     .then((res) => res.json())
                     .then((data) => setTableData(data.metadata))
                     .catch((err) => console.error("Failed to fetch:", err));

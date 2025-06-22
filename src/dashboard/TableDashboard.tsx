@@ -37,11 +37,12 @@ interface CBAMData {
 const TableDashboard = () => {
   const [data, setData] = useState<CBAMData[]>([]);
 
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get(
-          "http://localhost:5000/api/cbam/report/company/1"
+         `${apiUrl}/api/cbam/report/company/1`
         );
 
         const raw = response.data;

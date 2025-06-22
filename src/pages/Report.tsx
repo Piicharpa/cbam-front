@@ -799,7 +799,6 @@ const Report = () => {
                   purchasedPrecursors: tabEData,
                 };
 
-                console.log("บันทึกข้อมูลรายงานทั้งหมด:", allData);
                 alert("บันทึกข้อมูลเรียบร้อยแล้ว");
               }}
               style={{

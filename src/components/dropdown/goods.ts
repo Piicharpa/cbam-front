@@ -19,13 +19,13 @@ export interface OptionType {
 
 // ฟังก์ชัน fetch หลัก
 export const fetchGoodsData = async (): Promise<IndustryGroup[]> => {
+      const apiUrl = process.env.REACT_APP_API_URL;
   try {
-    const response = await fetch("http://178.128.123.212:5000/api/cbam/goods");
+    const response = await fetch(`${apiUrl}/api/cbam/goods`);
     if (!response.ok) {
       throw new Error("Failed to fetch goods data");
     }
     const data = await response.json();
-    // console.log("Fetched goods data:", data);
     return data;
   } catch (err) {
     console.error("Error fetching goods data:", err);
@@ -94,20 +94,16 @@ export const getPrecursorsOptions = (
 
 async function debug() {
   const data = await fetchGoodsData();
-  // console.log("Raw data:", data);
 
   const industryOptions = getIndustryOptions(data);
-  // console.log("Industry options:", industryOptions);
 
   if (industryOptions.length > 0) {
     const firstIndustryId = industryOptions[0].value as number;
     const goodsOptions = getGoodsOptions(data, firstIndustryId);
-    // console.log("Goods options for first industry:", goodsOptions);
 
     if (goodsOptions.length > 0) {
       const firstGoodsId = goodsOptions[0].value as number;
       const routesOptions = getRoutesOptions(data, firstIndustryId, firstGoodsId);
-      // console.log("Routes for first goods:", routesOptions);
     }
   }
 }

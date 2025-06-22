@@ -149,7 +149,7 @@ function ColorlibStepIcon(props: StepIconProps) {
 
   const icons: { [index: string]: React.ReactElement } = {
     1: <BarChartIcon />,
-    2: <DescriptionIcon />,
+    // 2: <DescriptionIcon />,
   };
 
   return (
@@ -165,7 +165,7 @@ function ColorlibStepIcon(props: StepIconProps) {
 // Steps definition
 const steps = [
   { label: "CBAM Dashboard", description: "View your carbon emission data" },
-  { label: "Summary Form", description: "Review and submit your information" },
+  // { label: "Summary Form", description: "Review and submit your information" },
 ];
 
 const Form: React.FC = () => {
@@ -188,8 +188,8 @@ const Form: React.FC = () => {
     switch (step) {
       case 0:
         return <TableDashboard />;
-      case 1:
-        return <SumupForm />;
+      // case 1:
+      //   return <SumupForm />;
       default:
         return <Typography>Unknown step</Typography>;
     }

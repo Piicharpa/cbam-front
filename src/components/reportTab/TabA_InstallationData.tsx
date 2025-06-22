@@ -55,8 +55,11 @@ const TabA_InstallationData = ({ formValues, setFormValues, reportId }: TabAProp
 
     const [tableData, setTableData] = useState<TableRowData[]>([]);
     const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
+
+     const apiUrl = process.env.REACT_APP_API_URL;
+
     useEffect(() => {
-      fetch(`http://178.128.123.212:5000api/cbam/excelreport/A_InstData/${reportId}`)
+      fetch(`${apiUrl}/api/cbam/excelreport/A_InstData/${reportId}`)
         .then((res) => res.json())
         .then((data) => setTableData(data.metadata))
         .catch((err) => console.error("Failed to fetch:", err));

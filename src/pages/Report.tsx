@@ -154,67 +154,67 @@ const a11yProps = (index: number) => {
   };
 };
 
-// เครื่องมือช่วยสร้าง Component สำหรับแสดง Summary Box
-const SummaryBox = ({ data, title }: { data: any; title: string }) => {
-  return (
-    <Box
-      sx={{
-        mt: 4,
-        p: 3,
-        borderRadius: 2,
-        backgroundColor: alpha(theme.palette.secondary.light, 0.5),
-        border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-        position: "relative",
-        overflow: "hidden",
-      }}
-    >
-      <Typography
-        variant="subtitle1"
-        color="secondary.dark"
-        fontWeight={600}
-        gutterBottom
-      >
-        {title}
-      </Typography>
+// // เครื่องมือช่วยสร้าง Component สำหรับแสดง Summary Box
+// const SummaryBox = ({ data, title }: { data: any; title: string }) => {
+//   return (
+//     <Box
+//       sx={{
+//         mt: 4,
+//         p: 3,
+//         borderRadius: 2,
+//         backgroundColor: alpha(theme.palette.secondary.light, 0.5),
+//         border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+//         position: "relative",
+//         overflow: "hidden",
+//       }}
+//     >
+//       <Typography
+//         variant="subtitle1"
+//         color="secondary.dark"
+//         fontWeight={600}
+//         gutterBottom
+//       >
+//         {title}
+//       </Typography>
 
-      <Grid container spacing={2}>
-        <Grid size={12}>
-          <Typography variant="body2" color="text.secondary">
-            <strong>Installation Name:</strong> {data.installationName || "-"}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            <strong>Product:</strong> {data.product || "-"}
-          </Typography>
-        </Grid>
-        <Grid size={12}>
-          <Typography variant="body2" color="text.secondary">
-            <strong>Carbon Footprint:</strong> {data.carbonFootprint || "-"}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-            <strong>Date:</strong> {data.date || "-"}
-          </Typography>
-        </Grid>
-      </Grid>
+//       <Grid container spacing={2}>
+//         <Grid size={12}>
+//           <Typography variant="body2" color="text.secondary">
+//             <strong>Name of Installation:</strong> {data.installationName || "-"}
+//           </Typography>
+//           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+//             <strong>Product:</strong> {data.product || "-"}
+//           </Typography>
+//         </Grid>
+//         <Grid size={12}>
+//           <Typography variant="body2" color="text.secondary">
+//             <strong>Carbon Footprint:</strong> {data.carbonFootprint || "-"}
+//           </Typography>
+//           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+//             <strong>Date:</strong> {data.date || "-"}
+//           </Typography>
+//         </Grid>
+//       </Grid>
 
-      {/* Decorative elements */}
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: -15,
-          right: -15,
-          width: 80,
-          height: 80,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${alpha(
-            "#74aa15",
-            0.1
-          )} 0%, transparent 70%)`,
-          zIndex: 0,
-        }}
-      />
-    </Box>
-  );
-};
+//       {/* Decorative elements */}
+//       <Box
+//         sx={{
+//           position: "absolute",
+//           bottom: -15,
+//           right: -15,
+//           width: 80,
+//           height: 80,
+//           borderRadius: "50%",
+//           background: `radial-gradient(circle, ${alpha(
+//             "#74aa15",
+//             0.1
+//           )} 0%, transparent 70%)`,
+//           zIndex: 0,
+//         }}
+//       />
+//     </Box>
+//   );
+// };
 
 // Interface สำหรับ Form Fields Pattern
 interface FormFieldsData {
@@ -229,39 +229,64 @@ const Report = () => {
   const [tabValue, setTabValue] = useState(0);
 
   // แยก state สำหรับแต่ละแท็บ
-  const [tabAData, setTabAData] = useState<FormFieldsData>({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+  const [tabAData, setTabAData] = useState<{
+    id: string;
+    name: string;
+    cell: string;
+    value: string;
+  }>({
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
-  const [tabBData, setTabBData] = useState<FormFieldsData>({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+  const [tabBData, setTabBData] = useState<{
+    id: string;
+    name: string;
+    cell: string;
+    value: string;
+  }>({
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
-  const [tabCData, setTabCData] = useState<FormFieldsData>({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+  const [tabCData, setTabCData] = useState<{
+    id: string;
+    name: string;
+    cell: string;
+    value: string;
+  }>({
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
-  const [tabDData, setTabDData] = useState<FormFieldsData>({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+  const [tabDData, setTabDData] = useState<{
+    id: string;
+    name: string;
+    cell: string;
+    value: string;
+  }>({
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
-  const [tabEData, setTabEData] = useState<FormFieldsData>({
-    installationName: "",
-    product: "",
-    carbonFootprint: "",
-    date: "",
+  const [tabEData, setTabEData] = useState<{
+    id: string;
+    name: string;
+    cell: string;
+    value: string;
+  }>({
+    id: "",
+    name: "",
+    cell: "",
+    value: "",
   });
 
   const isDesktop = useMediaQuery("(min-width:900px)");
@@ -297,136 +322,140 @@ const Report = () => {
   };
 
   // เปลี่ยนจาก renderCommonFields เป็น renderFieldsForTab ที่สามารถรองรับฟิลด์เพิ่มเติมได้
-  const renderFieldsForTab = (
-    title: string,
-    data: FormFieldsData,
-    handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-    additionalFields?: Array<{
-      name: string;
-      caption: string;
-      defination: string;
-    }>
-  ) => (
-    <Box
-      sx={{
-        position: "relative",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          right: -20,
-          top: 20,
-          width: 150,
-          height: 150,
-          borderRadius: "50%",
-          background: `radial-gradient(circle, ${alpha(
-            "#f3f7e7",
-            0.7
-          )} 0%, ${alpha("#e7f9cd", 0.3)} 50%, transparent 70%)`,
-          zIndex: 0,
-          pointerEvents: "none",
-        },
-      }}
-    >
-      <Typography
-        variant="h5"
-        gutterBottom
-        color="primary.main"
-        sx={{
-          position: "relative",
-          pb: 1,
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            bottom: 0,
-            left: 0,
-            width: "60px",
-            height: "3px",
-            borderRadius: "2px",
-            background: theme.palette.primary.main,
-          },
-        }}
-      >
-        {title}
-      </Typography>
+  // const renderFieldsForTab = (
+  //   title: string,
+  //   data: FormFieldsData,
+  //   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
+  //   additionalFields?: Array<{
+  //     name: string;
+  //     caption: string;
+  //     defination: string;
+  //   }>
+  // ) => (
+  //   <Box
+  //     sx={{
+  //       position: "relative",
+  //       "&::before": {
+  //         content: '""',
+  //         position: "absolute",
+  //         right: -20,
+  //         top: 20,
+  //         width: 150,
+  //         height: 150,
+  //         borderRadius: "50%",
+  //         background: `radial-gradient(circle, ${alpha(
+  //           "#f3f7e7",
+  //           0.7
+  //         )} 0%, ${alpha("#e7f9cd", 0.3)} 50%, transparent 70%)`,
+  //         zIndex: 0,
+  //         pointerEvents: "none",
+  //       },
+  //     }}
+  //   >
+  //     <Typography
+  //       variant="h5"
+  //       gutterBottom
+  //       color="primary.main"
+  //       sx={{
+  //         position: "relative",
+  //         pb: 1,
+  //         "&::after": {
+  //           content: '""',
+  //           position: "absolute",
+  //           bottom: 0,
+  //           left: 0,
+  //           width: "60px",
+  //           height: "3px",
+  //           borderRadius: "2px",
+  //           background: theme.palette.primary.main,
+  //         },
+  //       }}
+  //     >
+  //       {title}
+  //     </Typography>
 
-      <Grid
-        container
-        spacing={3}
-        sx={{ mt: 2, position: "relative", zIndex: 1 }}
-      >
-        <Grid size={12}>
-          <LabeledTextField
-            type="text"
-            caption="Name of Installation"
-            defination="ชื่อสถานประกอบการ"
-            label=""
-            name="installationName"
-            value={data.installationName}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
+  //     <Grid
+  //       container
+  //       spacing={3}
+  //       sx={{ mt: 2, position: "relative", zIndex: 1 }}
+  //     >
+  //       <Grid size={12}>
+  //         <LabeledTextField
+  //           type="text"
+  //           caption="Name of Installation"
+  //           defination="ชื่อสถานประกอบการ"
+  //           label=""
+  //           name="installationName"
+  //           value={data.installationName}
+  //           onChange={handleChange}
+  //           required
+  //         />
+  //       </Grid>
 
-        <Grid size={12}>
-          <LabeledTextField
-            type="text"
-            caption="Product"
-            defination="ผลิตภัณฑ์"
-            label=""
-            name="product"
-            value={data.product}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
+  //       <Grid size={12}>
+  //         <LabeledTextField
+  //           type="text"
+  //           caption="Product"
+  //           defination="ผลิตภัณฑ์"
+  //           label=""
+  //           name="product"
+  //           value={data.product}
+  //           onChange={handleChange}
+  //           required
+  //         />
+  //       </Grid>
 
-        <Grid size={12}>
-          <LabeledTextField
-            type="text"
-            caption="Carbon Footprint"
-            defination="คาร์บอนฟุตพริ้นท์"
-            label=""
-            name="carbonFootprint"
-            value={data.carbonFootprint}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
+  //       <Grid size={12}>
+  //         <LabeledTextField
+  //           type="text"
+  //           caption="Carbon Footprint"
+  //           defination="คาร์บอนฟุตพริ้นท์"
+  //           label=""
+  //           name="carbonFootprint"
+  //           value={data.carbonFootprint}
+  //           onChange={handleChange}
+  //           required
+  //         />
+  //       </Grid>
 
-        <Grid size={12}>
-          <LabeledTextField
-            type="date"
-            caption="Date"
-            defination="วันที่"
-            label=""
-            name="date"
-            value={data.date}
-            onChange={handleChange}
-            required
-          />
-        </Grid>
+  //       <Grid size={12}>
+  //         <LabeledTextField
+  //           type="date"
+  //           caption="Date"
+  //           defination="วันที่"
+  //           label=""
+  //           name="date"
+  //           value={data.date}
+  //           onChange={handleChange}
+  //           required
+  //         />
+  //       </Grid>
 
-        {/* แสดงฟิลด์เพิ่มเติมตามที่กำหนด */}
-        {additionalFields &&
-          additionalFields.map((field) => (
-            <Grid size={12} key={field.name}>
-              <LabeledTextField
-                type="text"
-                caption={field.caption}
-                defination={field.defination}
-                label=""
-                name={field.name}
-                value={data[field.name] || ""}
-                onChange={handleChange}
-              />
-            </Grid>
-          ))}
-      </Grid>
+  //       {/* แสดงฟิลด์เพิ่มเติมตามที่กำหนด */}
+  //       {additionalFields &&
+  //         additionalFields.map((field) => (
+  //           <Grid size={12} key={field.name}>
+  //             <LabeledTextField
+  //               type="text"
+  //               caption={field.caption}
+  //               defination={field.defination}
+  //               label=""
+  //               name={field.name}
+  //               value={data[field.name] || ""}
+  //               onChange={handleChange}
+  //             />
+  //           </Grid>
+  //         ))}
+  //     </Grid>
 
-      {/* Summary Box */}
-      <SummaryBox data={data} title="Summary Information" />
-    </Box>
-  );
+  {
+    /* Summary Box */
+  }
+  {
+    /* <SummaryBox data={data} title="Summary Information" /> */
+  }
+  //   </Box>
+  // );
 
   return (
     <ThemeProvider theme={theme}>
@@ -582,90 +611,40 @@ const Report = () => {
                 zIndex: 1,
               }}
             >
-              {/* Tab A: Installation Data */}
-              <TabPanel value={tabValue} index={0}>
-                <Section
-                  title="A. Installation Data"
-                  subtitle="ข้อมูลสถานประกอบการ"
-                  defaultExpanded={true}
-                  icon={<FactoryIcon fontSize="small" />}
-                >
-                  {renderFieldsForTab(
-                    "Installation Information",
-                    tabAData,
-                    handleTabAChange,
-                    [])
-                  }
-                </Section>
-              </TabPanel>
+              <Paper sx={{ width: "100%", mt: 3 }}>
+                <TabPanel value={tabValue} index={0}>
+                  <TabAInstallationData
+                    formValues={tabAData}
+                    setFormValues={setTabAData}
+                  />
+                </TabPanel>
+                <TabPanel value={tabValue} index={1}>
+                  <TabBEmissionInstallation
+                    formValues={tabBData}
+                    setFormValues={setTabBData}
+                  />
+                </TabPanel>
+                <TabPanel value={tabValue} index={2}>
+                  <TabCEnergyEmission
+                    formValues={tabCData}
+                    setFormValues={setTabCData}
+                  />
+                </TabPanel>
 
-              {/* Tab B: Emission Installation */}
-              <TabPanel value={tabValue} index={1}>
-                <Section
-                  title="B. Emission Installation"
-                  subtitle="การปล่อยมลพิษของสถานประกอบการ"
-                  defaultExpanded={true}
-                  icon={<LocalFireDepartmentIcon fontSize="small" />}
-                >
-                  {renderFieldsForTab(
-                    "Emission Installation Details",
-                    tabBData,
-                    handleTabBChange,
-                    []
-                  )}
-                </Section>
-              </TabPanel>
+                <TabPanel value={tabValue} index={3}>
+                  <TabDProcess
+                    formValues={tabDData}
+                    setFormValues={setTabDData}
+                  />
+                </TabPanel>
 
-              {/* Tab C: Emission of Energy */}
-              <TabPanel value={tabValue} index={2}>
-                <Section
-                  title="C. Emission of Energy"
-                  subtitle="การปล่อยมลพิษด้านพลังงาน"
-                  defaultExpanded={true}
-                  icon={<BoltIcon fontSize="small" />}
-                >
-                  {renderFieldsForTab(
-                    "Energy Emission Details",
-                    tabCData,
-                    handleTabCChange,
-                    []
-                  )}
-                </Section>
-              </TabPanel>
-
-              {/* Tab D: Process */}
-              <TabPanel value={tabValue} index={3}>
-                <Section
-                  title="D. Process"
-                  subtitle="กระบวนการ"
-                  defaultExpanded={true}
-                  icon={<SettingsIcon fontSize="small" />}
-                >
-                  {renderFieldsForTab(
-                    "Process Details",
-                    tabDData,
-                    handleTabDChange,
-                    []
-                  )}
-                </Section>
-              </TabPanel>
-
-              {/* Tab E: Purchased Precursors */}
-              <TabPanel value={tabValue} index={4}>
-                <Section
-                  title="E. Purchased Precursors"
-                  subtitle="การซื้อสารตั้งต้น"
-                  defaultExpanded={true}
-                  icon={<ShoppingCartIcon fontSize="small" />}
-                >
-                  {renderFieldsForTab(
-                    "Purchased Precursors Details",
-                    tabEData,
-                    handleTabEChange,
-                    []
-                  )}
-                </Section>
-              </TabPanel>
+                <TabPanel value={tabValue} index={4}>
+                  <TabEPurchasedPrecursors
+                    formValues={tabEData}
+                    setFormValues={setTabEData}
+                  />
+                </TabPanel>
+              </Paper>
             </Box>
           </Box>
 

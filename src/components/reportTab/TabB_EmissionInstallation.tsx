@@ -36,7 +36,7 @@ const TabB_EmissionInstallation = ({ formValues, setFormValues }: TabAProps) => 
         const [tableData, setTableData] = useState<TableRowData[]>([]);
         const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
         useEffect(() => {
-            fetch("http://localhost:5000/api/cbam/excelreport/B_EmInst")
+            fetch("http://178.128.123.212:5000/api/cbam/excelreport/B_EmInst")
                 .then((res) => res.json())
                 .then((data) => setTableData(data))
                 .catch((err) => console.error("Failed to fetch:", err));

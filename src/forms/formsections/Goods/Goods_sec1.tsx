@@ -97,22 +97,23 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     setRouteCount(Math.min(Object.keys(values.routes || {}).length || 1, 6));
   }, [values.routes]);
 
-
-  // Save data to local storage
-  localStorage.setItem(
-    "precursorData",
-    JSON.stringify({
-      routes: values.routes || [],
-      amounts: values.amounts || [],
-      industry_type: values.industry_type,
-      goods_category: values.goods_category,
-      precursors: Object.values(values.routes).map((r) => {
-        const found = routesOptions.find((opt) => String(opt.value) === r);
-        return found?.label || r;
-      }),
-    })
-  );
-  console.log(localStorage)
+// แก้ไข Section1.tsx โดยย้ายการจัดเก็บ localStorage ไปใน useEffect เพื่อให้แน่ใจว่าข้อมูลจะถูกบันทึกเมื่อมีการเปลี่ยนแปลงเท่านั้น
+useEffect(() => {
+  // บันทึกเมื่อมีข้อมูลพร้อมเท่านั้น
+  if (values.industry_type || values.goods_category) {
+    localStorage.setItem(
+      "goodsFormData", // ใช้ key เดียวกับ GoodsForm
+      JSON.stringify({
+        routes: values.routes || {},
+        amounts: values.amounts || {},
+        industry_type: values.industry_type,
+        goods_category: values.goods_category,
+        name: values.name
+      })
+    );
+  }
+}, [values.industry_type, values.goods_category, values.routes, values.amounts, values.name]);
+ 
 
   return (
     <Section

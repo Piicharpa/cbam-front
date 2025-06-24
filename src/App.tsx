@@ -10,7 +10,6 @@ import {
   alpha,
 } from "@mui/material";
 import {
-  BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
@@ -123,7 +122,6 @@ function App() {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Router>
         <Box
           sx={{
             minHeight: "100vh",
@@ -398,7 +396,6 @@ function App() {
             />
           </Box>
         </Box>
-      </Router>
     </ThemeProvider>
   );
 }

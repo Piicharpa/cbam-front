@@ -19,7 +19,7 @@ import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import TableDashboard from "../dashboard/TableDashboard";
-import SumupForm from "../dashboard/SumupForm";
+import SumupForm from "../forms/SumupForm";
 
 // Custom theme based on provided colors
 const theme = createTheme({

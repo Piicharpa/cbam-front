@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import SumupForm from "./SumupForm";
+import SumupForm from "../forms/SumupForm";
 import {
   Table,
   TableBody,

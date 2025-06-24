@@ -42,52 +42,46 @@ interface GoodsFormProps {
     total_production_amounts: number;
   };
   onChange: (formValues: GoodsFormProps["formValues"]) => void;
-  redirectPath?: string;
   onNextStep: () => void;
 }
-
 const GoodsForm: React.FC<GoodsFormProps> = ({
   formValues,
   onChange,
   onNextStep,
 }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const reportIdRaw =
-    (location.state as { reportId?: number } | undefined)?.reportId || null;
-  const reportId = localStorage.getItem('reportId');
-  // const reportId = 13;
-
+  const reportId = localStorage.getItem("reportId");
+  // ...
   const [localFormValues, setLocalFormValues] = useState<
     GoodsFormProps["formValues"]
   >({
-    report_id: 0,
-    name: "",
-    goods_category: "",
-    routes: [],
-    amounts: [],
-    total_consumed_within_installation: 0,
-    consumed_in_others_amounts: 0,
-    condumed_non_cbam_goods_amounts: 0,
-    has_heat: 0,
-    has_waste_gases: 0,
-    direct_emissions: 0,
-    imported_heat_value: 0,
-    exported_heat_value: 0,
-    ef_imported_heat: 0,
-    ef_exported_heat: 0,
-    electricity_consumption_value: 0,
-    ef_electricity: 0,
-    source_of_ef_electricity: "",
-    exported_electricity_value: 0,
-    ef_exported_electricity: 0,
-    produced_for_market_amount: 0,
-    imported_wgases_amount: 0,
-    ef_imported_wgases: 0,
-    exported_wgases_amount: 0,
-    ef_exported_wgases: 0,
-    industry_type: "",
-    total_production_amounts: 0,
+    // ใช้ข้อมูลจาก props ถ้ามีค่า หรือใช้ค่าเริ่มต้นถ้าไม่มี
+    report_id: formValues.report_id || 0,
+    name: formValues.name || "",
+    goods_category: formValues.goods_category || "",
+    routes: formValues.routes || {},
+    amounts: formValues.amounts || {},
+    total_consumed_within_installation:formValues.total_consumed_within_installation || 0,
+    consumed_in_others_amounts: formValues.consumed_in_others_amounts || 0,
+    condumed_non_cbam_goods_amounts:formValues.condumed_non_cbam_goods_amounts || 0,
+    has_heat: formValues.has_heat || 0,
+    has_waste_gases: formValues.has_waste_gases || 0,
+    direct_emissions: formValues.direct_emissions || 0,
+    imported_heat_value: formValues.imported_heat_value || 0,
+    exported_heat_value: formValues.exported_heat_value || 0,
+    ef_imported_heat: formValues.ef_imported_heat || 0,
+    ef_exported_heat: formValues.ef_exported_heat || 0,
+    electricity_consumption_value:formValues.electricity_consumption_value || 0,
+    ef_electricity: formValues.ef_electricity || 0,
+    source_of_ef_electricity: formValues.source_of_ef_electricity || "",
+    exported_electricity_value: formValues.exported_electricity_value || 0,
+    ef_exported_electricity: formValues.ef_exported_electricity || 0,
+    produced_for_market_amount: formValues.produced_for_market_amount || 0,
+    imported_wgases_amount: formValues.imported_wgases_amount || 0,
+    ef_imported_wgases: formValues.ef_imported_wgases || 0,
+    exported_wgases_amount: formValues.exported_wgases_amount || 0,
+    ef_exported_wgases: formValues.ef_exported_wgases || 0,
+    industry_type: formValues.industry_type || "",
+    total_production_amounts: formValues.total_production_amounts || 0,
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -103,23 +97,70 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     loadCountries();
   }, []);
 
-  useEffect(() => {
-    setLocalFormValues(formValues);
-  }, [formValues]);
+
+  // เพิ่ม useEffect สำหรับบันทึกข้อมูลเมื่อมีการเปลี่ยนแปลง
+useEffect(() => {
+  // บันทึกข้อมูลลงใน localStorage
+  localStorage.setItem("goodsFormData", JSON.stringify({
+    goods_category: localFormValues.goods_category,
+    name: localFormValues.name,
+    industry_type: localFormValues.industry_type,
+    // ฟิลด์สำคัญอื่นๆ...
+  }));
+}, [localFormValues.goods_category, localFormValues.name, localFormValues.industry_type]);
+
+// ปรับปรุง useEffect สำหรับโหลดข้อมูลตอนเปิดหน้า
+useEffect(() => {
+  // โหลดข้อมูลจาก localStorage เฉพาะเมื่อ formValues ไม่มีข้อมูล
+  const savedData = localStorage.getItem("goodsFormData");
+  if (savedData) {
+    try {
+      const parsedData = JSON.parse(savedData);
+      console.log("Loading data from localStorage:", parsedData); // เพิ่ม log
+      
+      setLocalFormValues(prev => {
+        const updatedValues = {
+          ...prev,
+          goods_category: prev.goods_category || parsedData.goods_category || "",
+          name: prev.name || parsedData.name || "",
+          industry_type: prev.industry_type || parsedData.industry_type || "",
+          routes: Object.keys(prev.routes || {}).length > 0 ? prev.routes : (parsedData.routes || {}),
+          amounts: Object.keys(prev.amounts || {}).length > 0 ? prev.amounts : (parsedData.amounts || {}),
+        };
+        console.log("Updated localFormValues from localStorage:", updatedValues);
+        return updatedValues;
+      });
+    } catch (error) {
+      console.error("Error parsing saved goods form data", error);
+    }
+  }
+}, []);
+
+
+
+  // useEffect(() => {
+  //   // ส่งข้อมูลกลับไปยัง parent component เมื่อ localFormValues เปลี่ยนแปลง
+  //   onChange(localFormValues);
+  // }, [localFormValues, onChange]);
+
+  // แก้ไขการจัดการ input change
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setLocalFormValues((prev) => {
+      // อัปเดต localFormValues
+      const updatedValues = { ...prev, [name]: value };
+      return updatedValues;
+    });
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
   // Move requiredFields to component scope
   const requiredFields = [
     "industry_type",
+    "goods_category",
     "source_of_ef_electricity",
     "name",
-    "goods_category",
   ];
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setLocalFormValues((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
-  };
 
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -193,7 +234,16 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             values={localFormValues}
             errors={formErrors}
             onChange={(field, val) => {
-              setLocalFormValues((prev) => ({ ...prev, [field]: val }));
+              console.log(
+                `Section1 updating field: ${field} with value: ${val}`
+              ); // เพิ่ม log
+
+              setLocalFormValues((prev) => {
+                const updated = { ...prev, [field]: val };
+                console.log("Updated localFormValues:", updated); // เพิ่ม log
+                return updated;
+              });
+
               setFormErrors((prev) => ({ ...prev, [field]: "" }));
             }}
           />

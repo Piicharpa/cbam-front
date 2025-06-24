@@ -1,32 +1,52 @@
-import React, {
-  forwardRef,
-  useState,
-  useEffect,
-  useImperativeHandle,
-  FormEvent,
-} from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
+import { useNavigate, useLocation, redirect } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
-import { useNavigate, useLocation } from "react-router-dom";
 import Source_sec1, {
   ProcessEmissionSection,
 } from "./formsections/Source/Source_sec1";
 import Source_sec2 from "./formsections/Source/Source_sec2";
+import Report from "../pages/Report";
 
 // เพิ่ม interface สำหรับ props
 interface SourceFormProps {
-  onNextStep?: () => void; // เพิ่มฟังก์ชัน onNextStep เป็น optional
+  formValues: {
+    p_method?: string;
+    p_source_stream_name?: string;
+    p_activity_data?: string;
+    p_ad_unit?: string;
+    p_net_calorific_value?: string;
+    p_ncv_unit?: string;
+    p_emission_factor?: string;
+    p_ef_unit?: string;
+    p_oxidation_factor?: string;
+    p_biomass_content?: string;
+    p_co2e_fossil?: string;
+    p_co2e_bio?: string;
+    p_energy_content_fossil?: string;
+    p_energy_content_bio?: string;
+    generatl_info_on_data_quality?: string;
+    justification_for_use_default_values?: string;
+    manual_fuel_balance?: string;
+    manual_GHG_emissions_balance?: string;
+    info_qty_assurance?: string;
+  };
+  onChange?: (formValues: SourceFormProps["formValues"]) => void;
+  onNextStep?: () => void;
 }
 
-// Proper type for the ref
-type SourceFormRef = {
-  submit: () => Promise<boolean>;
-};
-
-const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
-  const navigate = useNavigate(); // เรียกใช้ navigate สำหรับ redirect
-  const { onNextStep } = props; // รับค่า onNextStep จาก props
+const SourceForm: React.FC<SourceFormProps> = ({
+  formValues: externalFormValues = {},
+  onChange,
+  onNextStep,
+}) => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  // const reportId = localStorage.getItem("reportId");
+  const reportId = 13;
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // State สำหรับ section 1b: Process emissions
   const [processEmissionSections, setProcessEmissionSections] = useState<
@@ -34,54 +54,167 @@ const SourceForm = forwardRef<SourceFormRef, SourceFormProps>((props, ref) => {
   >([
     {
       id: Date.now(),
-      p_method: "",
-      p_source_stream_name: "",
-      p_activity_data: "",
-      p_ad_unit: "",
-      p_net_calorific_value: "",
-      p_ncv_unit: "",
-      p_emission_factor: "",
-      p_ef_unit: "",
-      p_oxidation_factor: "",
-      p_biomass_content: "",
-      p_co2e_fossil: "",
-      p_co2e_bio: "",
-      p_energy_content_fossil: "",
-      p_energy_content_bio: "",
+      p_method: externalFormValues.p_method || "",
+      p_source_stream_name: externalFormValues.p_source_stream_name || "",
+      p_activity_data: externalFormValues.p_activity_data || "",
+      p_ad_unit: externalFormValues.p_ad_unit || "",
+      p_net_calorific_value: externalFormValues.p_net_calorific_value || "",
+      p_ncv_unit: externalFormValues.p_ncv_unit || "",
+      p_emission_factor: externalFormValues.p_emission_factor || "",
+      p_ef_unit: externalFormValues.p_ef_unit || "",
+      p_oxidation_factor: externalFormValues.p_oxidation_factor || "",
+      p_biomass_content: externalFormValues.p_biomass_content || "",
+      p_co2e_fossil: externalFormValues.p_co2e_fossil || "",
+      p_co2e_bio: externalFormValues.p_co2e_bio || "",
+      p_energy_content_fossil: externalFormValues.p_energy_content_fossil || "",
+      p_energy_content_bio: externalFormValues.p_energy_content_bio || "",
     },
   ]);
 
-  const processRequiredFields = [
-  "p_method",
-  "p_source_stream_name",
-  "p_activity_data",
-  "p_ad_unit",
-  "p_emission_factor",
-  "p_ef_unit",
-  "p_oxidation_factor",
-];
-
-const formValuesRequiredFields = [
-  "manual_fuel_balance",
-  "manual_GHG_emissions_balance",
-  "generatl_info_on_data_quality", 
-  "justification_for_use_default_values",
-  "information_quality_ssurance",
-];
-
-  // State สำหรับส่วนอื่นๆ
   const [formValues, setFormValues] = useState({
     reportId: "",
-    manual_fuel_balance: "",
-    manual_GHG_emissions_balance: "",
-    generatl_info_on_data_quality: "",
-    justification_for_use_default_values: "",
-    information_quality_ssurance: "",
+    manual_fuel_balance: externalFormValues.manual_fuel_balance || "",
+    manual_GHG_emissions_balance:
+      externalFormValues.manual_GHG_emissions_balance || "",
+    generatl_info_on_data_quality:
+      externalFormValues.generatl_info_on_data_quality || "",
+    justification_for_use_default_values:
+      externalFormValues.justification_for_use_default_values || "",
+    information_quality_ssurance: externalFormValues.info_qty_assurance || "",
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // -- Section 1b: Process emissions --
+  useEffect(() => {
+    if (externalFormValues) {
+      const hasExternalValuesChanged = Object.keys(externalFormValues).some(
+        (key) =>
+          externalFormValues[key as keyof typeof externalFormValues] !==
+          formValues[key as keyof typeof formValues]
+      );
+
+      if (hasExternalValuesChanged) {
+        setFormValues((existingValues) => ({
+          ...existingValues,
+          reportId: "",
+          manual_fuel_balance:
+            externalFormValues.manual_fuel_balance ||
+            existingValues.manual_fuel_balance,
+          manual_GHG_emissions_balance:
+            externalFormValues.manual_GHG_emissions_balance ||
+            existingValues.manual_GHG_emissions_balance,
+          generatl_info_on_data_quality:
+            externalFormValues.generatl_info_on_data_quality ||
+            existingValues.generatl_info_on_data_quality,
+          justification_for_use_default_values:
+            externalFormValues.justification_for_use_default_values ||
+            existingValues.justification_for_use_default_values,
+          information_quality_ssurance:
+            externalFormValues.info_qty_assurance ||
+            existingValues.information_quality_ssurance,
+        }));
+
+        // อัปเดต processEmissionSections ถ้ามีข้อมูล
+        if (
+          externalFormValues.p_method ||
+          externalFormValues.p_source_stream_name ||
+          externalFormValues.p_activity_data
+        ) {
+          setProcessEmissionSections((prevSections) => [
+            {
+              ...prevSections[0],
+              // p_method: externalFormValues.p_method || prevSections[0].p_method,
+              // p_source_stream_name: externalFormValues.p_source_stream_name || prevSections[0].p_source_stream_name,
+              p_activity_data:
+                externalFormValues.p_activity_data ||
+                prevSections[0].p_activity_data,
+              // p_ad_unit: externalFormValues.p_ad_unit || prevSections[0].p_ad_unit,
+              p_net_calorific_value:
+                externalFormValues.p_net_calorific_value ||
+                prevSections[0].p_net_calorific_value,
+              // p_ncv_unit: externalFormValues.p_ncv_unit || prevSections[0].p_ncv_unit,
+              p_emission_factor:
+                externalFormValues.p_emission_factor ||
+                prevSections[0].p_emission_factor,
+              p_ef_unit:
+                externalFormValues.p_ef_unit || prevSections[0].p_ef_unit,
+              p_oxidation_factor:
+                externalFormValues.p_oxidation_factor ||
+                prevSections[0].p_oxidation_factor,
+              p_biomass_content:
+                externalFormValues.p_biomass_content ||
+                prevSections[0].p_biomass_content,
+              // p_co2e_fossil:  externalFormValues.p_co2e_fossil || prevSections[0].p_co2e_fossil,
+              // p_co2e_bio: externalFormValues.p_co2e_bio || prevSections[0].p_co2e_bio,
+              // p_energy_content_fossil: externalFormValues.p_energy_content_fossil || prevSections[0].p_energy_content_fossil,
+              // p_energy_content_bio: externalFormValues.p_energy_content_bio || prevSections[0].p_energy_content_bio,
+            },
+            ...prevSections.slice(1),
+          ]);
+        }
+      }
+    }
+  }, [externalFormValues]);
+
+  // แจ้งเตือนเมื่อไม่มี reportId
+  useEffect(() => {
+    if (!reportId) {
+      console.error(
+        "❌ reportId ไม่ถูกส่งมา - ไม่พบใน localStorage หรือ state"
+      );
+      alert("ไม่พบรหัสรายงาน กรุณากลับไปเลือกรายงานก่อน");
+    }
+  }, [reportId]);
+
+  // คอยอัปเดต parent component เมื่อข้อมูลเปลี่ยน
+  useEffect(() => {
+    // ส่งข้อมูลขึ้นไปยัง parent component
+    const section = processEmissionSections[0];
+    if (onChange) {
+      onChange({
+        p_method: section.p_method,
+        p_source_stream_name: section.p_source_stream_name,
+        p_activity_data: section.p_activity_data,
+        p_ad_unit: section.p_ad_unit,
+        p_net_calorific_value: section.p_net_calorific_value,
+        p_ncv_unit: section.p_ncv_unit,
+        p_emission_factor: section.p_emission_factor,
+        p_ef_unit: section.p_ef_unit,
+        p_oxidation_factor: section.p_oxidation_factor,
+        p_biomass_content: section.p_biomass_content,
+        p_co2e_fossil: section.p_co2e_fossil,
+        p_co2e_bio: section.p_co2e_bio,
+        p_energy_content_fossil: section.p_energy_content_fossil,
+        p_energy_content_bio: section.p_energy_content_bio,
+        manual_fuel_balance: formValues.manual_fuel_balance,
+        manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
+        generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+        justification_for_use_default_values:
+          formValues.justification_for_use_default_values,
+        info_qty_assurance: formValues.information_quality_ssurance,
+      });
+    }
+  }, [formValues, processEmissionSections, onChange]);
+
+  // ฟังก์ชั่น validation สำหรับฟอร์ม
+  const processRequiredFields = [
+    "p_method",
+    "p_source_stream_name",
+    "p_activity_data",
+    "p_ad_unit",
+    "p_emission_factor",
+    "p_ef_unit",
+    "p_oxidation_factor",
+  ];
+
+  const formValuesRequiredFields = [
+    "manual_fuel_balance",
+    "manual_GHG_emissions_balance",
+    "generatl_info_on_data_quality",
+    "justification_for_use_default_values",
+    "information_quality_ssurance",
+  ];
+
   // เพิ่ม process section ใหม่
   const addNewProcessSection = () => {
     setProcessEmissionSections([
@@ -203,160 +336,128 @@ const formValuesRequiredFields = [
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+
+    // เคลียร์ข้อผิดพลาดเมื่อผู้ใช้แก้ไขข้อมูล
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
   };
 
-  // เพื่อให้ parent component สามารถเรียกใช้ submit ได้
-  useImperativeHandle(ref, () => ({
-    async submit() {
-      try {
-        await handleSubmit();
-        return true;
-      } catch (error) {
-        return false;
-      }
-    },
-  }));
-
-  // ดึง report ID จาก location state
-  const location = useLocation();
-  const apiUrl = process.env.REACT_APP_API_URL;
-  const reportId = localStorage.getItem('reportId');
-  // const reportId = 3;
-
-  // ฟังก์ชัน submit form
- const handleSubmit = async (event?: FormEvent<HTMLFormElement>) => {
-  if (event) {
-    event.preventDefault();
-  }
-  console.log("Form submission started");
-  
-  const newErrors: { [key: string]: string } = {};
-  
-  // ตรวจสอบแต่ละ section สำหรับ process
-  processEmissionSections.forEach((section) => {
-    processRequiredFields.forEach((field) => {
-      const fieldValue = section[field as keyof ProcessEmissionSection];
-      if (!fieldValue) {
-        newErrors[`p_${section.id}_${field}`] = "กรุณากรอกข้อมูล";
-      }
-    });
-  });
-
-  // ตรวจสอบ formValues
-  formValuesRequiredFields.forEach((field) => {
-    if (!formValues[field as keyof typeof formValues]) {
-      newErrors[field] = "กรุณากรอกข้อมูล";
+ const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    // ป้องกันการ submit ซ้ำ
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+    if (!reportId) {
+        alert("❌ ไม่พบรหัสรายงาน (reportId) กรุณากลับไปสร้างรายงานก่อน");
+        setIsSubmitting(false);
+        return;
     }
-  });
-  
-  if (Object.keys(newErrors).length > 0) {
-    console.log("Form has errors:", newErrors);
-    setFormErrors(newErrors);
-    const firstErrorField = Object.keys(newErrors)[0];
-    const errorElement = document.getElementsByName(firstErrorField)[0];
-    if (errorElement)
-      errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    return false;
-  }
-
-    console.log("Form validation passed");
-
-    try {
-      console.log("Sending API requests...");
-
-      // แปลงข้อมูลสำหรับส่งไปยังเซิร์ฟเวอร์
-      // 1. ข้อมูล section 1b (Process emissions)
-      for (const section of processEmissionSections) {
-        const payload = {
-          report_id: reportId,
-          method: section.p_method,
-          source_stream_name: section.p_source_stream_name,
-          activity_data: section.p_activity_data,
-          AD_Unit: section.p_ad_unit,
-          net_calorific_value: section.p_net_calorific_value || null,
-          NCV_unit: section.p_ncv_unit,
-          ef: section.p_emission_factor,
-          ef_unit: section.p_ef_unit,
-          oxidation_factor_percentage: section.p_oxidation_factor,
-          biomass_content_percentage: section.p_biomass_content || null,
-          CO2e_fossil: section.p_co2e_fossil,
-          CO2e_bio: section.p_co2e_bio,
-          energy_content_fossil: section.p_energy_content_fossil,
-          energy_content_bio: section.p_energy_content_bio,
-        };
-
-        console.log("Sending process emission data:", payload);
-
-        const response = await fetch(`${apiUrl}/api/cbam/b_emission`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
+    // ตรวจสอบความถูกต้องของข้อมูล
+    const newErrors: { [key: string]: string } = {};
+    // ตรวจสอบแต่ละ section สำหรับ process
+    processEmissionSections.forEach((section) => {
+        processRequiredFields.forEach((field) => {
+            const fieldValue = section[field as keyof ProcessEmissionSection];
+            if (!fieldValue) {
+                newErrors[`p_${section.id}_${field}`] = "กรุณากรอกข้อมูล";
+            }
         });
-
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error("Process emission API error:", errorText);
-          throw new Error(
-            `Failed to submit process emissions data: ${errorText}`
-          );
+    });
+    // ตรวจสอบ formValues
+    formValuesRequiredFields.forEach((field) => {
+        if (!formValues[field as keyof typeof formValues]) {
+            newErrors[field] = "กรุณากรอกข้อมูล";
         }
-      }
-
-      // 2. ข้อมูล section 2 (Installation-level GHG emissions)
-      const emissionsDataPayload = {
-        report_id: reportId,
-        generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
-        justification_for_use_default_values:
-          formValues.justification_for_use_default_values,
-        manual_fuel_balance: formValues.manual_fuel_balance,
-        manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
-        info_qty_assurance: formValues.information_quality_ssurance,
-      };
-
-      console.log("Sending emissions data:", emissionsDataPayload);
-
-      const emissionsDataResponse = await fetch(
-        `${apiUrl}/api/cbam/c_emission`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(emissionsDataPayload),
+    });
+    // ถ้ามีข้อผิดพลาด อัปเดต state และไม่ส่งข้อมูล
+    if (Object.keys(newErrors).length > 0) {
+        setFormErrors(newErrors);
+        // เลื่อนไปยังฟิลด์แรกที่มีข้อผิดพลาด
+        const firstErrorField = Object.keys(newErrors)[0];
+        const errorElement = document.getElementsByName(firstErrorField)[0];
+        if (errorElement) {
+            errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
         }
-      );
-
-      if (!emissionsDataResponse.ok) {
-        const errorText = await emissionsDataResponse.text();
-        console.error("Emissions data API error:", errorText);
-        throw new Error(`Failed to submit emissions data: ${errorText}`);
-      }
-
-      console.log("All data submitted successfully");
-      alert("✅ ส่งข้อมูลสำเร็จ");
-
-      // เรียกใช้ onNextStep หรือ navigate ตาม logic
-      console.log("onNextStep exists:", !!onNextStep);
-
-      if (onNextStep) {
-        console.log("Calling onNextStep function");
-        onNextStep();
-        console.log("onNextStep called");
-      } else if (reportId) {
-        console.log("Navigating to Report page");
-        navigate(`/Report?reportId=${reportId}`);
-      } else {
-        console.log("No reportId found");
-        alert("ไม่พบ Report ID กรุณาลองใหม่อีกครั้ง");
-        navigate("/");
-      }
-
-      return true;
-    } catch (err: any) {
-      console.error("❌ Form submission error:", err.message || err);
-      alert(`❌ เกิดข้อผิดพลาด: ${err.message}`);
-      return false;
+        setIsSubmitting(false);
+        return;
     }
-  };
+    try {
+        console.log("Sending API requests...");
+        // แปลงข้อมูลสำหรับส่งไปยังเซิร์ฟเวอร์
+        // 1. ข้อมูล section 1b (Process emissions)
+        for (const section of processEmissionSections) {
+            const payload = {
+                report_id: reportId,
+                method: section.p_method,
+                source_stream_name: section.p_source_stream_name,
+                activity_data: section.p_activity_data,
+                AD_Unit: section.p_ad_unit,
+                net_calorific_value: section.p_net_calorific_value || null,
+                NCV_unit: section.p_ncv_unit,
+                ef: section.p_emission_factor,
+                ef_unit: section.p_ef_unit,
+                oxidation_factor_percentage: section.p_oxidation_factor,
+                biomass_content_percentage: section.p_biomass_content || null,
+                CO2e_fossil: section.p_co2e_fossil,
+                CO2e_bio: section.p_co2e_bio,
+                energy_content_fossil: section.p_energy_content_fossil,
+                energy_content_bio: section.p_energy_content_bio,
+            };
+            console.log("Sending process emission data:", payload);
+            const response = await fetch(`${apiUrl}/api/cbam/b_emission`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error("Process emission API error:", errorText);
+                throw new Error(
+                    `Failed to submit process emissions data: ${errorText}`
+                );
+            }
+        }
+        // 2. ข้อมูล section 2 (Installation-level GHG emissions)
+        const emissionsDataPayload = {
+            report_id: reportId,
+            generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+            justification_for_use_default_values:
+                formValues.justification_for_use_default_values,
+            manual_fuel_balance: formValues.manual_fuel_balance,
+            manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
+            info_qty_assurance: formValues.information_quality_ssurance,
+        };
+        console.log("Sending emissions data:", emissionsDataPayload);
+        const emissionsDataResponse = await fetch(
+            `${apiUrl}/api/cbam/c_emission`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(emissionsDataPayload),
+            }
+        );
+
+        if (!emissionsDataResponse.ok) {
+            const errorText = await emissionsDataResponse.text();
+            console.error("Emissions data API error:", errorText);
+            throw new Error(`Failed to submit emissions data: ${errorText}`);
+        }
+        console.log("All data submitted successfully");
+        alert("✅ ส่งข้อมูลสำเร็จ");
+
+        // นำทางไปยังหน้ารายงานหลังจากส่งข้อมูลสำเร็จ
+        navigate(`/report?reportId=${reportId}`);
+        
+        // ไปยังขั้นตอนถัดไป
+        localStorage.removeItem("cbam_report_id");
+    } catch (error: any) {
+        console.error("❌ Form submission error:", error);
+        alert(`❌ เกิดข้อผิดพลาด: ${error.message || "โปรดลองใหม่อีกครั้ง"}`);
+    } finally {
+        setIsSubmitting(false);
+    }
+};
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
@@ -412,6 +513,6 @@ const formValuesRequiredFields = [
       </form>
     </Container>
   );
-});
+};
 
 export default SourceForm;

@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
             justifyContent: 'center'
           }}>
             <img 
-              src="https://tgo-dist.pages.dev/icon.png" 
+              src="/image/favicon_cbam.ico" 
               alt="TGO Logo"
               style={{
                 width: '48px',

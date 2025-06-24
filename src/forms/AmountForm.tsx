@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
@@ -8,54 +8,77 @@ import LabeledAutocompleteMap from "../components/LabeledAutoCompleteMap";
 import { justification } from "../components/dropdown/justification";
 import LabeledAutoComplete from "../components/LabeledAutoComplete";
 
-interface VerifierFormProps {
-  redirectPath?: string;
+interface AmountFormProps {
+  data: {
+    id: string;
+    embedded_direct_emissions_value: string;
+    source_embedded_direct_emissions: string;
+    embedded_indirection_emissions_value: string;
+    source_embedded_indirect_emissions: string;
+    justification_for_use_default_values: string;
+  };
+  onChange: (data: AmountFormProps["data"]) => void;
   onNextStep: () => void;
 }
 
-const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
+const AmountForm: React.FC<AmountFormProps> = ({
+  data,
+  onChange,
+  onNextStep,
+}) => {
   const navigate = useNavigate();
   const location = useLocation();
   const reportId = localStorage.getItem("reportId");
-  // const reportId = 13;
-
-  // const percursorId = location.state?.percursorId || null;
   const percursorId =
     location.state?.precursorId || localStorage.getItem("precursorId");
 
   const [formValues, setFormValues] = useState({
-    id: "",
-    embedded_direct_emissions_value: "",
-    source_embedded_direct_emissions: "",
-    embedded_indirection_emissions_value: "",
-    source_embedded_indirect_emissions: "",
-    justification_for_use_default_values: "",
+    id: data.id || "",
+    embedded_direct_emissions_value: data.embedded_direct_emissions_value || "",
+    source_embedded_direct_emissions: data.source_embedded_direct_emissions || "",
+    embedded_indirection_emissions_value: data.embedded_indirection_emissions_value || "",
+    source_embedded_indirect_emissions: data.source_embedded_indirect_emissions || "",
+    justification_for_use_default_values: data.justification_for_use_default_values || "",
   });
-
+  
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const apiUrl = process.env.REACT_APP_API_URL;
 
-    const apiUrl = process.env.REACT_APP_API_URL;
-  // Initialize form values with id from precursorId
+  // โหลดข้อมูลจาก localStorage เมื่อเริ่มต้น
   useEffect(() => {
-    if (percursorId) {
-      setFormValues((prev) => ({
-        ...prev,
-        id: percursorId,
-      }));
+    const savedData = localStorage.getItem("amountFormData");
+    if (savedData) {
+      try {
+        const parsedData = JSON.parse(savedData);
+        setFormValues(prev => ({
+          ...prev,
+          ...parsedData,
+        }));
+      } catch (e) {
+        console.error("Error parsing saved amount data", e);
+      }
     }
   }, [percursorId]);
 
+  // บันทึกข้อมูลไปยัง localStorage เมื่อ formValues เปลี่ยนแปลง
+  useEffect(() => {
+    if (formValues) {
+      localStorage.setItem("amountFormData", JSON.stringify(formValues));
+    }
+  }, [formValues]);
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    setFormValues(prev => ({ ...prev, [name]: value }));
+    onChange({ ...formValues, [name]: value });
+    if (formErrors[name]) {
+      setFormErrors(prev => ({ ...prev, [name]: "" }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Prevent multiple submissions
     if (isSubmitting) return;
 
     const requiredFields = [
@@ -64,16 +87,15 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
       "embedded_indirection_emissions_value",
       "source_embedded_indirect_emissions",
       "justification_for_use_default_values",
-
     ];
-
+    
     const newErrors: { [key: string]: string } = {};
     requiredFields.forEach((field) => {
       if (!formValues[field as keyof typeof formValues]) {
         newErrors[field] = "กรุณากรอกข้อมูล";
       }
     });
-
+    
     if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
       const firstErrorField = Object.keys(newErrors)[0];
@@ -84,24 +106,16 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
     }
 
     try {
-      const updateId = percursorId; // 👈 ใส่ ID ที่จะอัปเดตตรงนี้ (อาจได้มาจาก POST ก่อนหน้า)
-
+      const updateId = percursorId;
       const payload = {
         id: updateId,
-        embedded_direct_emissions_value:
-          formValues.embedded_direct_emissions_value || "",
-        source_embedded_direct_emissions:
-          formValues.source_embedded_direct_emissions || "",
-        embedded_indirection_emissions_value:
-          formValues.embedded_indirection_emissions_value || "",
-        source_embedded_indirect_emissions:
-          formValues.source_embedded_indirect_emissions || "",
-        justification_for_use_default_values:
-          formValues.justification_for_use_default_values || "",
+        embedded_direct_emissions_value: formValues.embedded_direct_emissions_value || "",
+        source_embedded_direct_emissions: formValues.source_embedded_direct_emissions || "",
+        embedded_indirection_emissions_value: formValues.embedded_indirection_emissions_value || "",
+        source_embedded_indirect_emissions: formValues.source_embedded_indirect_emissions || "",
+        justification_for_use_default_values: formValues.justification_for_use_default_values || "",
       };
 
-
-      // 🔄 PUT เพื่ออัปเดต
       const response = await fetch(
         `${apiUrl}/api/cbam/e_precursors/${updateId}`,
         {
@@ -112,33 +126,27 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
           body: JSON.stringify(payload),
         }
       );
-      onNextStep?.();
+
       if (!response.ok) {
         const errText = await response.text();
         throw new Error(`PUT Error: ${errText}`);
       }
 
+      onNextStep?.();
 
-      // 🔍 ดึงข้อมูลล่าสุดจาก ID นั้น
-      const getRes = await fetch(
-        `${apiUrl}/api/cbam/e_precursors/${updateId}`
-      );
+      const getRes = await fetch(`${apiUrl}/api/cbam/e_precursors/${updateId}`);
       if (!getRes.ok) {
         const errText = await getRes.text();
         throw new Error(`GET Error: ${errText}`);
       }
 
       const detailData = await getRes.json();
-
-      // onNextStep?.();
     } catch (error: any) {
       console.error("❌ Error ใน PUT หรือ GET:", error.message || error);
     }
-
-    // navigate(redirectPath);
   };
 
-  // Utility function to update formValues state, similar to setFormValues
+  // Utility function to update formValues state
   function setValues(
     updater: (prev: typeof formValues) => typeof formValues
   ): void {

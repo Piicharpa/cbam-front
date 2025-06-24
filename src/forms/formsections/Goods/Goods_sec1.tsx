@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import Section from "../../components/Section";
-import SectionButton from "../../components/SectionButton";
+import Section from "../../../components/Section";
+import SectionButton from "../../../components/SectionButton";
 import {
   fetchGoodsData,
   getIndustryOptions,
@@ -8,9 +8,9 @@ import {
   getRoutesOptions,
   OptionType,
   IndustryGroup,
-} from "../../components/dropdown/goods";
-import LabeledAutocompleteMap from "../../components/LabeledAutoCompleteMap";
-import LabeledTextField from "../../components/LabeledTextField";
+} from "../../../components/dropdown/goods";
+import LabeledAutocompleteMap from "../../../components/LabeledAutoCompleteMap";
+import LabeledTextField from "../../../components/LabeledTextField";
 
 interface FormValues {
   name: string;
@@ -97,30 +97,13 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     setRouteCount(Math.min(Object.keys(values.routes || {}).length || 1, 6));
   }, [values.routes]);
 
-  // Handle submission for the section
-  // const handleSectionSubmit = () => {
-  //   const validationErrors: FormErrors = {};
-  //   if (!values.industry_type) {
-  //     validationErrors.industry_type = "กรุณากรอกข้อมูล";
-  //   }
-  //   if (!values.goods_category) {
-  //     validationErrors.goods_category = "กรุณากรอกข้อมูล";
-  //   }
-  //   if (!values.routes || values.routes.length === 0) {
-  //     validationErrors.routes = "กรุณาเลือกวัตถุดิบที่เกี่ยวข้อง";
-  //   }
-
-  //   // If validation fails, log errors and exit
-  //   if (Object.keys(validationErrors).length > 0) {
-  //     return;
-  //   }
 
   // Save data to local storage
   localStorage.setItem(
     "precursorData",
     JSON.stringify({
       routes: values.routes || [],
-      amounts: values.amounts || {},
+      amounts: values.amounts || [],
       industry_type: values.industry_type,
       goods_category: values.goods_category,
       precursors: Object.values(values.routes).map((r) => {
@@ -129,32 +112,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
       }),
     })
   );
-
-
-
-  //   // Call onNext to navigate to the next section
-  //   // onNext();
-  // };
-
-  // const handleSectionSubmit = (): boolean => {
-  //   const validationErrors: FormErrors = {};
-
-  //   if (!values.industry_type) {
-  //     validationErrors.industry_type = "กรุณากรอกข้อมูล";
-  //   }
-  //   if (!values.goods_category) {
-  //     validationErrors.goods_category = "กรุณากรอกข้อมูล";
-  //   }
-  //   if (!values.routes || values.routes.length === 0) {
-  //     validationErrors.routes = "กรุณาเลือกวัตถุดิบที่เกี่ยวข้อง";
-  //   }
-
-  //   if (Object.keys(validationErrors).length > 0) {
-  //     return false;
-  //   }
-
-  //   return true;
-  // };
+  console.log(localStorage)
 
   return (
     <Section
@@ -183,6 +141,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               onChange={(val) => {
                 onChange("industry_type", String(val));
               }}
+              required
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -200,6 +159,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               onChange={(val) => {
                 onChange("goods_category", String(val));
               }}
+              required
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -213,6 +173,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               onChange={(e) => onChange("name", e.target.value)}
               error={errors.name} // Pass the error for the helper text
               helperText={errors.name}
+              required
             />
           </div>
         </div>

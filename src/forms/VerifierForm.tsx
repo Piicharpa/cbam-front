@@ -7,8 +7,6 @@ import PGButton from "../components/FormButton";
 import LabeledAutocomplete from "../components/LabeledAutoComplete";
 import LabeledTextField from "../components/LabeledTextField";
 import LabeledAutocompleteMap from "../components/LabeledAutoCompleteMap";
-
-
 import {
   fetchCountries,
   CountryOption,
@@ -41,6 +39,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
   const navigate = useNavigate();
   const location = useLocation();
   const reportId = location.state?.reportId;
+  // const reportId = 13;
   const [formValues, setFormValues] = useState({
     installation_name: "" ,
     address: "",
@@ -66,20 +65,35 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
     setFormValues(data);
   }, [data]);
 
-  useEffect(() => {
-    const loadCountries = async () => {
-      const fetched = await fetchCountries();
-      setCountries(fetched);
-      const defaultThailand = fetched.find((c) => c.label === "Thailand");
-      if (defaultThailand) {
-        setFormValues((prev) => ({
-          ...prev,
-          country_id: String(defaultThailand.value),
-        }));
-      }
-    };
-    loadCountries();
-  }, []);
+  // useEffect(() => {
+  //   const loadCountries = async () => {
+  //     const fetched = await fetchCountries();
+  //     setCountries(fetched);
+  //     const defaultThailand = fetched.find((c) => c.label === "Thailand");
+  //     if (defaultThailand) {
+  //       setFormValues((prev) => ({
+  //         ...prev,
+  //         country_id: String(defaultThailand.value),
+  //       }));
+  //     }
+  //   };
+  //   loadCountries();
+  // }, []);
+
+   useEffect(() => {
+      const loadCountries = async () => {
+        const fetched = await fetchCountries();
+        setCountries(fetched);
+        const defaultThailand = fetched.find((c) => c.label === "Thailand");
+        if (defaultThailand && !data.country_id) {
+          onChange({
+            ...data,
+            country_id: String(defaultThailand.value),
+          });
+        }
+      };
+      loadCountries();
+    }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -163,6 +177,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
           registration_no: formValues.registration_no || null,
         }),
       });
+      // console.log(verifierRes)
 
       if (!verifierRes.ok) throw new Error("Failed to create verifier");
       const verifierData = await verifierRes.json();
@@ -173,6 +188,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
         `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
       const verifierDetails = await getVerifier.json();
+ 
 
       // PUT update report
       const putRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {

@@ -9,7 +9,6 @@ import {
   fetchCountries,
   CountryOption,
 } from "../components/dropdown/contriesmap";
-import { Margin } from "@mui/icons-material";
 
 interface InstallationFormProps {
   data: {
@@ -41,11 +40,13 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const reportIdRaw = location.state?.reportId || null;
   const reportId = localStorage.getItem("reportId");
-  const apiUrl = process.env.REACT_APP_API_URL;
+  // const reportId = 13;
 
+  const apiUrl = process.env.REACT_APP_API_URL;
   const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [formValues, setFormValues] = useState({
     name: data.name || "",
     name_specific: data.name_specific || "",
@@ -70,6 +71,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
   const formatDate = (date: any): string => {
     if (!date) return "";
     if (date instanceof Date) return date.toISOString().split("T")[0];
@@ -77,22 +79,21 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     return "";
   };
 
+  // report id alert
   useEffect(() => {
     if (!reportId) {
       console.error(
         "❌ reportId ไม่ถูกส่งมา - ไม่พบใน localStorage หรือ state"
       );
-      // หากต้องการแสดงการแจ้งเตือน
       alert("ไม่พบรหัสรายงาน กรุณากลับไปเลือกรายงานก่อน");
-      navigate("/dashboard"); // นำทางกลับหน้า dashboard
     }
   }, [reportId, navigate]);
 
+  // api countries
   useEffect(() => {
     const loadCountries = async () => {
       const fetched = await fetchCountries();
       setCountries(fetched);
-
       const defaultThailand = fetched.find((c) => c.label === "Thailand");
       if (defaultThailand && !data.country_id) {
         onChange({
@@ -105,35 +106,101 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     loadCountries();
   }, []);
 
+  // data in box
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
     onChange({ ...formValues, [name]: value });
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    // เคลียร์ข้อผิดพลาดเมื่อผู้ใช้แก้ไขข้อมูล
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    // จัดการกับรูปแบบข้อมูล
+    let updatedFormValues = { ...formValues, [name]: value };
+    onChange(updatedFormValues as InstallationFormProps["data"]);
   };
 
+  // submit
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Prevent multiple submissions
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
     if (!reportId) {
       alert("❌ ไม่พบรหัสรายงาน (reportId) กรุณากลับไปสร้างรายงานก่อน");
+      setIsSubmitting(false);
       return;
     }
 
+    // กำหนดฟิลด์ที่จำเป็นต้องกรอก
     const requiredFields = [
       "name",
-      "eco_activity",
       "address",
-      "post_code",
       "city",
-      "country_id",
-      "unlocode",
+      " country_id",
+      "post_code",
+      "po_box",
       "latitude",
       "longitude",
-      "reporting_period_start",
-      "reporting_period_end",
+      "author_represent",
+      "email",
+      "tel",
+      "unlocode",
+      "reporting_period_startd_start",
+      "reporting_period_endd_end",
     ];
 
+    // สร้าง object เก็บ errors
+    const newErrors: { [key: string]: string } = {};
+
+    // ตรวจสอบแต่ละฟิลด์ที่จำเป็น
+    requiredFields.forEach((field) => {
+      if (!formValues[field as keyof typeof formValues]) {
+        newErrors[field] = "กรุณากรอกข้อมูล";
+      }
+    });
+
+    // ตรวจสอบรูปแบบอีเมล (ถ้ามีการกรอก)
+    if (
+      formValues.email &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)
+    ) {
+      newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
+    }
+
+    // ตรวจสอบรูปแบบพิกัด
+    // if (formValues.latitude) {
+    //   const lat = parseFloat(String(formValues.latitude));
+    //   if (isNaN(lat) || lat < -90 || lat > 90) {
+    //     newErrors.latitude = "พิกัดละติจูดต้องอยู่ระหว่าง -90 ถึง 90";
+    //   }
+    // }
+
+    // if (formValues.longitude) {
+    //   const lng = parseFloat(String(formValues.longitude));
+    //   if (isNaN(lng) || lng < -180 || lng > 180) {
+    //     newErrors.longitude = "พิกัดลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180";
+    //   }
+    // }
+
+    // ถ้ามีข้อผิดพลาด อัปเดต state และไม่ส่งข้อมูล
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(newErrors);
+      setIsSubmitting(false);
+
+      // เลื่อนไปยังฟิลด์แรกที่มีข้อผิดพลาด
+      const firstErrorField = Object.keys(newErrors)[0];
+      const errorElement = document.getElementsByName(firstErrorField)[0];
+      if (errorElement) {
+        errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      return;
+    }
+
+    // ถ้าไม่มีข้อผิดพลาด ดำเนินการส่งข้อมูล
     const payload = {
       name: formValues.name,
       name_specific: formValues.name_specific || null,
@@ -142,12 +209,12 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       city: formValues.city,
       country_id: Number(formValues.country_id),
       post_code: formValues.post_code,
-      po_box: formValues.po_box,
       latitude: formValues.latitude,
       longitude: formValues.longitude,
-      author_represent: formValues.author_represent,
-      email: formValues.email,
-      phone: formValues.tel,
+      po_box: formValues.po_box || null,
+      author_represent: formValues.author_represent || null,
+      email: formValues.email || null,
+      phone: formValues.tel || null,
     };
 
     try {
@@ -158,9 +225,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         body: JSON.stringify(payload),
       });
 
-      if (!response.ok) throw new Error("❌ Installation submission failed");
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Server error:", errorText);
+        throw new Error("❌ Installation submission failed");
+      }
+
       const result = await response.json();
       const installationId = result.id;
+      console.log(result);
 
       // PUT update report with installation_id
       const putResponse = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
@@ -177,31 +250,37 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         }),
       });
 
-      if (!putResponse.ok)
+      if (!putResponse.ok) {
         throw new Error("❌ Failed to update report with installation_id");
+      }
 
-      // GET installation detail (optional)
+      // GET installation detail
       const getResponse = await fetch(
-        `${apiUrl}/cbam/installation/${installationId}`
+        `${apiUrl}/api/cbam/installation/${installationId}`
       );
-      if (!getResponse.ok) throw new Error("❌ Failed to fetch installation");
-      const installationData = await getResponse.json();
 
-      // navigate ไปหน้าต่อไป (ถ้าต้องการ)
-      // navigate("/verifier", { state: { installationId } });
+      if (!getResponse.ok) {
+        throw new Error("❌ Failed to fetch installation");
+      }
+
+      const installationData = await getResponse.json();
+      console.log("✅ Installation submitted successfully", installationData);
+
+      // ข้อมูลถูกต้องและบันทึกสำเร็จแล้ว จึงไปยังขั้นตอนถัดไป
+      onNextStep?.();
     } catch (error) {
       console.error("❌ Error submitting form:", error);
-      // alert("เกิดข้อผิดพลาดขณะส่งข้อมูล กรุณาลองใหม่อีกครั้ง");
+      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล โปรดลองใหม่อีกครั้ง");
+    } finally {
+      setIsSubmitting(false);
     }
-    onNextStep?.();
   };
-
   return (
     <Container
       maxWidth="md"
       style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3} alignItems="stretch">
           <Box>
             <Typography
@@ -216,11 +295,14 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               รายละเอียดสถานประกอบการ
             </Typography>
           </Box>
-
+          {/* reporting period */}
           <Section
             title="Reporting Period"
             subtitle=""
-            hasError={false}
+            hasError={
+              !!formErrors.reporting_period_start ||
+              !!formErrors.reporting_period_end
+            }
             defaultExpanded
           >
             <div
@@ -233,9 +315,11 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   label=""
                   name="reporting_period_start"
                   type="date"
-                  value={formatDate(data.reporting_period_start)}
+                  value={formatDate(formValues.reporting_period_start)}
                   onChange={handleInputChange}
-                  error={formErrors.reporting_period_start}
+                  error={!!formErrors.reporting_period_start}
+                  helperText={formErrors.reporting_period_start || ""}
+                  required
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -245,14 +329,16 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   label=""
                   name="reporting_period_end"
                   type="date"
-                  value={formatDate(data.reporting_period_end)}
+                  value={formatDate(formValues.reporting_period_end)}
                   onChange={handleInputChange}
-                  error={formErrors.reporting_period_end}
+                  error={!!formErrors.reporting_period_end}
+                  helperText={formErrors.reporting_period_end || ""}
+                  required
                 />
               </div>
             </div>
           </Section>
-
+          {/* Installation form */}
           <Section
             title="Installation form"
             subtitle=""
@@ -265,7 +351,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="name"
               value={formValues.name}
               onChange={handleInputChange}
-              error={formErrors.name}
+              error={!!formErrors.name}
+              helperText={formErrors.name || ""}
+              required
             />
             <LabeledTextField
               caption="Name of the installation (TH)"
@@ -274,7 +362,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="name_specific"
               value={formValues.name_specific}
               onChange={handleInputChange}
-              error={formErrors.name_specific}
+              error={!!formErrors.name_specific}
+              helperText={formErrors.name_specific || ""}
             />
             <LabeledTextField
               caption="Economic activity"
@@ -283,7 +372,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="eco_activity"
               value={formValues.eco_activity}
               onChange={handleInputChange}
-              error={formErrors.eco_activity}
+              error={!!formErrors.eco_activity}
+              helperText={formErrors.eco_activity || ""}
             />
             <LabeledTextField
               caption="Street, Number"
@@ -292,7 +382,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="address"
               value={formValues.address}
               onChange={handleInputChange}
-              error={formErrors.address}
+              error={!!formErrors.address}
+              helperText={formErrors.address || ""}
+              required
             />
             <LabeledTextField
               caption="City"
@@ -301,9 +393,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="city"
               value={formValues.city}
               onChange={handleInputChange}
-              error={formErrors.city}
+              error={!!formErrors.city}
+              helperText={formErrors.city || ""}
+              required
             />
-
             <div
               style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
             >
@@ -318,6 +411,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   }))}
                   value={formValues.country_id}
                   name="country_id"
+                  required
                   onChange={(val) => {
                     const selected = countries.find(
                       (c) => String(c.value) === val
@@ -327,28 +421,37 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       country_id: String(val),
                       unlocode: selected?.abbreviation || "",
                     }));
+                    // เคลียร์ error เมื่อเลือกประเทศ
+                    if (formErrors.country_id) {
+                      setFormErrors((prev) => ({ ...prev, country_id: "" }));
+                    }
                   }}
-                  error={formErrors.country_id}
+                  error={formErrors.country_id || ""}
                 />
+                
                 <LabeledTextField
                   caption="Post code"
                   defination="รหัสไปรษณีย์ (Post Code)"
                   label=""
-                  type="text"
+                  type="number"
                   name="post_code"
                   value={formValues.post_code}
                   onChange={handleInputChange}
-                  error={formErrors.post_code}
+                  error={!!formErrors.post_code}
+                  helperText={formErrors.post_code || ""}
+                  required
                 />
                 <LabeledTextField
                   caption="Coordinates of the main emission source (latitude)"
                   defination="พิกัดละติจูดของแหล่งปล่อยก๊าซหลัก (Latitude) เช่น 13.7563"
                   label=""
-                  type="text"
+                  type="number"
                   name="latitude"
                   value={formValues.latitude}
                   onChange={handleInputChange}
-                  error={formErrors.latitude}
+                  error={!!formErrors.latitude}
+                  helperText={formErrors.latitude || ""}
+                  required
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -360,9 +463,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   value={formValues.unlocode}
                   readOnly
                   onChange={() => {}}
-                  error={formErrors.unlocode}
+                  error={!!formErrors.unlocode}
+                  helperText={formErrors.unlocode || ""}
+                  required
                 />
-                <div style={{ marginBottom: "1.5rem" }}></div>
                 <LabeledTextField
                   caption="P.O. Box"
                   defination="หมายเลขตู้ไปรษณีย์ (ถ้ามี) (P.O. Box)"
@@ -371,21 +475,24 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   name="po_box"
                   value={formValues.po_box}
                   onChange={handleInputChange}
-                  error={formErrors.po_box}
+                  error={!!formErrors.po_box}
+                  helperText={formErrors.po_box || ""}
+                  required
                 />
                 <LabeledTextField
                   caption="Coordinates of the main emission source (longitude)"
                   defination="พิกัดลองจิจูดของแหล่งปล่อยก๊าซหลัก (Longitude) เช่น 100.5018"
                   label=""
-                  type="text"
+                  type="number"
                   name="longitude"
                   value={formValues.longitude}
                   onChange={handleInputChange}
-                  error={formErrors.longitude}
+                  error={!!formErrors.longitude}
+                  helperText={formErrors.longitude || ""}
+                  required
                 />
               </div>
             </div>
-
             <LabeledTextField
               caption="Name of authorized representative"
               defination="ชื่อหน่วยงานมาฐานแห่งชาติที่ให้การรับรอง"
@@ -393,9 +500,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               name="author_represent"
               value={formValues.author_represent}
               onChange={handleInputChange}
-              error={formErrors.author_represent}
+              error={!!formErrors.author_represent}
+              helperText={formErrors.author_represent || ""}
+              required
             />
-
             <div
               style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
             >
@@ -408,19 +516,23 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   name="email"
                   value={formValues.email}
                   onChange={handleInputChange}
-                  error={formErrors.email}
+                  error={!!formErrors.email}
+                  helperText={formErrors.email || ""}
+                  required
                 />
               </div>
               <div style={{ flex: 1 }}>
                 <LabeledTextField
                   type="tel"
-                  caption="Telphone"
+                  caption="Telephone"
                   defination="หมายเลขทะเบียนที่ออกโดยหน่วยงานรับรอง"
                   label=""
                   name="tel"
                   value={formValues.tel}
                   onChange={handleInputChange}
-                  error={formErrors.tel}
+                  error={!!formErrors.tel}
+                  helperText={formErrors.tel || ""}
+                  required
                 />
               </div>
             </div>
@@ -431,5 +543,4 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     </Container>
   );
 };
-
 export default InstallationForm;

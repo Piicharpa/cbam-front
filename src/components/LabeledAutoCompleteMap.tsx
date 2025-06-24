@@ -1,3 +1,4 @@
+// components/LabeledAutocompleteMap.tsx
 import React from "react";
 import { Autocomplete, TextField, Typography } from "@mui/material";
 
@@ -7,18 +8,21 @@ interface Option {
 }
 
 interface Props {
-  label: string;
-  caption?: string;
-  options: Option[];
-  value: string | number; // store actual 'value' (like 'TH')
-  name: string;
-  onChange: (val: string | number) => void;
-  error?: string;
-  type?: string;
+  caption: string;
   defination?: string;
+  label: string;
+  name: string;
+  options: Option[];
+  value: string | number | (string | number)[]; // support single or multiple
+  onChange: (val: string | number | (string | number)[]) => void;
+  error?: string | boolean;
+  type?: string;
+  helperText?: string;
+  required?: boolean;
+  readOnly?: boolean;
   disabled?: boolean;
-  readonly?: boolean;
   multiple?: boolean;
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
 const LabeledAutocompleteMap: React.FC<Props> = ({
@@ -29,27 +33,34 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
   onChange,
   error,
   name,
+  helperText,
   defination,
-  type = "text",
   disabled = false,
-  readonly = false,
+  readOnly = false,
+  type = "text",
+  required = false,
   multiple = false,
+  inputProps,
 }) => {
   // This maps the current value (e.g. 'TH') back to the option object
   const selectedOption = options.find((opt) => opt.value === value) || null;
-
+  
   return (
     <>
       {caption && (
-        <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 , fontSize: 13}}>
-          {caption}
+        <Typography
+          variant="caption"
+          color="#0290c4"
+          style={{ fontWeight: 600, fontSize: 13 }}
+        >
+          {caption} {required && <span style={{ color: 'red' }}>*</span>}
         </Typography>
       )}
       {defination && (
         <Typography
           variant="caption"
           color="#74aa15"
-          style={{ marginBottom: "0.25rem", display: "block" , fontSize:11}}
+          style={{ marginBottom: "0.25rem", display: "block", fontSize: 10 }}
         >
           {defination}
         </Typography>
@@ -62,8 +73,16 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
         }
         value={selectedOption}
         onChange={(_, newValue) => {
-          onChange(newValue?.value ?? "");
+          if (multiple) {
+            // newValue is Option[] | null
+            onChange(Array.isArray(newValue) ? newValue.map(opt => opt.value) : []);
+          } else {
+            // newValue is Option | null
+            onChange((newValue as Option | null)?.value ?? "");
+          }
         }}
+        disabled={disabled}
+        multiple={multiple}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -73,11 +92,23 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
             margin="normal"
             fullWidth
             error={!!error}
-            helperText={error || " "}
+            helperText={error ? (typeof error === 'string' ? error : helperText || "กรุณากรอกข้อมูล") : helperText}
+            required={required}
             disabled={disabled}
             InputProps={{
               ...params.InputProps,
-              readOnly: readonly,
+              readOnly,
+            }}
+            inputProps={{
+              ...params.inputProps,
+              ...inputProps,
+            }}
+            FormHelperTextProps={{
+              style: {
+                color: error ? '#d32f2f' : 'inherit',
+                marginTop: '3px',
+                fontSize: '0.75rem',
+              }
             }}
           />
         )}

@@ -3,21 +3,21 @@ import React from "react";
 import { Autocomplete, TextField, Typography } from "@mui/material";
 
 interface Props {
+  caption: string;
+  defination?: string;
   label: string;
-  caption?: string;
+  name: string;
   options: string[];
   value: string;
-  name: string;
   onChange: (value: string) => void;
-  error?: string;
+  error?: string | boolean;
   type?: string;
   helperText?: string;
-  defination?: string;
+  required?: boolean;
+  readOnly?: boolean;
   disabled?: boolean;
-  readonly?: boolean;
   multiple?: boolean;
-  fontSize?: string | number; // เพิ่มพร็อพสำหรับปรับขนาดตัวอักษร
-  
+  inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
 }
 
 const LabeledAutocomplete: React.FC<Props> = ({
@@ -31,24 +31,29 @@ const LabeledAutocomplete: React.FC<Props> = ({
   helperText,
   defination,
   disabled = false,
-  readonly = false,
+  readOnly = false,
   type = "text",
-  fontSize = "1.2rem", // ค่าเริ่มต้นสำหรับขนาดตัวอักษร
+  required = false,
+  inputProps,
 }) => (
   <>
     {caption && (
-      <Typography variant="caption" color="#0290c4" style={{ fontWeight: 600 , fontSize:13}}>
-        {caption}
+      <Typography
+        variant="caption"
+        color="#0290c4"
+        style={{ fontWeight: 600, fontSize: 13 }}
+      >
+        {caption} {required && <span style={{ color: 'red' }}>*</span>}
       </Typography>
     )}
     {defination && (
-        <Typography
-            variant="caption"
-            color="#74aa15"
-            style={{ marginBottom: "0.25rem", display: "block",fontSize:11 }}
-        >
-            {defination}
-        </Typography>
+      <Typography
+        variant="caption"
+        color="#74aa15"
+        style={{ marginBottom: "0.25rem", display: "block", fontSize: 10 }}
+      >
+        {defination}
+      </Typography>
     )}
     <Autocomplete
       options={options}
@@ -62,16 +67,30 @@ const LabeledAutocomplete: React.FC<Props> = ({
           name={name}
           margin="normal"
           error={!!error}
-          helperText={helperText}
+          helperText={error ? (typeof error === 'string' ? error : helperText || "กรุณากรอกข้อมูล") : helperText}
           disabled={disabled}
+          required={required}
           InputProps={{
             ...params.InputProps,
-            readOnly: readonly
+            readOnly,
+          }}
+          inputProps={{
+            ...params.inputProps,
+            ...inputProps,
+          }}
+          FormHelperTextProps={{
+            style: {
+              color: error ? '#d32f2f' : 'inherit',
+              marginTop: '3px',
+              fontSize: '0.75rem',
+            }
           }}
         />
       )}
       fullWidth
       freeSolo
+      disabled={disabled}
+      readOnly={readOnly}
     />
   </>
 );

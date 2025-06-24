@@ -1,7 +1,7 @@
 import React from "react";
-import Section from "../../components/Section";
-import LabeledTextField from "../../components/LabeledTextField";
-import SectionButton from "../../components/SectionButton";
+import Section from "../../../components/Section";
+import LabeledTextField from "../../../components/LabeledTextField";
+import SectionButton from "../../../components/SectionButton";
 
 interface Props {
   values: {
@@ -20,40 +20,6 @@ interface Props {
   // onNext: () => void;
 }
 const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
-  // const Section2: React.FC<Props> = ({ values, errors, onChange, onNext }) => {
-
-  const handleSectionSubmit = () => {
-    const validationErrors: { [key: string]: string } = {};
-
-    // Validation logic
-    if (!values.total_production_amounts) {
-      validationErrors.total_production_amounts = "กรุณากรอกปริมาณการผลิตทั้งหมด"; 
-    }
-    if (!values.consumed_in_others_amounts) {
-      validationErrors.consumed_in_others_amounts = "กรุณากรอกปริมาณการใช้ในกระบวนการผลิตอื่น"; 
-    } else if (isNaN(Number(values.consumed_in_others_amounts)) || Number(values.consumed_in_others_amounts) < 0) {
-      validationErrors.consumed_in_others_amounts = "กรุณากรอกจำนวนที่ถูกต้อง"; // Must be a valid number
-    }
-    if (!values.produced_for_market_amount) {
-      validationErrors.produced_for_market_amount = "กรุณากรอกปริมาณการผลิตเพื่อจำหน่าย";
-    } else if (isNaN(Number(values.produced_for_market_amount)) || Number(values.produced_for_market_amount) < 0) {
-      validationErrors.produced_for_market_amount = "กรุณากรอกจำนวนที่ถูกต้อง";
-    }
-    if (!values.condumed_non_cbam_goods_amounts) {
-      validationErrors.condumed_non_cbam_goods_amounts = "กรุณากรอกปริมาณการใช้ของสินค้าที่ไม่อยู่ภายใต้ CBAM"; 
-    } else if (isNaN(Number(values.condumed_non_cbam_goods_amounts)) || Number(values.condumed_non_cbam_goods_amounts) < 0) {
-      validationErrors.condumed_non_cbam_goods_amounts = "กรุณากรอกจำนวนที่ถูกต้อง";
-    }
-
-    // If errors are present, set state and exit
-    if (Object.keys(validationErrors).length > 0) {
-      // You may want to set errors in state here if needed
-      return false;
-    }
-
-    return true;
-  };
-
   return (
     <Section
       title="(b) Amount of aggregated goods"
@@ -77,6 +43,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
               placeholder: "Enter amount",
               className: "appearance-none",
             }}
+            required
           />
           <LabeledTextField
             type="number"
@@ -93,6 +60,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
               placeholder: "Enter amount",
               className: "appearance-none",
             }}
+            required
           />
         </div>
         <div style={{ flex: 1 }}>
@@ -111,7 +79,9 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
               placeholder: "Enter amount",
               className: "appearance-none",
             }}
+            required
           />
+          
           <LabeledTextField
             type="number"
             caption="Consumed for non-CBAM goods"
@@ -127,12 +97,10 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
               placeholder: "Enter amount",
               className: "appearance-none",
             }}
+            required
           />
         </div>
       </div>
-      {/* <div style={{ display: "flex", justifyContent: "right" }}>
-        <SectionButton onValidate={handleSectionSubmit} onSuccess={onNext} />
-      </div> */}
     </Section>
   );
 };

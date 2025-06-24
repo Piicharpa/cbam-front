@@ -2,18 +2,17 @@
 // import React from "react";
 import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
-import Section from "../../components/Section";
-import LabeledTextField from "../../components/LabeledTextField";
-import LabeledAutoComplete from "../../components/LabeledAutoComplete";
-import SectionButton from "../../components/SectionButton";
+import Section from "../../../components/Section";
+import LabeledTextField from "../../../components/LabeledTextField";
+import LabeledAutoComplete from "../../../components/LabeledAutoComplete";
+import SectionButton from "../../../components/SectionButton";
 import Typography from "@mui/material/Typography";
-import LabeledCheckbox from "../../components/LabeledCheckBox";
+import LabeledCheckbox from "../../../components/LabeledCheckBox";
 
 interface Props {
   values: any;
   errors: any;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  // onNext: () => void;
   setValues: React.Dispatch<React.SetStateAction<any>>;
   countries: any[]; // options for autocomplete
 }
@@ -22,19 +21,16 @@ const Section3: React.FC<Props> = ({
   values,
   errors,
   onChange,
-  // onNext,
   setValues,
 }) => {
   const [electricitySources, setElectricitySources] = useState<
     { id: number; name: string }[]
   >([]);
- const apiUrl = process.env.REACT_APP_API_URL
+  const apiUrl = process.env.REACT_APP_API_URL;
   useEffect(() => {
     const fetchElectricitySources = async () => {
       try {
-        const res = await fetch(
-         `${apiUrl} ctricitys`
-        );
+        const res = await fetch(`${apiUrl}/api/cbam/srcefelectricitys`);
         const name = await res.json();
         setElectricitySources(name);
       } catch (error) {
@@ -54,7 +50,7 @@ const Section3: React.FC<Props> = ({
       title="(c) Calculation of the attributed emissions"
       subtitle="การคำนวณการปล่อยก๊าซเรือนกระจกจากกระบวนการผลิต"
       hasError={
-        !!errors.auth_rep || !!errors.email || !!errors.tel || !!errors.fax
+        !!(errors.source_of_ef_electricity)
       }
     >
       {/* Box 1: Measurable Heat */}
@@ -156,6 +152,7 @@ const Section3: React.FC<Props> = ({
                 value={values.ef_imported_wgases}
                 onChange={onChange}
                 error={errors.ef_imported_wgases}
+                
               />
               <LabeledTextField
                 type="number"
@@ -166,6 +163,7 @@ const Section3: React.FC<Props> = ({
                 value={values.ef_exported_wgases}
                 onChange={onChange}
                 error={errors.ef_exported_wgases}
+                
               />
             </div>
 
@@ -179,6 +177,7 @@ const Section3: React.FC<Props> = ({
                 value={values.imported_wgases_amount}
                 onChange={onChange}
                 error={errors.imported_wgases_amount}
+                
               />
               <LabeledTextField
                 type="number"
@@ -189,27 +188,28 @@ const Section3: React.FC<Props> = ({
                 value={values.exported_wgases_amount}
                 onChange={onChange}
                 error={errors.exported_wgases_amount}
+                
               />
             </div>
           </div>
         )}
       </Box>
-      
-       <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+
+      <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
         <strong> Directly attributable emissions (DirEm*) </strong>
       </div>
       <Box mb={3}>
-          <LabeledTextField
-            type="number"
-            caption="Directly attributable emissions (DirEm*)"
-            defination="กรอกตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
-            label=""
-            name="direct_emissions"
-            value={values.direct_emissions}
-            onChange={onChange}
-            error={errors.direct_emissions}
-          />
-
+        <LabeledTextField
+          type="number"
+          caption="Directly attributable emissions (DirEm*)"
+          defination="กรอกตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
+          label=""
+          name="direct_emissions"
+          value={values.direct_emissions}
+          onChange={onChange}
+          error={errors.direct_emissions}
+          required
+        />
       </Box>
 
       {/* Box 3: Indirect emissions from electricity consumption"*/}
@@ -229,6 +229,7 @@ const Section3: React.FC<Props> = ({
           value={values.electricity_consumption_value}
           onChange={onChange}
           error={errors.electricity_consumption_value}
+          required
         />
       </Box>
       <Box mb={3}>
@@ -243,11 +244,12 @@ const Section3: React.FC<Props> = ({
               value={values.ef_exported_electricity}
               onChange={onChange}
               error={errors.ef_exported_electricity}
+              required
             />
           </div>
 
           <div style={{ flex: 1 }}>
-            <LabeledAutoComplete
+            {/* <LabeledAutoComplete
               caption="Source of the emission factor"
               defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
               label=""
@@ -261,6 +263,15 @@ const Section3: React.FC<Props> = ({
                   source_of_ef_electricity: val,
                 }))
               }
+            /> */}
+            <LabeledTextField
+              caption="Source of the emission factor"
+              defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
+              label=""
+              name="source_of_ef_electricity"
+              value={values.source_of_ef_electricity}
+              error={errors.source_of_ef_electricity}
+              onChange={onChange}required
             />
           </div>
         </div>
@@ -286,6 +297,7 @@ const Section3: React.FC<Props> = ({
               value={values.ef_electricity}
               onChange={onChange}
               error={errors.ef_electricity}
+              required
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -298,6 +310,7 @@ const Section3: React.FC<Props> = ({
               value={values.exported_electricity_value}
               onChange={onChange}
               error={errors.exported_electricity_value}
+              required
             />
           </div>
         </div>

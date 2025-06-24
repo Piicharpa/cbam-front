@@ -6,7 +6,7 @@ import PGButton from "../components/FormButton";
 import LabeledAutocompleteMap from "../components/LabeledAutoCompleteMap";
 
 
-interface InstallationFormProps {
+interface CNcodeFormProps {
   redirectPath?: string;
   onNextStep?: () => void;
 }
@@ -28,7 +28,7 @@ interface CncodeItem {
   cn_code_name?: string;
 }
 
-const SumupForm: React.FC<InstallationFormProps> = ({
+const SumupForm: React.FC<CNcodeFormProps> = ({
   // redirectPath = "/Verifier",
   onNextStep,
 }) => {
@@ -224,11 +224,11 @@ const [isSubmitting, setIsSubmitting] = useState(false);
       maxWidth="md"
       style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3}>
           <Section
             defaultExpanded={true}
-            title="Installation form"
+            title="CN Code form"
             hasError={
               !!formErrors.industry_id ||
               !!formErrors.goods_id ||
@@ -254,6 +254,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                 defination="ประเภทอุตสาหกรรม"
                 label="Pls choose Industry"
                 name="industry_id"
+                required
                 options={industryTypes.map((item) => ({
                   label: item.name,
                   value: String(item.industry_id),
@@ -293,6 +294,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                   value: String(item.goods_id),
                 }))}
                 value={formValues.goods_id}
+                required
                 onChange={async (val) => {
                   setFormValues((prev) => ({
                     ...prev,
@@ -321,6 +323,7 @@ const [isSubmitting, setIsSubmitting] = useState(false);
                 defination="CN Code"
                 label="Pls choose CN Code"
                 name="cn_id"
+                required
                 options={cncodeList.map((item) => ({
                   label: `${item.cn_code} - ${item.cn_code_name || item.name}`,
                   value: String(item.cn_id),

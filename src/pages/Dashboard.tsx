@@ -188,8 +188,6 @@ const Form: React.FC = () => {
     switch (step) {
       case 0:
         return <TableDashboard />;
-      // case 1:
-      //   return <SumupForm />;
       default:
         return <Typography>Unknown step</Typography>;
     }

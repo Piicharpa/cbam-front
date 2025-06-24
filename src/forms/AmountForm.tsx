@@ -17,6 +17,8 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const reportId = localStorage.getItem("reportId");
+  // const reportId = 13;
+
   // const percursorId = location.state?.percursorId || null;
   const percursorId =
     location.state?.precursorId || localStorage.getItem("precursorId");
@@ -208,8 +210,13 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
                     ]}
                     value={formValues.source_embedded_direct_emissions}
                     error={formErrors.source_embedded_direct_emissions}
-                    onChange={(val: string | number) => {
-                      const value = typeof val === "string" ? val : String(val);
+                    onChange={(val: string | number | (string | number)[]) => {
+                      let value: string;
+                      if (Array.isArray(val)) {
+                        value = val.length > 0 ? String(val[0]) : "";
+                      } else {
+                        value = typeof val === "string" ? val : String(val);
+                      }
                       setFormValues((prev) => ({
                         ...prev,
                         source_embedded_direct_emissions: value,
@@ -262,8 +269,13 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
                     ]}
                     value={formValues.source_embedded_indirect_emissions}
                     error={formErrors.source_embedded_indirect_emissions}
-                    onChange={(val: string | number) => {
-                      const value = typeof val === "string" ? val : String(val);
+                    onChange={(val: string | number | (string | number)[]) => {
+                      let value: string;
+                      if (Array.isArray(val)) {
+                        value = val.length > 0 ? String(val[0]) : "";
+                      } else {
+                        value = typeof val === "string" ? val : String(val);
+                      }
                       setFormValues((prev) => ({
                         ...prev,
                         source_embedded_indirect_emissions: value,
@@ -291,8 +303,13 @@ const AmountForm: React.FC<VerifierFormProps> = ({ onNextStep }) => {
                     options={justification.map((item) => item.name)}
                     value={formValues.justification_for_use_default_values}
                     error={formErrors.justification_for_use_default_values}
-                     onChange={(val: string | number) => {
-                      const value = typeof val === "string" ? val : String(val);
+                    onChange={(val: string | number | (string | number)[]) => {
+                      let value: string;
+                      if (Array.isArray(val)) {
+                        value = val.length > 0 ? String(val[0]) : "";
+                      } else {
+                        value = typeof val === "string" ? val : String(val);
+                      }
                       setFormValues((prev) => ({
                         ...prev,
                         justification_for_use_default_values: value,

@@ -183,7 +183,7 @@ function ColorlibStepIcon(props: StepIconProps) {
 
 // Steps definition with descriptions
 const steps = [
-  { label: "Summary Form", description: "Review and submit your information" },
+  { label: "CN Code", description: "Get your report id" },
   { label: "Installation", description: "Add installation details" },
   { label: "Verifier", description: "Verification information" },
   { label: "Goods", description: "Product information" },
@@ -639,23 +639,10 @@ const Formdev: React.FC = () => {
               Back
             </Button>
             <Box sx={{ position: "relative" }}>
-              {activeStep === steps.length - 1 ? (
-                <Button
-                  onClick={handleSubmit}
-                  variant="contained"
-                  color="secondary"
-                  endIcon={<CheckCircleIcon />}
-                  sx={{
-                    px: 4,
-                    background:
-                      "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
-                    fontWeight: 600,
-                    letterSpacing: "0.5px",
-                  }}
-                >
-                  Submit Declaration
-                </Button>
-              ) : (
+              {/* {activeStep > 0 && activeStep < steps.length - 1  ?  */}
+              {activeStep < steps.length - 1  ? 
+
+              (
                 <Button
                   onClick={handleNext}
                   variant="contained"
@@ -669,7 +656,7 @@ const Formdev: React.FC = () => {
                 >
                   Continue to Next Step
                 </Button>
-              )}
+              ) : null}
 
               {/* Decorative dots around the main button */}
               <Box

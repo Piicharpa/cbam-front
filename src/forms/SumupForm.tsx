@@ -207,7 +207,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({ data, onChange, onNextStep }) =>
   } finally {
     setIsSubmitting(false);
   }
-  navigate(`\report?reportId=${reportId}`)
+  // navigate(`\report?reportId=${reportId}`)
 };
 
   return (

@@ -33,20 +33,12 @@ interface InstallationFormProps {
   onNextStep: () => void;
 }
 
-const InstallationForm: React.FC<InstallationFormProps> = ({
-  data,
-  onChange,
-  onNextStep,
-}) => {
+const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onNextStep }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const reportId = localStorage.getItem("reportId");
-  // const reportId = 13;
-
-  const apiUrl = process.env.REACT_APP_API_URL;
+  const reportId = localStorage.getItem("reportId") || "1";  // Replace with proper initialization or check
+  const apiUrl = process.env.REACT_APP_API_URL || "";
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
   const [formValues, setFormValues] = useState({
     name: data.name || "",
     name_specific: data.name_specific || "",
@@ -69,7 +61,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       ? new Date(data.reporting_period_end)
       : new Date(),
   });
-
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
   const formatDate = (date: any): string => {
@@ -140,7 +131,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       "name",
       "address",
       "city",
-      " country_id",
+      "country_id",
       "post_code",
       "po_box",
       "latitude",
@@ -149,8 +140,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       "email",
       "tel",
       "unlocode",
-      "reporting_period_startd_start",
-      "reporting_period_endd_end",
+      "reporting_period_start",
+      "reporting_period_end",
     ];
 
     // สร้าง object เก็บ errors
@@ -187,11 +178,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     // }
 
     // ถ้ามีข้อผิดพลาด อัปเดต state และไม่ส่งข้อมูล
-    if (Object.keys(newErrors).length > 0) {
+  if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
       setIsSubmitting(false);
-
-      // เลื่อนไปยังฟิลด์แรกที่มีข้อผิดพลาด
       const firstErrorField = Object.keys(newErrors)[0];
       const errorElement = document.getElementsByName(firstErrorField)[0];
       if (errorElement) {
@@ -216,6 +205,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       email: formValues.email || null,
       phone: formValues.tel || null,
     };
+    console.log("Submitting payload:", payload);
 
     try {
       // POST installation
@@ -233,7 +223,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       const result = await response.json();
       const installationId = result.id;
-      console.log(result);
+      console.log("Installation",result);
 
       // PUT update report with installation_id
       const putResponse = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {

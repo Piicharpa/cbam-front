@@ -38,7 +38,8 @@ interface VerifierFormProps {
 const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const reportId = location.state?.reportId;
+  // const reportId = location.state?.reportId;
+  const reportId = 1;
   // const reportId = 13;
   const [formValues, setFormValues] = useState({
     installation_name: "" ,

@@ -7,7 +7,7 @@ import LabeledAutocompleteMap from '../../components/LabeledAutoCompleteMap';
 import { CountryOption } from '../../components/dropdown/contriesmap';
 import { fetchGoodsData, getRoutesOptions, OptionType } from '../../components/dropdown/goods';
 import Box from '@mui/material/Box';
-import { PrecursorSubmitData } from '../PrecursorsForm'; // Import the shared type
+import type { PrecursorSubmitData } from '../PrecursorsForm'; // Import the shared type
 
 interface PrecursorFieldsProps {
   index: number;
@@ -206,8 +206,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           </div>
         </div>
       </Box>
-      
-     // PrecursorFields.tsx (continued)
       <Box mb={3}>
         <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
           <strong>Specific electricity consumption (for SEE (indirect)) Unit: MWh/t</strong>

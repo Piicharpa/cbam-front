@@ -102,7 +102,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   // Initialization useEffect - runs only once on mount
   useEffect(() => {
     // Load data sources
-    fetchCountries().then(setCountries);
+    fetchCountries().then((result) => setCountries(result.countries));
     fetchGoodsData().then(setGoodsData);
 
     // Initialize from localStorage
@@ -220,7 +220,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         // Only set country if not already set
         if (!localFormValues[`country_code_${index + 1}`]) {
           updatedValues[`country_code_${index + 1}`] =
-            defaultCountry.abbreviation;
+            defaultCountry.abbreviation ?? "";
         }
       });
     }

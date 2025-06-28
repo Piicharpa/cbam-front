@@ -92,7 +92,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   useEffect(() => {
     const loadCountries = async () => {
       const fetched = await fetchCountries();
-      setCountries(fetched);
+      setCountries(fetched.countries); // Use only the countries array
     };
     loadCountries();
   }, []);

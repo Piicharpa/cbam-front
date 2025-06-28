@@ -6,6 +6,7 @@ import LabeledAutocomplete from '../../components/LabeledAutoComplete';
 import LabeledAutocompleteMap from '../../components/LabeledAutoCompleteMap';
 import { CountryOption } from '../../components/dropdown/contriesmap';
 import { fetchGoodsData, getRoutesOptions, OptionType } from '../../components/dropdown/goods';
+import { justification } from '../../components/dropdown/justification';
 import Box from '@mui/material/Box';
 import type { PrecursorSubmitData } from '../PrecursorsForm'; // Import the shared type
 
@@ -68,7 +69,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       const thailandOption = countries.find(
         (country) => country.label === 'Thailand' || country.abbreviation === 'TH'
       );
-      if (thailandOption) {
+      if (thailandOption && thailandOption.abbreviation !== undefined) {
         onChange(`country_code_${index}`, thailandOption.abbreviation);
       }
     }
@@ -251,7 +252,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
               defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
               label=""
               name={`justification_for_use_default_values_${index}`}
-              options={['Option 1', 'Option 2', 'Option 3']} // Replace with your actual options
+              options={justification.map(j => j.name)} // Map to string array for options
               value={String(formValues[`justification_for_use_default_values_${index}`] ?? '')}
               error={formErrors[`justification_for_use_default_values_${index}`]}
               onChange={(val) => handleInputChange(`justification_for_use_default_values_${index}`, val)}

@@ -35,10 +35,11 @@ interface InstallationFormProps {
 
 const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onNextStep }) => {
   const navigate = useNavigate();
-  const reportId = localStorage.getItem("reportId") || "1";  // Replace with proper initialization or check
+  const reportId = localStorage.getItem("reportId") || "1"; 
   const apiUrl = process.env.REACT_APP_API_URL || "";
+
   const [countries, setCountries] = useState<CountryOption[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);//
   const [formValues, setFormValues] = useState({
     name: data.name || "",
     name_specific: data.name_specific || "",
@@ -70,7 +71,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     return "";
   };
 
-  // report id alert
+
   useEffect(() => {
     if (!reportId) {
       console.error(
@@ -80,43 +81,46 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     }
   }, [reportId, navigate]);
 
-  // api countries
-  useEffect(() => {
-    const loadCountries = async () => {
-      const fetched = await fetchCountries();
-      setCountries(fetched);
-      const defaultThailand = fetched.find((c) => c.label === "Thailand");
-      if (defaultThailand && !data.country_id) {
-        onChange({
-          ...data,
-          country_id: String(defaultThailand.value),
-          unlocode: String(defaultThailand.abbreviation),
-        });
-      }
-    };
-    loadCountries();
-  }, []);
 
-  // data in box
+useEffect(() => {
+  const loadCountries = async () => {
+    const { countries, defaultCountry } = await fetchCountries(); // destructure ตรงนี้เลย
+
+    setCountries(countries); // ✅ ตั้ง countries array ให้กับ state
+
+    if (defaultCountry && !data.country_id) {
+      onChange({
+        ...data,
+        country_id: String(defaultCountry.value),
+        unlocode: String(defaultCountry.abbreviation),
+      });
+    }
+  };
+
+  loadCountries();
+}, []);
+
+
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
     onChange({ ...formValues, [name]: value });
-    // เคลียร์ข้อผิดพลาดเมื่อผู้ใช้แก้ไขข้อมูล
+
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    // จัดการกับรูปแบบข้อมูล
+
     let updatedFormValues = { ...formValues, [name]: value };
     onChange(updatedFormValues as InstallationFormProps["data"]);
   };
 
-  // submit
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prevent multiple submissions
+ 
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -265,6 +269,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
       setIsSubmitting(false);
     }
   };
+
+  
   return (
     <Container
       maxWidth="md"

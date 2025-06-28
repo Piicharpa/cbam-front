@@ -83,9 +83,9 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
 
    useEffect(() => {
       const loadCountries = async () => {
-        const fetched = await fetchCountries();
-        setCountries(fetched);
-        const defaultThailand = fetched.find((c) => c.label === "Thailand");
+        const { countries: fetchedCountries, defaultCountry } = await fetchCountries();
+        setCountries(fetchedCountries);
+        const defaultThailand = fetchedCountries.find((c) => c.label === "Thailand");
         if (defaultThailand && !data.country_id) {
           onChange({
             ...data,

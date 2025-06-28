@@ -36,8 +36,6 @@ interface VerifierFormProps {
 
 
 const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep }) => {
-  const navigate = useNavigate();
-  const location = useLocation();
   // const reportId = location.state?.reportId;
   const reportId = 1;
   // const reportId = 13;
@@ -66,21 +64,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
     setFormValues(data);
   }, [data]);
 
-  // useEffect(() => {
-  //   const loadCountries = async () => {
-  //     const fetched = await fetchCountries();
-  //     setCountries(fetched);
-  //     const defaultThailand = fetched.find((c) => c.label === "Thailand");
-  //     if (defaultThailand) {
-  //       setFormValues((prev) => ({
-  //         ...prev,
-  //         country_id: String(defaultThailand.value),
-  //       }));
-  //     }
-  //   };
-  //   loadCountries();
-  // }, []);
-
    useEffect(() => {
       const loadCountries = async () => {
         const { countries: fetchedCountries, defaultCountry } = await fetchCountries();
@@ -96,54 +79,22 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
       loadCountries();
     }, []);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => {
-      const newData = { ...prev, [name]: value };
-      onChange(newData);  // แจ้ง parent
-      return newData;
-    });
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
-  };
 
-  const handleAutocompleteChange = (name: string, val: string) => {
+  const handleChange = (name: string, valueOrEvent: string | React.ChangeEvent<HTMLInputElement>) => {
+    // Determine if the valueOrEvent is an event or a direct value
+    const value = typeof valueOrEvent === 'string' ? valueOrEvent : valueOrEvent.target.value;
+
     setFormValues((prev) => {
-      const newData = { ...prev, [name]: val };
-      onChange(newData);  // แจ้ง parent
-      return newData;
+        const newData = { ...prev, [name]: value };
+        onChange(newData);  // Notify parent with new data
+        return newData;
     });
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+};
 
     const apiUrl = process.env.REACT_APP_API_URL;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    // const requiredFields = [
-    //   "installation_name",
-    //   "address",
-    //   "city",
-    //   "post_code",
-    //   "country_id",
-    //   "name",
-    //   "email",
-    //   "phone",
-    // ];
-
-    // const newErrors: { [key: string]: string } = {};
-    // requiredFields.forEach((field) => {
-    //   if (!formValues[field as keyof typeof formValues]) {
-    //     newErrors[field] = "กรุณากรอกข้อมูล";
-    //   }
-    // });
-
-    // if (Object.keys(newErrors).length > 0) {
-    //   setFormErrors(newErrors);
-    //   const firstErrorField = Object.keys(newErrors)[0];
-    //   const errorElement = document.getElementsByName(firstErrorField)[0];
-    //   if (errorElement) errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
-    //   return;
-    // }
 
     try {
       // POST authorised representative
@@ -226,7 +177,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="installation_name"
               value={formValues.installation_name}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("installation_name", e)}
               error={formErrors.installation_name}
             />
             <LabeledTextField
@@ -234,7 +185,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="address"
               value={formValues.address}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("address", e)}
               error={formErrors.address}
             />
             <LabeledTextField
@@ -242,7 +193,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="city"
               value={formValues.city}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("city", e)}
               error={formErrors.city}
             />
             <LabeledTextField
@@ -250,7 +201,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="post_code"
               value={formValues.post_code}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("post_code", e)}
               error={formErrors.post_code}
             />
             <LabeledAutocompleteMap
@@ -276,7 +227,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="name"
               value={formValues.name}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("name", e)}
               error={formErrors.name}
             />
             <LabeledTextField
@@ -284,7 +235,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="email"
               value={formValues.email}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("email", e)}
               error={formErrors.email}
             />
             <LabeledTextField
@@ -292,7 +243,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="phone"
               value={formValues.phone}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("phone", e)}
               error={formErrors.phone}
             />
             <LabeledTextField
@@ -300,7 +251,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="fax"
               value={formValues.fax}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("fax", e)}
               error={formErrors.fax}
             />
           </Section>
@@ -312,7 +263,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               name="accreditation_state"
               value={formValues.accreditation_state}
               options={countries.map((c) => c.label)}
-              onChange={(val) => handleAutocompleteChange("accreditation_state", val)}
+              onChange={(val) => handleChange("accreditation_state", val)}
               error={formErrors.accreditation_state}
             />
             <LabeledTextField
@@ -320,7 +271,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="accreditation_national_body"
               value={formValues.accreditation_national_body}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("accreditation_national_body", e)}
               error={formErrors.accreditation_national_body}
             />
             <LabeledTextField
@@ -328,7 +279,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
               label=""
               name="registration_no"
               value={formValues.registration_no}
-              onChange={handleInputChange}
+              onChange={(e) => handleChange("registration_no", e)}
               error={formErrors.registration_no}
             />
           </Section>

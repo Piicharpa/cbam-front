@@ -170,7 +170,92 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         value={String(formValues[`country_code_${index}`] || 'TH')}
         onChange={(val) => handleInputChange(`country_code_${index}`, val)}
       />
-      
+      {/* Dynamic Routes Section */}
+      <Box mb={3}>
+        {Array.from({ length: routeCount }).map((_, routeIndex) => (
+          <Box key={routeIndex} display="flex" gap={3} mb={3}>
+            <Box flex={1}>
+              <LabeledAutocomplete
+                caption={`Production Route ${routeIndex + 1}`}
+                defination="เลือกเทคโนโลยีการผลิตที่ใช้วัตถุดิบนี้"
+                label=""
+                name={`route_${routeIndex}_${index}`}
+                error={formErrors[`route_${routeIndex}_${index}`]}
+                options={routeOptions.map((option) => option.label)}
+                value={String(formValues[`route_${routeIndex}_${index}`] ?? '')}
+                onChange={(val) => handleInputChange(`route_${routeIndex}_${index}`, val)}
+                disabled={isLoadingRoutes || routeOptions.length === 0}
+                helperText={
+                  isLoadingRoutes
+                    ? 'Loading routes...'
+                    : routeOptions.length === 0
+                    ? 'No routes available'
+                    : ''
+                }
+              />
+            </Box>
+            <Box flex={1}>
+              <LabeledTextField
+                caption={`Amount for Route ${routeIndex + 1}`}
+                defination="จำนวน"
+                label=""
+                type="number"
+                name={`amount_${routeIndex}_${index}`}
+                value={formValues[`amount_${routeIndex}_${index}`] || ''}
+                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+                error={formErrors[`amount_${routeIndex}_${index}`]}
+              />
+            </Box>
+          </Box>
+        ))}
+        
+        {/* Route Buttons Container */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            marginTop: '10px',
+          }}
+        >
+          <div> {/* Left side container */}
+            {routeCount < 6 && (
+              <button
+                type="button"
+                style={{
+                  backgroundColor: '#2ecc71',
+                  color: '#fff',
+                  padding: '8px 12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  marginRight: '10px',
+                }}
+                onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
+              >
+                + เพิ่ม Route
+              </button>
+            )}
+            
+            {routeCount > 1 && (
+              <button
+                type="button"
+                style={{
+                  backgroundColor: '#e74c3c',
+                  color: '#fff',
+                  padding: '8px 12px',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                }}
+                onClick={() => setRouteCount((prev) => prev - 1)}
+              >
+                - ลบ Route
+              </button>
+            )}
+          </div>
+          </div>
+          </Box>
+
       <Box mb={3}>
         <div style={{ textAlign: 'left', marginBottom: '1.5rem' }}>
           <strong>Specific embedded direct emissions (SEE (direct)) Unit: tCO2e/t</strong>
@@ -260,90 +345,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           </div>
         </div>
       </Box>
-      
-      {/* Dynamic Routes Section */}
-      <Box mb={3}>
-        {Array.from({ length: routeCount }).map((_, routeIndex) => (
-          <Box key={routeIndex} display="flex" gap={3} mb={3}>
-            <Box flex={1}>
-              <LabeledAutocomplete
-                caption={`Production Route ${routeIndex + 1}`}
-                defination="เลือกเทคโนโลยีการผลิตที่ใช้วัตถุดิบนี้"
-                label=""
-                name={`route_${routeIndex}_${index}`}
-                error={formErrors[`route_${routeIndex}_${index}`]}
-                options={routeOptions.map((option) => option.label)}
-                value={String(formValues[`route_${routeIndex}_${index}`] ?? '')}
-                onChange={(val) => handleInputChange(`route_${routeIndex}_${index}`, val)}
-                disabled={isLoadingRoutes || routeOptions.length === 0}
-                helperText={
-                  isLoadingRoutes
-                    ? 'Loading routes...'
-                    : routeOptions.length === 0
-                    ? 'No routes available'
-                    : ''
-                }
-              />
-            </Box>
-            <Box flex={1}>
-              <LabeledTextField
-                caption={`Amount for Route ${routeIndex + 1}`}
-                defination="จำนวน"
-                label=""
-                type="number"
-                name={`amount_${routeIndex}_${index}`}
-                value={formValues[`amount_${routeIndex}_${index}`] || ''}
-                onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-                error={formErrors[`amount_${routeIndex}_${index}`]}
-              />
-            </Box>
-          </Box>
-        ))}
-        
-        {/* Route Buttons Container */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '10px',
-          }}
-        >
-          <div> {/* Left side container */}
-            {routeCount < 6 && (
-              <button
-                type="button"
-                style={{
-                  backgroundColor: '#2ecc71',
-                  color: '#fff',
-                  padding: '8px 12px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                  marginRight: '10px',
-                }}
-                onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
-              >
-                + เพิ่ม Route
-              </button>
-            )}
-            
-            {routeCount > 1 && (
-              <button
-                type="button"
-                style={{
-                  backgroundColor: '#e74c3c',
-                  color: '#fff',
-                  padding: '8px 12px',
-                  border: 'none',
-                  borderRadius: '4px',
-                  cursor: 'pointer',
-                }}
-                onClick={() => setRouteCount((prev) => prev - 1)}
-              >
-                - ลบ Route
-              </button>
-            )}
-          </div>
           
           {/* Save Button - Right aligned */}
           <button
@@ -368,8 +369,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             )}
           </button>
         </div>
-      </Box>
-    </div>
+      // </Box>
+    // </div>
   );
 };
 

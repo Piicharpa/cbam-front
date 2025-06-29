@@ -14,33 +14,34 @@ import {
 
 interface VerifierFormProps {
   data: {
-    installation_name: string,
-    address: string,
-    city: string,
-    country_id: string,
-    post_code: string,
-    authorized_rep_id: string,
-    accreditation_state: string,
-    accreditation_national_body: string,
-    registration_no: string,
-    name: string,
-    email: string,
-    phone: string,
-    fax: string,
-
-  }
+    installation_name: string;
+    address: string;
+    city: string;
+    country_id: string;
+    post_code: string;
+    authorized_rep_id: string;
+    accreditation_state: string;
+    accreditation_national_body: string;
+    registration_no: string;
+    name: string;
+    email: string;
+    phone: string;
+    fax: string;
+  };
   onChange: (data: any) => void;
   onNextStep: () => void;
 }
 
-
-
-const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep }) => {
+const VerifierForm: React.FC<VerifierFormProps> = ({
+  data,
+  onChange,
+  onNextStep,
+}) => {
   // const reportId = location.state?.reportId;
   const reportId = 1;
   // const reportId = 13;
   const [formValues, setFormValues] = useState({
-    installation_name: "" ,
+    installation_name: "",
     address: "",
     city: "",
     country_id: "",
@@ -55,8 +56,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
     fax: "",
   });
 
-
-
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [countries, setCountries] = useState<CountryOption[]>([]);
 
@@ -64,38 +63,57 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
     setFormValues(data);
   }, [data]);
 
-   useEffect(() => {
-      const loadCountries = async () => {
-        const { countries: fetchedCountries, defaultCountry } = await fetchCountries();
-        setCountries(fetchedCountries);
-        const defaultThailand = fetchedCountries.find((c) => c.label === "Thailand");
-        if (defaultThailand && !data.country_id) {
-          onChange({
-            ...data,
-            country_id: String(defaultThailand.value),
-          });
-        }
-      };
-      loadCountries();
-    }, []);
+  useEffect(() => {
+    const loadCountries = async () => {
+      const { countries: fetchedCountries, defaultCountry } =
+        await fetchCountries();
+      setCountries(fetchedCountries);
+      const defaultThailand = fetchedCountries.find(
+        (c) => c.label === "Thailand"
+      );
+      if (defaultThailand && !data.country_id) {
+        onChange({
+          ...data,
+          country_id: String(defaultThailand.value),
+        });
+      }
+    };
+    loadCountries();
+  }, []);
 
-
-  const handleChange = (name: string, valueOrEvent: string | React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (
+    name: string,
+    valueOrEvent: string | React.ChangeEvent<HTMLInputElement>
+  ) => {
     // Determine if the valueOrEvent is an event or a direct value
-    const value = typeof valueOrEvent === 'string' ? valueOrEvent : valueOrEvent.target.value;
+    const value =
+      typeof valueOrEvent === "string"
+        ? valueOrEvent
+        : valueOrEvent.target.value;
 
     setFormValues((prev) => {
-        const newData = { ...prev, [name]: value };
-        onChange(newData);  // Notify parent with new data
-        return newData;
+      const newData = { ...prev, [name]: value };
+      onChange(newData); // Notify parent with new data
+      return newData;
     });
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
-};
+  };
 
-    const apiUrl = process.env.REACT_APP_API_URL;
+  const apiUrl = process.env.REACT_APP_API_URL;
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+  const payload = {
+      name: formValues.installation_name || null,
+      address: formValues.address || null,
+      city: formValues.city || null,
+      country_id: formValues.country_id || null,
+      post_code: formValues.post_code || null,
+      authorized_rep_id: formValues.authorized_rep_id|| null,
+      accreditation_state: formValues.accreditation_state || null,
+      accreditation_national_body: formValues.accreditation_national_body || null,
+      registration_no: formValues.registration_no || null,
+    };
     try {
       // POST authorised representative
       const authorisedRes = await fetch(`${apiUrl}/api/cbam/authorised`, {
@@ -109,7 +127,8 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
         }),
       });
 
-      if (!authorisedRes.ok) throw new Error("Failed to create authorised representative");
+      if (!authorisedRes.ok)
+        throw new Error("Failed to create authorised representative");
       const authorisedData = await authorisedRes.json();
       const authorisedId = authorisedData.id;
 
@@ -120,12 +139,13 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
         body: JSON.stringify({
           name: formValues.installation_name || null,
           address: formValues.address || null,
-          city: formValues.city ||null,
+          city: formValues.city || null,
           country_id: Number(formValues.country_id) || null,
           post_code: formValues.post_code || null,
-          authorized_rep_id: authorisedId ||null,
+          authorized_rep_id: authorisedId || null,
           accreditation_state: formValues.accreditation_state || null,
-          accreditation_national_body: formValues.accreditation_national_body || null,
+          accreditation_national_body:
+            formValues.accreditation_national_body || null,
           registration_no: formValues.registration_no || null,
         }),
       });
@@ -140,7 +160,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
         `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
       const verifierDetails = await getVerifier.json();
- 
 
       // PUT update report
       const putRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
@@ -149,7 +168,8 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
         body: JSON.stringify({ verifier_id: verifierId }),
       });
 
-      if (!putRes.ok) throw new Error("Failed to update report with verifier_id");
+      if (!putRes.ok)
+        throw new Error("Failed to update report with verifier_id");
 
       // navigate(redirectPath);
     } catch (error) {
@@ -159,11 +179,19 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
   };
 
   return (
-    <Container maxWidth="md" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
+    <Container
+      maxWidth="md"
+      style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
+    >
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           <Box>
-            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
               Verifier of the report
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
@@ -171,7 +199,12 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
             </Typography>
           </Box>
 
-          <Section title="Verifier Info" subtitle="ชื่อและที่อยู่ผู้ทวนสอบ" hasError={false} defaultExpanded={true}>
+          <Section
+            title="Verifier Info"
+            subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
+            hasError={false}
+            defaultExpanded={true}
+          >
             <LabeledTextField
               caption="Name of the verifier"
               label=""
@@ -221,7 +254,11 @@ const VerifierForm: React.FC<VerifierFormProps> = ({ data, onChange, onNextStep 
             />
           </Section>
 
-          <Section title="Authorised Representative" subtitle="" hasError={false}>
+          <Section
+            title="Authorised Representative"
+            subtitle=""
+            hasError={false}
+          >
             <LabeledTextField
               caption="Name"
               label=""

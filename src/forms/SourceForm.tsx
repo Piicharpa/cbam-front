@@ -419,32 +419,32 @@ const SourceForm: React.FC<SourceFormProps> = ({
             }
         }
         // 2. ข้อมูล section 2 (Installation-level GHG emissions)
-        const emissionsDataPayload = {
-            report_id: reportId,
-            generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
-            justification_for_use_default_values:
-                formValues.justification_for_use_default_values,
-            manual_fuel_balance: formValues.manual_fuel_balance,
-            manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
-            info_qty_assurance: formValues.information_quality_ssurance,
-        };
-        console.log("Sending emissions data:", emissionsDataPayload);
-        const emissionsDataResponse = await fetch(
-            `${apiUrl}/api/cbam/c_emission`,
-            {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(emissionsDataPayload),
-            }
-        );
+        // const emissionsDataPayload = {
+        //     report_id: reportId,
+        //     generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+        //     justification_for_use_default_values:
+        //         formValues.justification_for_use_default_values,
+        //     manual_fuel_balance: formValues.manual_fuel_balance,
+        //     manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
+        //     info_qty_assurance: formValues.information_quality_ssurance,
+        // };
+        // console.log("Sending emissions data:", emissionsDataPayload);
+        // const emissionsDataResponse = await fetch(
+        //     `${apiUrl}/api/cbam/c_emission`,
+        //     {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify(emissionsDataPayload),
+        //     }
+        // );
 
-        if (!emissionsDataResponse.ok) {
-            const errorText = await emissionsDataResponse.text();
-            console.error("Emissions data API error:", errorText);
-            throw new Error(`Failed to submit emissions data: ${errorText}`);
-        }
-        console.log("All data submitted successfully");
-        alert("✅ ส่งข้อมูลสำเร็จ");
+        // if (!emissionsDataResponse.ok) {
+        //     const errorText = await emissionsDataResponse.text();
+        //     console.error("Emissions data API error:", errorText);
+        //     throw new Error(`Failed to submit emissions data: ${errorText}`);
+        // }
+        // console.log("All data submitted successfully");
+        // alert("✅ ส่งข้อมูลสำเร็จ");
 
         // นำทางไปยังหน้ารายงานหลังจากส่งข้อมูลสำเร็จ
         navigate(`/report?reportId=${reportId}`);
@@ -494,7 +494,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
           </Section>
 
           {/* SECTION 2: Installation-level GHG emissions and energy consumption */}
-          <Section
+          {/* <Section
             title="(d) Installation-level GHG emissions and energy consumption"
             subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
           >
@@ -505,7 +505,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
               setFormValues={setFormValues}
               setFormErrors={setFormErrors}
             />
-          </Section>
+          </Section> */}
 
           {/* ปุ่มบันทึก */}
           <PGButton />

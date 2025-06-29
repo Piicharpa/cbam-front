@@ -91,6 +91,6 @@ export const steps = [
   { label: "Verifier", description: "Verification information" },
   { label: "Goods", description: "Product information" },
   { label: "Precursors", description: "Precursor materials" },
-  { label: "Amount", description: "Quantity details" },
-  { label: "Source", description: "Emission sources" },
+  { label: "Source", description: "Quantity details" },
+  { label: "Emission & Energy", description: "Emission sources" },
 ];

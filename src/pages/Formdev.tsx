@@ -31,11 +31,12 @@ import InstallationForm from "../forms/installationForm";
 import VerifierForm from "../forms/VerifierForm";
 import GoodsForm from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
-import AmountForm from "../forms/AmountForm";
 import SourceForm from "../forms/SourceForm";
+// import EmissionForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
 
 import { Theme } from "@mui/material/styles";
+import EmissionForm from "../forms/EmissionForm";
 
 const StyledBox = styled(Box)(({ theme }: { theme: Theme }) => ({
   width: "100%",
@@ -53,8 +54,9 @@ const Formdev: React.FC = () => {
   const verifierFormRef = useRef<any>(null);
   const goodsFormRef = useRef<any>(null);
   const precursorsFormRef = useRef<any>(null);
-  const amountFormRef = useRef<any>(null);
+  // const amountFormRef = useRef<any>(null);
   const sourceFormRef = useRef<any>(null);
+  const emissionFormRef = useRef<any>(null);
 
   // Form data states
   const [sumupData, setsumupData] = useState({
@@ -146,14 +148,6 @@ const Formdev: React.FC = () => {
     source_embedded_indirect_emissions: "",
     justification_for_use_default_values: "",
   });
-  const [amountData, setAmountData] = useState({
-    id: "",
-    embedded_direct_emissions_value: "",
-    source_embedded_direct_emissions: "",
-    embedded_indirection_emissions_value: "",
-    source_embedded_indirect_emissions: "",
-    justification_for_use_default_values: "",
-  });
   const [sourceData, setSourceData] = useState({
     p_method: "",
     p_source_stream_name: "",
@@ -169,6 +163,13 @@ const Formdev: React.FC = () => {
     p_co2e_bio: "",
     p_energy_content_fossil: "",
     p_energy_content_bio: "",
+    generatl_info_on_data_quality: "",
+    justification_for_use_default_values: "",
+    manual_fuel_balance: "",
+    manual_GHG_emissions_balance: "",
+    info_qty_assurance: "",
+  });
+  const [emissionData, setEmissionData] = useState({
     generatl_info_on_data_quality: "",
     justification_for_use_default_values: "",
     manual_fuel_balance: "",
@@ -207,13 +208,13 @@ const Formdev: React.FC = () => {
           }
           break;
         case 5:
-          if (amountFormRef.current?.submit) {
-            canProceed = await amountFormRef.current.submit();
+          if (sourceFormRef.current?.submit) {
+            canProceed = await sourceFormRef.current.submit();
           }
           break;
         case 6:
-          if (sourceFormRef.current?.submit) {
-            canProceed = await sourceFormRef.current.submit();
+          if (emissionFormRef.current?.submit) {
+            canProceed = await emissionFormRef.current.submit();
           }
           break;
       }
@@ -249,7 +250,7 @@ const Formdev: React.FC = () => {
       verifierData,
       goodsData,
       precursorsData,
-      amountData,
+      // amountData,
       sourceData,
     };
     setFadeIn(false);
@@ -310,15 +311,22 @@ const Formdev: React.FC = () => {
         );
       case 5:
         return (
-          <AmountForm
-            data={amountData}
-            onChange={setAmountData}
+          <SourceForm
+            formValues={sourceData}
+            onChange={(formValues) =>
+              setSourceData((prev) => ({
+                ...prev,
+                ...Object.fromEntries(
+                  Object.entries(formValues).map(([k, v]) => [k, v ?? ""])
+                ),
+              }))
+            }
             onNextStep={handleNext}
           />
         );
       case 6:
         return (
-          <SourceForm
+          <EmissionForm
             formValues={sourceData}
             onChange={(formValues) =>
               setSourceData((prev) => ({

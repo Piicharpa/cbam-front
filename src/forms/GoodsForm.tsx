@@ -47,8 +47,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     onChange,
     onNextStep,
 }) => {
-    const reportId = 1;
-
+    const reportId = formValues.report_id; // Assuming reportId comes from formValues
     const [localFormValues, setLocalFormValues] = useState<GoodsFormProps["formValues"]>({
         report_id: formValues.report_id || 0,
         name: formValues.name || "",
@@ -81,41 +80,32 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
     const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
     const [countries, setCountries] = useState<CountryOption[]>([]);
-
     const apiUrl = process.env.REACT_APP_API_URL;
 
-    // Load the countries from an API on component mount
+    const loadCountries = async () => {
+        const fetched = await fetchCountries();
+        setCountries(fetched.countries);
+    };
+
+    // Load the countries and existing data based on reportId
     useEffect(() => {
-        const loadCountries = async () => {
-            const fetched = await fetchCountries();
-            setCountries(fetched.countries);
-        };
         loadCountries();
-    }, []);
-
-    // Load saved data from localStorage on mount
-    useEffect(() => {
-        const savedData = localStorage.getItem("goodsFormData");
-        if (savedData) {
-            try {
-                const parsedData = JSON.parse(savedData);
-                setLocalFormValues((prev) => ({
-                    ...prev,
-                    ...parsedData,
-                    // Keeping routes and amounts based on localFormValues priority
-                    routes: Object.keys(prev.routes).length > 0 ? prev.routes : (parsedData.routes || {}),
-                    amounts: Object.keys(prev.amounts).length > 0 ? prev.amounts : (parsedData.amounts || {}),
-                }));
-            } catch (error) {
-                console.error("Error parsing saved goods form data", error);
+        // Fetch existing data for the reportId
+        const fetchExistingData = async () => {
+            if (reportId) {
+                try {
+                    const response = await fetch(`${apiUrl}/api/cbam/d_goods/${reportId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        setLocalFormValues(data);
+                    }
+                } catch (error) {
+                    console.error("Error fetching existing data:", error);
+                }
             }
-        }
-    }, []);
-
-    // Save data to localStorage whenever localFormValues change
-    useEffect(() => {
-        localStorage.setItem("goodsFormData", JSON.stringify(localFormValues));
-    }, [localFormValues]);
+        };
+        fetchExistingData();
+    }, [reportId, apiUrl]);
 
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
@@ -135,36 +125,32 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
     const handleSubmit = async (e?: React.FormEvent) => {
         if (e) e.preventDefault();
-
         const newErrors: { [key: string]: string } = {};
         requiredFields.forEach((field) => {
             if (!localFormValues[field as keyof typeof localFormValues]) {
                 newErrors[field] = "กรุณากรอกข้อมูล";
             }
         });
-
         if (Object.keys(newErrors).length > 0) {
             setFormErrors(newErrors);
             const firstErrorField = Object.keys(newErrors)[0];
             const errorElement = document.getElementsByName(firstErrorField)[0];
-            if (errorElement)
-                errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
+            if (errorElement) errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
             return;
         }
 
         const payload = {
             ...localFormValues,
-            industry_type: localFormValues.industry_type || "",
-            goods_category: localFormValues.goods_category || "",
-            name: localFormValues.name || "",
             amounts: JSON.stringify(localFormValues.amounts),
             routes: JSON.stringify(localFormValues.routes),
-            report_id: reportId || "",
         };
 
         try {
-            const response = await fetch(`${apiUrl}/api/cbam/d_goods/`, {
-                method: "POST",
+            const method = reportId ? "PUT" : "POST";
+            const url = reportId ? `${apiUrl}/api/cbam/d_goods/${reportId}` : `${apiUrl}/api/cbam/d_goods/`;
+
+            const response = await fetch(url, {
+                method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
             });
@@ -173,13 +159,13 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                 const errorText = await response.text();
                 throw new Error(`Server error: ${errorText}`);
             }
-
             const data = await response.json();
-            localStorage.removeItem("goodsFormData"); // Clear local storage on successful submission
+            console.log(data);
+
             onChange(localFormValues);
             onNextStep?.();
         } catch (err: any) {
-            console.error("❌ POST error:", err.message || err);
+            console.error("❌ POST/PUT error:", err.message || err);
             alert(`บันทึกข้อมูลไม่สำเร็จ: ${err.message}`);
         }
     };
@@ -232,7 +218,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                         setValues={setLocalFormValues}
                         countries={countries}
                     />
-                    <PGButton />
+                    <PGButton text={reportId ? "Update" : "Submit"} />
                 </Grid>
             </form>
         </Container>

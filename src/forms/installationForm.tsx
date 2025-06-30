@@ -33,13 +33,18 @@ interface InstallationFormProps {
   onNextStep: () => void;
 }
 
-const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onNextStep }) => {
+const InstallationForm: React.FC<InstallationFormProps> = ({
+  data,
+  onChange,
+  onNextStep,
+}) => {
   const navigate = useNavigate();
-  const reportId = localStorage.getItem("reportId") || "1"; 
+  // const reportId = localStorage.getItem("reportId");
+  const reportId = 1;
   const apiUrl = process.env.REACT_APP_API_URL || "";
 
   const [countries, setCountries] = useState<CountryOption[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);//
+  const [isSubmitting, setIsSubmitting] = useState(false); //
   const [formValues, setFormValues] = useState({
     name: data.name || "",
     name_specific: data.name_specific || "",
@@ -71,7 +76,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     return "";
   };
 
-
   useEffect(() => {
     if (!reportId) {
       console.error(
@@ -81,26 +85,23 @@ const InstallationForm: React.FC<InstallationFormProps> = ({ data, onChange, onN
     }
   }, [reportId, navigate]);
 
+  useEffect(() => {
+    const loadCountries = async () => {
+      const { countries, defaultCountry } = await fetchCountries(); // destructure ตรงนี้เลย
 
-useEffect(() => {
-  const loadCountries = async () => {
-    const { countries, defaultCountry } = await fetchCountries(); // destructure ตรงนี้เลย
+      setCountries(countries); // ✅ ตั้ง countries array ให้กับ state
 
-    setCountries(countries); // ✅ ตั้ง countries array ให้กับ state
+      if (defaultCountry && !data.country_id) {
+        onChange({
+          ...data,
+          country_id: String(defaultCountry.value),
+          unlocode: String(defaultCountry.abbreviation),
+        });
+      }
+    };
 
-    if (defaultCountry && !data.country_id) {
-      onChange({
-        ...data,
-        country_id: String(defaultCountry.value),
-        unlocode: String(defaultCountry.abbreviation),
-      });
-    }
-  };
-
-  loadCountries();
-}, []);
-
-
+    loadCountries();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -111,16 +112,13 @@ useEffect(() => {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-
     let updatedFormValues = { ...formValues, [name]: value };
     onChange(updatedFormValues as InstallationFormProps["data"]);
   };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
- 
     if (isSubmitting) return;
     setIsSubmitting(true);
 
@@ -182,7 +180,7 @@ useEffect(() => {
     // }
 
     // ถ้ามีข้อผิดพลาด อัปเดต state และไม่ส่งข้อมูล
-  if (Object.keys(newErrors).length > 0) {
+    if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
       setIsSubmitting(false);
       const firstErrorField = Object.keys(newErrors)[0];
@@ -212,65 +210,36 @@ useEffect(() => {
     console.log("Submitting payload:", payload);
 
     try {
-      // POST installation
-      const response = await fetch(`${apiUrl}/api/cbam/installation/`, {
-        method: "POST",
+      const method = reportId ? "PUT" : "POST"; // Use PUT if reportId exists
+      const url = reportId
+        ? `${apiUrl}/api/cbam/installation/${reportId}`
+        : `${apiUrl}/api/cbam/installation`;
+
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("Server error:", errorText);
-        throw new Error("❌ Installation submission failed");
+        console.error("❌ Verifier error:", errorText);
+        throw new Error("Failed to create verifier");
       }
 
-      const result = await response.json();
-      const installationId = result.id;
-      console.log("Installation",result);
+      const data = await response.json();
+      console.log(data);
 
-      // PUT update report with installation_id
-      const putResponse = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          installation_id: installationId,
-          reporting_period_start: formValues.reporting_period_start
-            .toISOString()
-            .split("T")[0],
-          reporting_period_end: formValues.reporting_period_end
-            .toISOString()
-            .split("T")[0],
-        }),
-      });
-
-      if (!putResponse.ok) {
-        throw new Error("❌ Failed to update report with installation_id");
-      }
-
-      // GET installation detail
-      const getResponse = await fetch(
-        `${apiUrl}/api/cbam/installation/${installationId}`
-      );
-
-      if (!getResponse.ok) {
-        throw new Error("❌ Failed to fetch installation");
-      }
-
-      const installationData = await getResponse.json();
-      console.log("✅ Installation submitted successfully", installationData);
-
-      // ข้อมูลถูกต้องและบันทึกสำเร็จแล้ว จึงไปยังขั้นตอนถัดไป
+      onChange(formValues);
       onNextStep?.();
-    } catch (error) {
-      console.error("❌ Error submitting form:", error);
-      alert("เกิดข้อผิดพลาดในการบันทึกข้อมูล โปรดลองใหม่อีกครั้ง");
+    } catch (err: any) {
+      console.error("❌ Error submitting form:", err.message || err);
+      alert(`Error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  
   return (
     <Container
       maxWidth="md"
@@ -424,7 +393,7 @@ useEffect(() => {
                   }}
                   error={formErrors.country_id || ""}
                 />
-                
+
                 <LabeledTextField
                   caption="Post code"
                   defination="รหัสไปรษณีย์ (Post Code)"

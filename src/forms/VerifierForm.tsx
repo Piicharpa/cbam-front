@@ -103,19 +103,19 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-  const payload = {
+    const payload = {
       name: formValues.installation_name || null,
       address: formValues.address || null,
       city: formValues.city || null,
       country_id: formValues.country_id || null,
       post_code: formValues.post_code || null,
-      authorized_rep_id: formValues.authorized_rep_id|| null,
+      authorized_rep_id: formValues.authorized_rep_id || null,
       accreditation_state: formValues.accreditation_state || null,
-      accreditation_national_body: formValues.accreditation_national_body || null,
+      accreditation_national_body:
+        formValues.accreditation_national_body || null,
       registration_no: formValues.registration_no || null,
     };
     try {
-      // POST authorised representative
       const authorisedRes = await fetch(`${apiUrl}/api/cbam/authorised`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -127,13 +127,24 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         }),
       });
 
-      if (!authorisedRes.ok)
+      if (!authorisedRes.ok) {
+        const errorText = await authorisedRes.text();
+        console.error("❌ Authorised error:", errorText);
         throw new Error("Failed to create authorised representative");
+      }
+
+      // Get the ID of the newly created authorised representative
       const authorisedData = await authorisedRes.json();
       const authorisedId = authorisedData.id;
 
+      const meyhod = reportId ? "PUT" : "POST";
+      const url = reportId
+        ? `${apiUrl}/api/cbam/verifier/${reportId}`
+        : `${apiUrl}/api/cbam/verifier/`;
+      // POST authorised representative
+
       // POST verifier with authorised_rep_id
-      const verifierRes = await fetch(`${apiUrl}/cbam/verifier/`, {
+      const response = await fetch(`${apiUrl}/api/cbam/verifier/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -149,10 +160,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           registration_no: formValues.registration_no || null,
         }),
       });
-      // console.log(verifierRes)
+      // console.log(response)
 
-      if (!verifierRes.ok) throw new Error("Failed to create verifier");
-      const verifierData = await verifierRes.json();
+      if (!response.ok) throw new Error("Failed to create verifier");
+      const verifierData = await response.json();
       const verifierId = verifierData.id;
 
       // GET verifier details
@@ -160,17 +171,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
       const verifierDetails = await getVerifier.json();
-
-      // PUT update report
-      const putRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ verifier_id: verifierId }),
-      });
-
-      if (!putRes.ok)
-        throw new Error("Failed to update report with verifier_id");
-
       // navigate(redirectPath);
     } catch (error) {
       console.error("❌ Error:", error);

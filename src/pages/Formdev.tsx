@@ -250,8 +250,8 @@ const Formdev: React.FC = () => {
       verifierData,
       goodsData,
       precursorsData,
-      // amountData,
       sourceData,
+      emissionData
     };
     setFadeIn(false);
     setTimeout(() => {

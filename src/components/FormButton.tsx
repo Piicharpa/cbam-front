@@ -2,8 +2,17 @@ import { styled } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import SaveIcon from '@mui/icons-material/Save';
 
-interface PGButtonProps {
+import type { ButtonPropsColorOverrides } from '@mui/material/Button';
+import type { OverridableStringUnion } from '@mui/types';
+
+interface PGButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   disabled?: boolean;
+  loading?: boolean; // Optional loading state
+  text?: string; // Optional text prop
+  color?: OverridableStringUnion<
+    'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning',
+    ButtonPropsColorOverrides
+  >;
 }
 
 const PaleGreenButton = styled(Button)(({ theme }) => ({
@@ -27,10 +36,22 @@ const PaleGreenButton = styled(Button)(({ theme }) => ({
   },
 }));
 
-const PGButton: React.FC<PGButtonProps> = ({ disabled = false }) => {
+const PGButton: React.FC<PGButtonProps> = ({ disabled = false, loading = false, text = "Save", color, ...props }) => {
+  // Only pass color if it's a valid MUI Button color
+  const allowedColors = ['inherit', 'primary', 'secondary', 'success', 'error', 'info', 'warning'];
+  const buttonProps = {
+    ...props,
+    ...(allowedColors.includes(color as string) ? { color } : {}),
+  };
+
   return (
-    <PaleGreenButton type="submit" startIcon={<SaveIcon />} disabled={disabled}>
-      Save
+    <PaleGreenButton
+      type="submit"
+      startIcon={loading ? undefined : <SaveIcon />}
+      disabled={disabled || loading}
+      {...buttonProps}
+    >
+      {loading ? 'Saving...' : text}
     </PaleGreenButton>
   );
 };

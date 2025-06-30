@@ -4,9 +4,6 @@ import React, { useState, useEffect } from "react";
 import { Box } from "@mui/material";
 import Section from "../../../components/Section";
 import LabeledTextField from "../../../components/LabeledTextField";
-import LabeledAutoComplete from "../../../components/LabeledAutoComplete";
-import SectionButton from "../../../components/SectionButton";
-import Typography from "@mui/material/Typography";
 import LabeledCheckbox from "../../../components/LabeledCheckBox";
 
 interface Props {

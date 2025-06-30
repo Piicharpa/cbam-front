@@ -1,7 +1,6 @@
 import React from "react";
 import Section from "../../../components/Section";
 import LabeledTextField from "../../../components/LabeledTextField";
-import SectionButton from "../../../components/SectionButton";
 
 interface Props {
   values: {

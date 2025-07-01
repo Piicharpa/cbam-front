@@ -18,6 +18,7 @@ interface PrecursorsFormProps {
   formValues: {
     report_id?: number;
     name?: string;
+    country_id?:string;
     route_1?: string;
     route_1_amounts?: number;
     route_2?: string;
@@ -64,7 +65,8 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   onNextStep,
 }) => {
   const navigate = useNavigate();
-  const reportId = localStorage.getItem("reportId");
+  // const reportId = localStorage.getItem("reportId");
+  const reportId =23;
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [precursorsCount, setPrecursorsCount] = useState<number>(0);

@@ -8,9 +8,10 @@ import { emission } from "../../../components/dropdown/emission";
 import { adunits } from "../../../components/dropdown/adunits";
 import { efunits } from "../../../components/dropdown/efunits";
 
-// สำหรับแต่ละ process emission section
+// In Source_sec1.tsx
 export interface ProcessEmissionSection {
-  id: number;
+  id: number;       // Client-side ID for React rendering
+  db_id?: number;   // Database ID for records that exist in the database
   p_method: string;
   p_source_stream_name: string;
   p_activity_data: string;

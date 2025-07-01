@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import LabeledTextField from "../components/LabeledTextField";
@@ -39,12 +39,23 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   onNextStep,
 }) => {
   const navigate = useNavigate();
-  // const reportId = localStorage.getItem("reportId");
-  const reportId = 1;
-  const apiUrl = process.env.REACT_APP_API_URL || "";
+  const [searchParams] = useSearchParams();
 
+  // Get report ID and company ID (fixed for demo or from params)
+  // const reportId = localStorage.getItem("reportId");
+  // const companyId = localStorage.companyId;
+  const reportId = 54;
+  const companyId = 1;
+
+  const apiUrl = process.env.REACT_APP_API_URL;
+  const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false); //
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // สถานะสำหรับติดตามการโหลด
+  const [isLoadingReport, setIsLoadingReport] = useState(true);
+  const [isLoadingInstallation, setIsLoadingInstallation] = useState(false);
+
   const [formValues, setFormValues] = useState({
     name: data.name || "",
     name_specific: data.name_specific || "",
@@ -67,8 +78,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       ? new Date(data.reporting_period_end)
       : new Date(),
   });
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  // ตัวช่วยจัดรูปแบบวันที่
   const formatDate = (date: any): string => {
     if (!date) return "";
     if (date instanceof Date) return date.toISOString().split("T")[0];
@@ -76,87 +89,371 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     return "";
   };
 
-  useEffect(() => {
-    if (!reportId) {
-      console.error(
-        "❌ reportId ไม่ถูกส่งมา - ไม่พบใน localStorage หรือ state"
-      );
-      alert("ไม่พบรหัสรายงาน กรุณากลับไปเลือกรายงานก่อน");
-    }
-  }, [reportId, navigate]);
+  // เพิ่มฟังก์ชันสำหรับดึง installation ล่าสุดของบริษัท
+  const fetchLatestInstallation = async (companyId: number) => {
+    try {
+      setIsLoadingInstallation(true);
 
+      // ดึงข้อมูล installations ทั้งหมดของบริษัท
+      const response = await fetch(
+        `${apiUrl}/api/cbam/installation/company/${companyId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching company installations: ${response.statusText}`
+        );
+      }
+
+      const installations = await response.json();
+      console.log("Fetched company installations:", installations);
+
+      if (installations && installations.length > 0) {
+        // ถ้าข้อมูลเรียงจากเก่าไปใหม่ ตัวล่าสุดจะอยู่ตำแหน่งสุดท้ายของ array
+        const latestInstallation = installations[installations.length - 1];
+        console.log("Using latest installation:", latestInstallation);
+
+        // อัปเดตฟอร์มด้วยข้อมูล installation ล่าสุด
+        setFormValues({
+          name: latestInstallation.name || "",
+          name_specific: latestInstallation.name_specific || "",
+          eco_activity: latestInstallation.eco_activity || "",
+          address: latestInstallation.address || "",
+          city: latestInstallation.city || "",
+          country_id: latestInstallation.country_id
+            ? String(latestInstallation.country_id)
+            : "",
+          post_code: latestInstallation.post_code || "",
+          po_box: latestInstallation.po_box || "",
+          latitude: latestInstallation.latitude || "",
+          longitude: latestInstallation.longitude || "",
+          author_represent: latestInstallation.author_represent || "",
+          email: latestInstallation.email || "",
+          tel: latestInstallation.phone || "", // หมายเหตุ: phone ในฐานข้อมูลแต่ tel ในฟอร์ม
+          unlocode: latestInstallation.unlocode || "",
+          reporting_period_start: existingData?.reporting_period_start
+            ? new Date(existingData.reporting_period_start)
+            : new Date(),
+          reporting_period_end: existingData?.reporting_period_end
+            ? new Date(existingData.reporting_period_end)
+            : new Date(),
+        });
+
+        // อัปเดต parent component
+        onChange({
+          name: latestInstallation.name || "",
+          name_specific: latestInstallation.name_specific || "",
+          eco_activity: latestInstallation.eco_activity || "",
+          address: latestInstallation.address || "",
+          city: latestInstallation.city || "",
+          country_id: latestInstallation.country_id
+            ? String(latestInstallation.country_id)
+            : "",
+          post_code: latestInstallation.post_code || "",
+          po_box: latestInstallation.po_box || "",
+          latitude: latestInstallation.latitude || "",
+          longitude: latestInstallation.longitude || "",
+          author_represent: latestInstallation.author_represent || "",
+          email: latestInstallation.email || "",
+          tel: latestInstallation.phone || "",
+          unlocode: latestInstallation.unlocode || "",
+          reporting_period_start: existingData?.reporting_period_start
+            ? new Date(existingData.reporting_period_start)
+            : new Date(),
+          reporting_period_end: existingData?.reporting_period_end
+            ? new Date(existingData.reporting_period_end)
+            : new Date(),
+        });
+
+        return latestInstallation.id; // ส่งคืน ID ของ installation ล่าสุด
+      }
+
+      return null; // ไม่พบ installation
+    } catch (error) {
+      console.error("Error fetching latest installation:", error);
+      return null;
+    } finally {
+      setIsLoadingInstallation(false);
+    }
+  };
+
+  const fetchCompanyReports = async () => {
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/cbam/report/company/${companyId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching company reports: ${response.statusText}`
+        );
+      }
+
+      const reports = await response.json();
+      console.log("Fetched company reports:", reports);
+
+      // กรองหารายงานที่มี installation_id แล้ว
+      const reportsWithInstallation = reports.filter(
+        (report: any) => report.installation_id
+      );
+
+      if (reportsWithInstallation.length > 0) {
+        console.log(
+          "Found report with installation:",
+          reportsWithInstallation[0]
+        );
+        // นำ installation_id จากรายงานแรกที่พบไปดึงข้อมูล
+        await fetchInstallationData(reportsWithInstallation[0].installation_id);
+      } else {
+        console.log(
+          "No reports with installation found, trying to fetch latest installation"
+        );
+        // ถ้าไม่พบรายงานที่มี installation ให้ดึง installation ล่าสุดแทน
+        await fetchLatestInstallation(companyId);
+      }
+    } catch (error) {
+      console.error("Error fetching company reports:", error);
+      console.log("Trying to fetch latest installation as fallback");
+      // ถ้าดึงข้อมูลรายงานไม่สำเร็จ ให้ลองดึง installation ล่าสุด
+      await fetchLatestInstallation(companyId);
+    } finally {
+      setIsLoadingInstallation(false);
+    }
+  };
+
+  // ดึงข้อมูล installation สำหรับแสดงในฟอร์ม
+  const fetchInstallationData = async (installationId: number) => {
+    if (!installationId) {
+      console.error("No installation ID provided to fetch");
+      return;
+    }
+
+    setIsLoadingInstallation(true);
+
+    try {
+      const response = await fetch(
+        `${apiUrl}/api/cbam/installation/${installationId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching installation data: ${response.statusText}`
+        );
+      }
+
+      const installationDataArray = await response.json();
+      console.log("Fetched installation data:", installationDataArray);
+
+      // สำคัญ: ข้อมูลเป็น array ต้องดึง element แรกออกมา
+      if (installationDataArray && installationDataArray.length > 0) {
+        const installationData = installationDataArray[0];
+        console.log("Using installation data:", installationData);
+
+        // อัปเดตค่าในฟอร์มด้วยข้อมูลจาก API
+        setFormValues((prev) => ({
+          ...prev,
+          name: installationData.name || prev.name,
+          name_specific: installationData.name_specific || prev.name_specific,
+          eco_activity: installationData.eco_activity || prev.eco_activity,
+          address: installationData.address || prev.address,
+          city: installationData.city || prev.city,
+          country_id: installationData.country_id
+            ? String(installationData.country_id)
+            : prev.country_id,
+          post_code: installationData.post_code || prev.post_code,
+          po_box: installationData.po_box || prev.po_box,
+          latitude: installationData.latitude || prev.latitude,
+          longitude: installationData.longitude || prev.longitude,
+          author_represent:
+            installationData.author_represent || prev.author_represent,
+          email: installationData.email || prev.email,
+          tel: installationData.phone || prev.tel, // หมายเหตุ: phone ในฐานข้อมูลแต่ tel ในฟอร์ม
+          unlocode: installationData.unlocode || prev.unlocode,
+        }));
+
+        // อัปเดต parent component
+        onChange({
+          ...formValues,
+          name: installationData.name || formValues.name,
+          name_specific:
+            installationData.name_specific || formValues.name_specific,
+          eco_activity:
+            installationData.eco_activity || formValues.eco_activity,
+          address: installationData.address || formValues.address,
+          city: installationData.city || formValues.city,
+          country_id: installationData.country_id
+            ? String(installationData.country_id)
+            : formValues.country_id,
+          post_code: installationData.post_code || formValues.post_code,
+          po_box: installationData.po_box || formValues.po_box,
+          latitude: installationData.latitude || formValues.latitude,
+          longitude: installationData.longitude || formValues.longitude,
+          author_represent:
+            installationData.author_represent || formValues.author_represent,
+          email: installationData.email || formValues.email,
+          tel: installationData.phone || formValues.tel,
+          unlocode: installationData.unlocode || formValues.unlocode,
+        });
+      } else {
+        console.warn("No installation data found for ID:", installationId);
+      }
+    } catch (error) {
+      console.error("Error fetching installation data:", error);
+    } finally {
+      setIsLoadingInstallation(false);
+    }
+  };
+
+  // เริ่มการดึงข้อมูลหลักเมื่อโหลดคอมโพเนนต์
+  // เริ่มการดึงข้อมูลหลักเมื่อโหลดคอมโพเนนต์
+  useEffect(() => {
+    const fetchMainData = async () => {
+      setIsLoadingReport(true);
+
+      try {
+        // ดึงข้อมูลรายงาน ID 54 โดยตรง แทนที่จะใช้ reportId จาก state
+        const reportResponse = await fetch(
+          `${apiUrl}/api/cbam/report/${reportId}`
+        );
+
+        if (!reportResponse.ok) {
+          throw new Error("Failed to fetch report data");
+        }
+
+        const reportData = await reportResponse.json();
+        console.log("Fetched report data:", reportData);
+
+        if (reportData && reportData.length > 0) {
+          setExistingData(reportData[0]);
+
+          // ถ้า report มี installation_id ให้ดึงข้อมูล installation
+          if (reportData[0].installation_id) {
+            console.log(
+              "Report has installation_id, fetching installation data"
+            );
+            await fetchInstallationData(reportData[0].installation_id);
+          } else {
+            console.log(
+              "Report does not have installation_id, checking other reports from company"
+            );
+            // ถ้า report ไม่มี installation_id ให้ดึงข้อมูลจาก company reports
+            await fetchCompanyReports();
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching report data:", error);
+        console.log("Error with report data, trying company reports");
+        // ถ้าดึงข้อมูล report ไม่สำเร็จ ก็ลองดึงข้อมูลจาก company reports
+        await fetchCompanyReports();
+      } finally {
+        setIsLoadingReport(false);
+      }
+    };
+
+    fetchMainData();
+  }, [apiUrl, companyId]); // ไม่ใช้ reportId เป็น dependency เพราะเราใช้ค่า hard-coded 54
+
+  // โหลดข้อมูลประเทศ
   useEffect(() => {
     const loadCountries = async () => {
-      const { countries, defaultCountry } = await fetchCountries(); // destructure ตรงนี้เลย
+      const { countries, defaultCountry } = await fetchCountries();
+      setCountries(countries);
 
-      setCountries(countries); // ✅ ตั้ง countries array ให้กับ state
+      // อัปเดต unlocode หลังจากโหลดข้อมูลประเทศแล้ว
+      // และมี country_id อยู่แล้ว
+      if (countries.length > 0 && formValues.country_id) {
+        const selectedCountry = countries.find(
+          (c) => String(c.value) === formValues.country_id
+        );
 
-      if (defaultCountry && !data.country_id) {
+        if (selectedCountry) {
+          setFormValues((prev) => ({
+            ...prev,
+            unlocode: selectedCountry.abbreviation || prev.unlocode,
+          }));
+
+          onChange({
+            ...formValues,
+            unlocode: selectedCountry.abbreviation || formValues.unlocode,
+          });
+        }
+      }
+      // ถ้ายังไม่มี country_id
+      else if (defaultCountry && !formValues.country_id) {
         onChange({
-          ...data,
+          ...formValues,
           country_id: String(defaultCountry.value),
           unlocode: String(defaultCountry.abbreviation),
         });
+
+        setFormValues((prev) => ({
+          ...prev,
+          country_id: String(defaultCountry.value),
+          unlocode: String(defaultCountry.abbreviation),
+        }));
       }
     };
 
     loadCountries();
-  }, []);
+  }, [formValues.country_id]);
 
+  // จัดการการเปลี่ยนแปลงค่าในฟอร์ม
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormValues((prev) => ({ ...prev, [name]: value }));
-    onChange({ ...formValues, [name]: value });
 
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    let updatedFormValues = { ...formValues, [name]: value };
+    const updatedFormValues = { ...formValues, [name]: value };
     onChange(updatedFormValues as InstallationFormProps["data"]);
+  };
+
+  // เพิ่มฟังก์ชันเพื่อตรวจสอบว่ารายงานมีอยู่แล้วหรือไม่
+  const checkReportExists = async (reportId: number): Promise<boolean> => {
+    try {
+      const response = await fetch(`${apiUrl}/api/cbam/report/${reportId}`);
+      if (response.ok) {
+        const data = await response.json();
+        return data && data.length > 0;
+      }
+      return false;
+    } catch (error) {
+      console.error("Error checking report existence:", error);
+      return false;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (isSubmitting) return;
     setIsSubmitting(true);
 
-    if (!reportId) {
-      alert("❌ ไม่พบรหัสรายงาน (reportId) กรุณากลับไปสร้างรายงานก่อน");
-      setIsSubmitting(false);
-      return;
-    }
-
-    // กำหนดฟิลด์ที่จำเป็นต้องกรอก
+    // ตรวจสอบ required fields
     const requiredFields = [
       "name",
       "address",
       "city",
       "country_id",
       "post_code",
-      "po_box",
       "latitude",
       "longitude",
       "author_represent",
       "email",
       "tel",
-      "unlocode",
-      "reporting_period_start",
-      "reporting_period_end",
     ];
 
-    // สร้าง object เก็บ errors
     const newErrors: { [key: string]: string } = {};
 
-    // ตรวจสอบแต่ละฟิลด์ที่จำเป็น
+    // ตรวจสอบฟิลด์ที่จำเป็น
     requiredFields.forEach((field) => {
       if (!formValues[field as keyof typeof formValues]) {
         newErrors[field] = "กรุณากรอกข้อมูล";
       }
     });
 
-    // ตรวจสอบรูปแบบอีเมล (ถ้ามีการกรอก)
+    // ตรวจสอบรูปแบบอีเมล
     if (
       formValues.email &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)
@@ -164,82 +461,134 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
     }
 
-    // ตรวจสอบรูปแบบพิกัด
-    // if (formValues.latitude) {
-    //   const lat = parseFloat(String(formValues.latitude));
-    //   if (isNaN(lat) || lat < -90 || lat > 90) {
-    //     newErrors.latitude = "พิกัดละติจูดต้องอยู่ระหว่าง -90 ถึง 90";
-    //   }
-    // }
-
-    // if (formValues.longitude) {
-    //   const lng = parseFloat(String(formValues.longitude));
-    //   if (isNaN(lng) || lng < -180 || lng > 180) {
-    //     newErrors.longitude = "พิกัดลองจิจูดต้องอยู่ระหว่าง -180 ถึง 180";
-    //   }
-    // }
-
-    // ถ้ามีข้อผิดพลาด อัปเดต state และไม่ส่งข้อมูล
+    // หากมีข้อผิดพลาด ไม่ดำเนินการต่อ
     if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
-      setIsSubmitting(false);
+
+      // เลื่อนไปยังฟิลด์แรกที่มีข้อผิดพลาด
       const firstErrorField = Object.keys(newErrors)[0];
       const errorElement = document.getElementsByName(firstErrorField)[0];
       if (errorElement) {
         errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
+
+      setIsSubmitting(false);
       return;
     }
 
-    // ถ้าไม่มีข้อผิดพลาด ดำเนินการส่งข้อมูล
-    const payload = {
-      name: formValues.name,
-      name_specific: formValues.name_specific || null,
-      eco_activity: formValues.eco_activity || null,
-      address: formValues.address,
-      city: formValues.city,
-      country_id: Number(formValues.country_id),
-      post_code: formValues.post_code,
-      latitude: formValues.latitude,
-      longitude: formValues.longitude,
-      po_box: formValues.po_box || null,
-      author_represent: formValues.author_represent || null,
-      email: formValues.email || null,
-      phone: formValues.tel || null,
-    };
-    console.log("Submitting payload:", payload);
-
     try {
-      const method = reportId ? "PUT" : "POST"; // Use PUT if reportId exists
-      const url = reportId
-        ? `${apiUrl}/api/cbam/installation/${reportId}`
+      // สร้าง payload สำหรับ installation
+      const installationPayload = {
+        name: formValues.name,
+        name_specific: formValues.name_specific || null,
+        eco_activity: formValues.eco_activity || null,
+        address: formValues.address,
+        city: formValues.city,
+        country_id: Number(formValues.country_id),
+        post_code: formValues.post_code,
+        latitude: formValues.latitude,
+        longitude: formValues.longitude,
+        po_box: formValues.po_box || null,
+        author_represent: formValues.author_represent || null,
+        email: formValues.email || null,
+        phone: formValues.tel || null,
+      };
+
+      console.log("ส่งข้อมูล installation:", installationPayload);
+
+      // ตรวจสอบว่าต้องอัปเดตหรือสร้างใหม่
+      const installationId = existingData?.installation_id;
+      const method = installationId ? "PUT" : "POST";
+      const installationUrl = installationId
+        ? `${apiUrl}/api/cbam/installation/${installationId}`
         : `${apiUrl}/api/cbam/installation`;
 
-      const response = await fetch(url, {
+      // ส่งข้อมูล installation
+      const response = await fetch(installationUrl, {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(installationPayload),
       });
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("❌ Verifier error:", errorText);
-        throw new Error("Failed to create verifier");
+        console.error(
+          `❌ การส่งข้อมูล installation ผิดพลาด (${method}):`,
+          errorText
+        );
+        throw new Error(
+          `ไม่สามารถ${method === "PUT" ? "อัปเดต" : "สร้าง"}ข้อมูลสถานประกอบการ`
+        );
       }
 
-      const data = await response.json();
-      console.log(data);
+      const installationData = await response.json();
+      console.log("บันทึกข้อมูล installation สำเร็จ:", installationData);
 
+      // หา installation_id จากการสร้างใหม่หรือใช้ของเดิม
+      const newInstallationId = installationData.id || installationId;
+
+      // เตรียม payload สำหรับอัปเดตรายงาน
+      const reportUpdatePayload = {
+        installation_id: newInstallationId,
+        company_id: companyId,
+        reporting_period_start: formatDate(formValues.reporting_period_start),
+        reporting_period_end: formatDate(formValues.reporting_period_end),
+        // อาจเพิ่มฟิลด์อื่นๆ ที่จำเป็นสำหรับการสร้างรายงานใหม่ เช่น company_id, goods_id, industry_type_id, etc.
+      };
+
+      // ตรวจสอบว่ารายงานมีอยู่แล้วหรือไม่
+      const reportExists = await checkReportExists(reportId);
+
+      // กำหนด method และ URL ตามผลการตรวจสอบ
+      const reportMethod = reportExists ? "PUT" : "POST";
+      const reportUrl = `${apiUrl}/api/cbam/report${
+        reportExists ? `/${reportId}` : ""
+      }`;
+
+      console.log(
+        `อัปเดตรายงาน ID ${reportId} ด้วยวิธี ${reportMethod}:`,
+        reportUpdatePayload
+      );
+
+      // ส่งคำขอ API
+      const reportUpdateResponse = await fetch(reportUrl, {
+        method: reportMethod,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reportUpdatePayload),
+      });
+
+      if (!reportUpdateResponse.ok) {
+        const errorText = await reportUpdateResponse.text();
+        console.error(
+          `❌ การ${method === "PUT" ? "อัปเดต" : "สร้าง"}รายงานผิดพลาด:`,
+          errorText
+        );
+        alert(
+          `บันทึกข้อมูลสถานประกอบการสำเร็จ แต่ไม่สามารถ${
+            method === "PUT" ? "อัปเดต" : "สร้าง"
+          }รายงานได้`
+        );
+      } else {
+        console.log(`${method === "PUT" ? "อัปเดต" : "สร้าง"}รายงานสำเร็จ`);
+        alert(
+          `บันทึกข้อมูลสถานประกอบการและ${
+            method === "PUT" ? "อัปเดต" : "สร้าง"
+          }รายงานสำเร็จ!`
+        );
+      }
+
+      // แจ้ง parent component และเปลี่ยนขั้นตอน
       onChange(formValues);
       onNextStep?.();
     } catch (err: any) {
-      console.error("❌ Error submitting form:", err.message || err);
-      alert(`Error: ${err.message}`);
+      console.error("❌ การบันทึกแบบฟอร์มผิดพลาด:", err.message || err);
+      alert(`เกิดข้อผิดพลาด: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
+  // แสดงฟอร์ม
   return (
     <Container
       maxWidth="md"
@@ -259,8 +608,62 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
               รายละเอียดสถานประกอบการ
             </Typography>
+
+            {/* แสดงข้อมูล report และ installation */}
+            {existingData ? (
+              <Box
+                mt={2}
+                p={2}
+                sx={{ backgroundColor: "#f5f5f5", borderRadius: 1 }}
+              >
+                <Typography variant="subtitle2" fontWeight="bold">
+                  ข้อมูลรายงาน:
+                </Typography>
+                <Typography variant="body2">
+                  รหัสรายงาน:{" "}
+                  {reportId || "ไม่ระบุ (สร้างข้อมูลสถานประกอบการอย่างเดียว)"}
+                </Typography>
+                <Typography variant="body2">
+                  ประเภทอุตสาหกรรม:{" "}
+                  {existingData.industry_type_name || "ไม่ระบุ"}
+                </Typography>
+                <Typography variant="body2">
+                  หมวดหมู่สินค้า:{" "}
+                  {existingData.goods_category_name || "ไม่ระบุ"}
+                </Typography>
+                <Typography variant="body2">
+                  ชื่อ: {existingData.name || "ไม่ระบุ"}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    mt: 1,
+                    color: existingData.installation_id ? "green" : "orange",
+                  }}
+                >
+                  สถานะสถานประกอบการ:{" "}
+                  {existingData.installation_id
+                    ? `มีข้อมูลอยู่แล้ว (ID: ${existingData.installation_id})`
+                    : "ยังไม่มีข้อมูล - กรุณากรอกข้อมูล"}
+                </Typography>
+              </Box>
+            ) : (
+              <Box
+                mt={2}
+                p={2}
+                sx={{ backgroundColor: "#f0f8ff", borderRadius: 1 }}
+              >
+                <Typography variant="subtitle2" fontWeight="bold">
+                  สร้างข้อมูลสถานประกอบการใหม่
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  กรุณากรอกข้อมูลสถานประกอบการ
+                </Typography>
+              </Box>
+            )}
           </Box>
-          {/* reporting period */}
+
+          {/* ส่วนของฟอร์มรายงาน */}
           <Section
             title="Reporting Period"
             subtitle=""
@@ -303,11 +706,13 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               </div>
             </div>
           </Section>
+
           {/* Installation form */}
           <Section
             title="Installation form"
             subtitle=""
             hasError={Object.values(formErrors).some((e) => !!e)}
+            defaultExpanded
           >
             <LabeledTextField
               caption="Name of the installation (ENG)"
@@ -386,14 +791,19 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       country_id: String(val),
                       unlocode: selected?.abbreviation || "",
                     }));
-                    // เคลียร์ error เมื่อเลือกประเทศ
+                    // Update the parent component
+                    onChange({
+                      ...formValues,
+                      country_id: String(val),
+                      unlocode: selected?.abbreviation || "",
+                    });
+                    // Clear error when country is selected
                     if (formErrors.country_id) {
                       setFormErrors((prev) => ({ ...prev, country_id: "" }));
                     }
                   }}
                   error={formErrors.country_id || ""}
                 />
-
                 <LabeledTextField
                   caption="Post code"
                   defination="รหัสไปรษณีย์ (Post Code)"
@@ -502,10 +912,36 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               </div>
             </div>
           </Section>
-          <PGButton />
+
+          {/* Submit button */}
+          <PGButton
+            text={existingData?.installation_id ? "Update" : "Save"}
+            loading={isSubmitting}
+          />
+
+          {/* Debug info - remove in production */}
+          {process.env.NODE_ENV === "development" && (
+            <Box
+              mt={4}
+              p={2}
+              sx={{
+                backgroundColor: "#f5f5f5",
+                borderRadius: 1,
+                fontSize: "0.8rem",
+              }}
+            >
+              <Typography variant="caption" component="pre">
+                Report ID: {reportId}
+              </Typography>
+              <Typography variant="caption" component="pre">
+                Existing Data: {JSON.stringify(existingData, null, 2)}
+              </Typography>
+            </Box>
+          )}
         </Grid>
       </form>
     </Container>
   );
 };
+
 export default InstallationForm;

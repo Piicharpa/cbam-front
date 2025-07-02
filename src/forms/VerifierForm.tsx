@@ -37,9 +37,11 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  // const reportId = location.state?.reportId;
-  const reportId = 1;
-  // const reportId = 13;
+  const navigate = useNavigate();
+  // กำหนด reportId และ companyId
+  const reportId = 54; // หรือรับจาก props หรือ params
+  const companyId = 1; // รับจาก context หรือกำหนดค่าคงที่
+  
   const [formValues, setFormValues] = useState({
     installation_name: "",
     address: "",
@@ -55,32 +57,184 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
     phone: "",
     fax: "",
   });
-
+  
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [existingData, setExistingData] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const apiUrl = process.env.REACT_APP_API_URL;
+  
+  const fetchReportData = async () => {
+  if (!reportId) return;
+  
+  setIsLoading(true);
+  try {
+    const response = await fetch(`${apiUrl}/api/cbam/report/${reportId}`);
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch report data");
+    }
+    
+    const reportData = await response.json();
+    console.log("Fetched report data:", reportData);
+    
+    // ตรวจสอบว่าข้อมูลที่ได้มาเป็น array หรือไม่
+    if (Array.isArray(reportData) && reportData.length > 0) {
+      setExistingData(reportData[0]);
+      
+      // ถ้า report มี verifier_id ให้ดึงข้อมูล verifier
+      if (reportData[0].verifier_id) {
+        console.log("Report has verifier_id, fetching verifier data");
+        await fetchVerifierData(reportData[0].verifier_id);
+      } else {
+        console.log("Report does not have verifier_id, checking other reports from company");
+        // ถ้าไม่มี verifier_id ให้ดึงข้อมูลจากรายงานอื่นของบริษัทที่อาจมี verifier_id
+        await fetchLatestVerifier();
+      }
+    }
+  } catch (error) {
+    console.error("Error fetching report data:", error);
+    // ถ้าดึงข้อมูล report ไม่สำเร็จ ก็ลองดึงข้อมูลจากรายงานอื่น
+    await fetchLatestVerifier();
+  } finally {
+    setIsLoading(false);
+  }
+};
 
+
+  // ฟังก์ชันดึงข้อมูล verifier ตาม ID
+const fetchVerifierData = async (verifierId: number) => {
+  try {
+    const response = await fetch(`${apiUrl}/api/cbam/verifier/detail/${verifierId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch verifier data: ${response.statusText}`);
+    }
+    
+    const verifierData = await response.json();
+    console.log("Fetched verifier data:", verifierData);
+    
+    // ตรวจสอบว่าข้อมูลที่ได้มาว่างเปล่าหรือเป็น array ว่างหรือไม่
+    if (Array.isArray(verifierData)) {
+      if (verifierData.length === 0) {
+        console.log("No verifier details found for ID:", verifierId);
+        return;
+      }
+      
+      // ใช้ข้อมูลตัวแรกถ้าเป็น array
+      const data = verifierData[0];
+      
+      // อัปเดต formValues ด้วยข้อมูล verifier
+      setFormValues({
+        installation_name: data.name || "",
+        address: data.address || "",
+        city: data.city || "",
+        country_id: data.country_id ? String(data.country_id) : "",
+        post_code: data.post_code || "",
+        authorized_rep_id: data.authorized_rep_id ? String(data.authorized_rep_id) : "",
+        accreditation_state: data.accreditation_state || "",
+        accreditation_national_body: data.accreditation_national_body || "",
+        registration_no: data.registration_no || "",
+        name: data.authorizedRep?.name || "",
+        email: data.authorizedRep?.email || "",
+        phone: data.authorizedRep?.phone || "",
+        fax: data.authorizedRep?.fax || "",
+      });
+      
+      // แจ้ง parent component
+      onChange({
+        installation_name: data.name || "",
+        address: data.address || "",
+        city: data.city || "",
+        country_id: data.country_id ? String(data.country_id) : "",
+        post_code: data.post_code || "",
+        authorized_rep_id: data.authorized_rep_id ? String(data.authorized_rep_id) : "",
+        accreditation_state: data.accreditation_state || "",
+        accreditation_national_body: data.accreditation_national_body || "",
+        registration_no: data.registration_no || "",
+        name: data.authorizedRep?.name || "",
+        email: data.authorizedRep?.email || "",
+        phone: data.authorizedRep?.phone || "",
+        fax: data.authorizedRep?.fax || "",
+      });
+    }
+  } catch (error) {
+    console.error("Error fetching verifier data:", error);
+  }
+};
+  
+ // แก้ไขฟังก์ชันดึงข้อมูล verifier ล่าสุดโดยดึงจากรายงานของบริษัท
+const fetchLatestVerifier = async () => {
+  try {
+    // ดึงรายงานทั้งหมดของบริษัท
+    const response = await fetch(`${apiUrl}/api/cbam/report/company/${companyId}`);
+    
+    if (!response.ok) {
+      throw new Error("Failed to fetch company reports");
+    }
+    
+    const reports = await response.json();
+    console.log("Fetched company reports:", reports);
+    
+    // กรองเฉพาะรายงานที่มี verifier_id
+    const reportsWithVerifier = Array.isArray(reports) 
+      ? reports.filter(report => report.verifier_id)
+      : [];
+    
+    if (reportsWithVerifier.length > 0) {
+      // เรียงตาม ID จากมากไปน้อย (ใหม่ไปเก่า)
+      reportsWithVerifier.sort((a: any, b: any) => b.id - a.id);
+      
+      const latestReportWithVerifier = reportsWithVerifier[0];
+      console.log("Using verifier from latest report:", latestReportWithVerifier);
+      
+      // ดึงข้อมูลรายละเอียดของ verifier
+      if (latestReportWithVerifier.verifier_id) {
+        await fetchVerifierData(latestReportWithVerifier.verifier_id);
+      }
+    } else {
+      console.log("No reports with verifier found");
+    }
+  } catch (error) {
+    console.error("Error fetching reports with verifier:", error);
+  }
+};
+  
+  // เรียกดึงข้อมูลเมื่อโหลดคอมโพเนนต์
+  useEffect(() => {
+    fetchReportData();
+  }, [reportId]);
+  
+  // อัปเดต formValues เมื่อ data props เปลี่ยนแปลง
   useEffect(() => {
     setFormValues(data);
   }, [data]);
-
+  
+  // โหลดข้อมูลประเทศ
   useEffect(() => {
     const loadCountries = async () => {
-      const { countries: fetchedCountries, defaultCountry } =
-        await fetchCountries();
+      const { countries: fetchedCountries, defaultCountry } = await fetchCountries();
       setCountries(fetchedCountries);
-      const defaultThailand = fetchedCountries.find(
-        (c) => c.label === "Thailand"
-      );
-      if (defaultThailand && !data.country_id) {
+      
+      const defaultThailand = fetchedCountries.find((c) => c.label === "Thailand");
+      if (defaultThailand && !formValues.country_id) {
+        setFormValues(prev => ({
+          ...prev,
+          country_id: String(defaultThailand.value),
+        }));
+        
         onChange({
-          ...data,
+          ...formValues,
           country_id: String(defaultThailand.value),
         });
       }
     };
+    
     loadCountries();
   }, []);
-
+  
+  // จัดการการเปลี่ยนแปลงค่าในฟอร์ม
   const handleChange = (
     name: string,
     valueOrEvent: string | React.ChangeEvent<HTMLInputElement>
@@ -90,113 +244,185 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       typeof valueOrEvent === "string"
         ? valueOrEvent
         : valueOrEvent.target.value;
-
+        
     setFormValues((prev) => {
       const newData = { ...prev, [name]: value };
       onChange(newData); // Notify parent with new data
       return newData;
     });
+    
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
   };
-
-  const apiUrl = process.env.REACT_APP_API_URL;
+  
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload = {
+  e.preventDefault();
+  
+  try {
+    // ส่วน authorized representative
+    let authorisedId = formValues.authorized_rep_id;
+    
+    // สร้าง payload
+    const authorisedPayload = {
+      name: formValues.name || null,
+      email: formValues.email || null,
+      phone: formValues.phone || null,
+      fax: formValues.fax || null,
+    };
+    
+    let authorisedMethod = "POST";
+    let authorisedUrl = `${apiUrl}/api/cbam/authorised`;
+    
+    if (authorisedId) {
+      authorisedMethod = "PUT";
+      authorisedUrl = `${apiUrl}/api/cbam/authorised/${authorisedId}`;
+    }
+    
+    console.log(`Sending ${authorisedMethod} request to ${authorisedUrl}:`, authorisedPayload);
+    
+    const authorisedRes = await fetch(authorisedUrl, {
+      method: authorisedMethod,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(authorisedPayload),
+    });
+    
+    if (!authorisedRes.ok) {
+      const errorText = await authorisedRes.text();
+      console.error("❌ Authorised error:", errorText);
+      throw new Error(`Failed to create/update authorised representative: ${errorText}`);
+    }
+    
+    // อ่าน response เพียงครั้งเดียว
+    const authorisedData = await authorisedRes.json();
+    authorisedId = authorisedData.id || authorisedId;
+    
+    // ส่วน verifier
+    const verifierId = existingData?.verifier_id;
+    const verifierMethod = verifierId ? "PUT" : "POST";
+    const verifierUrl = verifierId
+      ? `${apiUrl}/api/cbam/verifier/${verifierId}`
+      : `${apiUrl}/api/cbam/verifier/`;
+    
+    const verifierPayload = {
       name: formValues.installation_name || null,
       address: formValues.address || null,
       city: formValues.city || null,
-      country_id: formValues.country_id || null,
+      country_id: Number(formValues.country_id) || null,
       post_code: formValues.post_code || null,
-      authorized_rep_id: formValues.authorized_rep_id || null,
+      authorized_rep_id: authorisedId || null,
       accreditation_state: formValues.accreditation_state || null,
-      accreditation_national_body:
-        formValues.accreditation_national_body || null,
+      accreditation_national_body: formValues.accreditation_national_body || null,
       registration_no: formValues.registration_no || null,
     };
-    try {
-      const authorisedRes = await fetch(`${apiUrl}/api/cbam/authorised`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formValues.name || null,
-          email: formValues.email || null,
-          phone: formValues.phone || null,
-          fax: formValues.fax || null,
-        }),
-      });
-
-      if (!authorisedRes.ok) {
-        const errorText = await authorisedRes.text();
-        console.error("❌ Authorised error:", errorText);
-        throw new Error("Failed to create authorised representative");
-      }
-
-      // Get the ID of the newly created authorised representative
-      const authorisedData = await authorisedRes.json();
-      const authorisedId = authorisedData.id;
-
-      const meyhod = reportId ? "PUT" : "POST";
-      const url = reportId
-        ? `${apiUrl}/api/cbam/verifier/${reportId}`
-        : `${apiUrl}/api/cbam/verifier/`;
-      // POST authorised representative
-
-      // POST verifier with authorised_rep_id
-      const response = await fetch(`${apiUrl}/api/cbam/verifier/`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: formValues.installation_name || null,
-          address: formValues.address || null,
-          city: formValues.city || null,
-          country_id: Number(formValues.country_id) || null,
-          post_code: formValues.post_code || null,
-          authorized_rep_id: authorisedId || null,
-          accreditation_state: formValues.accreditation_state || null,
-          accreditation_national_body:
-            formValues.accreditation_national_body || null,
-          registration_no: formValues.registration_no || null,
-        }),
-      });
-      // console.log(response)
-
-      if (!response.ok) throw new Error("Failed to create verifier");
-      const verifierData = await response.json();
-      const verifierId = verifierData.id;
-
-      // GET verifier details
-      const getVerifier = await fetch(
-        `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
-      );
-      const verifierDetails = await getVerifier.json();
-      // navigate(redirectPath);
-    } catch (error) {
-      console.error("❌ Error:", error);
+    
+    console.log(`Sending ${verifierMethod} request to ${verifierUrl}:`, verifierPayload);
+    
+    const verifierRes = await fetch(verifierUrl, {
+      method: verifierMethod,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(verifierPayload),
+    });
+    
+    if (!verifierRes.ok) {
+      const errorText = await verifierRes.text(); // อ่านเพียงครั้งเดียว
+      console.error("❌ Verifier error:", errorText);
+      throw new Error(`Failed to create/update verifier: ${errorText}`);
     }
-    onNextStep?.();
-  };
+    
+    // อ่าน response เพียงครั้งเดียว
+    const verifierData = await verifierRes.json();
+    const newVerifierId = verifierData.id || verifierId;
+    
+    // ส่วนอัปเดตรายงาน
+    if (reportId) {
+      const reportPayload = {
+        verifier_id: newVerifierId,
+        // ไม่รวม verifier_name
+      };
+      
+      console.log(`Updating report ${reportId} with verifier ID ${newVerifierId}`);
+      
+      const reportRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(reportPayload),
+      });
+      
+      if (!reportRes.ok) {
+        const errorText = await reportRes.text(); // อ่านเพียงครั้งเดียว
+        console.error("❌ Report update error:", errorText);
+        alert(`Verifier saved but couldn't link to report: ${errorText}`);
+      } else {
+        // อ่าน response ถ้าจำเป็น
+        try {
+          const reportData = await reportRes.json();
+          console.log("Report updated successfully:", reportData);
+        } catch (jsonError) {
+          console.log("Report updated but couldn't read response as JSON");
+        }
+      }
+    }
+    
+    // ตรวจสอบข้อมูล verifier ล่าสุด
+    try {
+      const getVerifierRes = await fetch(`${apiUrl}/api/cbam/verifier/detail/${newVerifierId}`);
+      if (!getVerifierRes.ok) {
+        console.warn("Warning: Unable to fetch updated verifier details");
+      } else {
+        // Optionally handle updated verifier details here
+      }
+    } catch (err) {
+      console.warn("Warning: Unable to fetch updated verifier details");
+    }
 
+    // Call onNextStep or show a success message if needed
+    onNextStep();
+  } catch (error) {
+    alert(error instanceof Error ? error.message : String(error));
+  }
+};
+  
+  // Always return JSX from the component
   return (
-    <Container
-      maxWidth="md"
-      style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
-    >
+    <Container maxWidth="md" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>
           <Box>
-            <Typography
-              variant="h5"
-              fontWeight="bold"
-              gutterBottom
-              color="#1976d2"
-            >
+            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
               Verifier of the report
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
               Only if available and not required during transitional period
             </Typography>
+            
+            {/* Show report information if available */}
+            {existingData && (
+              <Box mt={2} p={2} sx={{ backgroundColor: "#f5f5f5", borderRadius: 1 }}>
+                <Typography variant="subtitle2" fontWeight="bold">
+                  Report Details:
+                </Typography>
+                <Typography variant="body2">
+                  Report ID: {reportId}
+                </Typography>
+                <Typography variant="body2">
+                  Industry Type: {existingData.industry_type_name || "Not specified"}
+                </Typography>
+                <Typography variant="body2">
+                  Goods Category: {existingData.goods_category_name || "Not specified"}
+                </Typography>
+                <Typography variant="body2">
+                  Name: {existingData.name || "Not specified"}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  sx={{ mt: 1, color: existingData.verifier_id ? "green" : "orange" }}
+                >
+                  Verifier Status:{" "}
+                  {existingData.verifier_id
+                    ? `Connected (ID: ${existingData.verifier_id})`
+                    : "Not connected - Please fill in verifier information"}
+                </Typography>
+              </Box>
+            )}
           </Box>
 
           <Section
@@ -244,21 +470,21 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               name="country_id"
               options={countries.map((c) => ({ ...c, value: String(c.value) }))}
               value={formValues.country_id}
-              onChange={(val) =>
+              onChange={(val) => {
                 setFormValues((prev) => ({
                   ...prev,
                   country_id: String(val),
-                }))
-              }
+                }));
+                onChange({
+                  ...formValues,
+                  country_id: String(val),
+                });
+              }}
               error={formErrors.country_id}
             />
           </Section>
 
-          <Section
-            title="Authorised Representative"
-            subtitle=""
-            hasError={false}
-          >
+          <Section title="Authorised Representative" subtitle="" hasError={false}>
             <LabeledTextField
               caption="Name"
               label=""
@@ -321,7 +547,19 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             />
           </Section>
 
-          <PGButton />
+          <PGButton text={existingData?.verifier_id ? "Update" : "Save"} />
+          
+                    {/* Debug information - remove for production */}
+          {process.env.NODE_ENV === "development" && (
+            <Box mt={4} p={2} sx={{ backgroundColor: "#f5f5f5", borderRadius: 1, fontSize: "0.8rem" }}>
+              <Typography variant="caption" component="pre">
+                Form Values: {JSON.stringify(formValues, null, 2)}
+              </Typography>
+              <Typography variant="caption" component="pre">
+                Existing Data: {JSON.stringify(existingData, null, 2)}
+              </Typography>
+            </Box>
+          )}
         </Grid>
       </form>
     </Container>

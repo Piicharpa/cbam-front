@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Section from "../../../components/Section";
-import SectionButton from "../../../components/SectionButton";
 import {
   fetchGoodsData,
   getIndustryOptions,
@@ -16,8 +15,8 @@ interface FormValues {
   name: string;
   industry_type: string;
   goods_category: string;
-  routes: string[];
-  amounts: string[];
+  routes: string[]; // Keep as array
+  amounts: string[]; // Keep as array
 }
 
 interface FormErrors {
@@ -34,91 +33,382 @@ interface Props {
     field: string,
     value: string | string[] | { [key: number]: string }
   ) => void;
-  // onNext: () => void;
 }
 
-// const Section1: React.FC<Props> = ({ values, errors, onChange, onNext }) => {
 const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
+  // State management
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
   const [routesOptions, setRoutesOptions] = useState<OptionType[]>([]);
-  const [routeCount, setRouteCount] = useState(
-    Math.min(Object.keys(values.routes || {}).length || 1, 6)
-  );
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch goods data and set industry options on mount
-  useEffect(() => {
-    fetchGoodsData().then((data) => {
-      setGoodsData(data);
-      const options = getIndustryOptions(data);
-      setIndustryOptions(options);
-    });
-  }, []);
+  // Calculate route count based on routes data
+const routeCount = useMemo(() => {
+  if (Array.isArray(values.routes)) {
+    // Show the total number of route slots (including empty ones)
+    // Minimum 1, maximum 6
+    return Math.min(Math.max(values.routes.length, 1), 6);
+  }
+  return 1;
+}, [values.routes]);
 
-  // Update goods options when industry type changes
-  useEffect(() => {
-    if (values.industry_type) {
-      const options = getGoodsOptions(goodsData, +values.industry_type);
+// Fix the handleAddRoute function
+const handleAddRoute = () => {
+  const currentRoutes = values.routes || [];
+  const currentAmounts = values.amounts || [];
+  
+  // Only add if we haven't reached the limit
+  if (currentRoutes.length < 6) {
+    console.log(`Adding route slot ${currentRoutes.length + 1}`);
+    
+    // Add an empty route slot
+    const updatedRoutes = [...currentRoutes, ''];
+    const updatedAmounts = [...currentAmounts, ''];
+    
+    console.log('New routes array:', updatedRoutes);
+    console.log('New amounts array:', updatedAmounts);
+    
+    onChange("routes", updatedRoutes);
+    onChange("amounts", updatedAmounts);
+  }
+};
+
+ const saveToLocalStorage = useCallback(() => {
+  if (values.industry_type || values.goods_category) {
+    const dataToSave = {
+      routes: values.routes || [], // Changed from {} to []
+      amounts: values.amounts || [], // Changed from {} to []
+      industry_type: values.industry_type,
+      goods_category: values.goods_category,
+      name: values.name,
+    };
+    
+    // Only save if data has actually changed
+    const currentSaved = localStorage.getItem("goodsFormData");
+    const newData = JSON.stringify(dataToSave);
+    
+    if (currentSaved !== newData) {
+      localStorage.setItem("goodsFormData", newData);
+    }
+  }
+}, [values]);
+
+
+  const updateGoodsOptions = useCallback((industryType: string) => {
+    if (industryType && goodsData.length > 0) {
+      const options = getGoodsOptions(goodsData, +industryType);
       setGoodsOptions(options);
-      if (!options.some((opt) => opt.value === values.goods_category)) {
+      
+      // Check if current goods_category is valid for new industry type
+      const currentGoodsCategory = String(values.goods_category);
+      const isValidGoodsCategory = options.some(
+        opt => String(opt.value) === currentGoodsCategory
+      );
+      
+      if (currentGoodsCategory && !isValidGoodsCategory) {
+        console.warn(`Clearing goods_category "${currentGoodsCategory}" as it's not valid for industry type`);
         onChange("goods_category", "");
         onChange("routes", []);
       }
     } else {
       setGoodsOptions([]);
-      setRoutesOptions([]);
     }
-  }, [values.industry_type, goodsData]);
+  }, [goodsData, values.goods_category, onChange]);
+
+  const updateRoutesOptions = useCallback(() => {
+  if (values.goods_category && values.industry_type) {
+    const options = getRoutesOptions(
+      goodsData,
+      +values.industry_type,
+      +values.goods_category
+    );
+    setRoutesOptions(options);
+    
+    // Check if current routes are still valid
+    const currentRoutes = Array.isArray(values.routes) ? values.routes : [];
+    
+    const hasValidRoutes = currentRoutes.some(route => 
+      route && options.some(opt => String(opt.value) === String(route))
+    );
+    
+    if (!hasValidRoutes && currentRoutes.length > 0) {
+      console.log('Clearing invalid routes');
+      onChange("routes", []);
+      onChange("amounts", []);
+    }
+    
+    // Auto-select if only one option and no existing routes
+    if (options.length === 1 && (!currentRoutes.length || currentRoutes.every(r => !r))) {
+      console.log('Auto-selecting single route option');
+      onChange("routes", [String(options[0].value)]);
+    }
+  } else {
+    setRoutesOptions([]);
+  }
+}, [values.goods_category, values.industry_type, values.routes, goodsData, onChange]);
+
+
+
+  // Effects
+  // Initial data loading
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true);
+        const data = await fetchGoodsData();
+        setGoodsData(data);
+        
+        const industryOpts = getIndustryOptions(data);
+        setIndustryOptions(industryOpts);
+        
+        // Set initial options if values exist
+        if (values.industry_type) {
+          const industryTypeStr = String(values.industry_type);
+          const goodsOpts = getGoodsOptions(data, +industryTypeStr);
+          setGoodsOptions(goodsOpts);
+        }
+      } catch (error) {
+        console.error('Failed to load goods data:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    loadData();
+  }, []); // Only run once on mount
+
+  // Update goods options when industry type changes
+  useEffect(() => {
+    if (!isLoading) {
+      updateGoodsOptions(values.industry_type);
+    }
+  }, [values.industry_type, isLoading, updateGoodsOptions]);
 
   // Update routes options when goods category changes
   useEffect(() => {
-    if (values.goods_category && values.industry_type) {
-      const options = getRoutesOptions(
-        goodsData,
-        +values.industry_type,
-        +values.goods_category
-      );
-      setRoutesOptions(options);
-      const routeValues = Object.values(values.routes || {});
-      if (!options.some((opt) => routeValues.includes(String(opt.value)))) {
-        onChange("routes", []);
-      }
-      if (options.length === 1) {
-        onChange("routes", [String(options[0].value)]);
-      }
-    } else {
-      setRoutesOptions([]);
+    if (!isLoading) {
+      updateRoutesOptions();
     }
-  }, [values.goods_category, values.industry_type, goodsData]);
+  }, [values.goods_category, isLoading, updateRoutesOptions]);
 
-  // Update count of routes when they change
+  // Save to localStorage when values change
   useEffect(() => {
-    setRouteCount(Math.min(Object.keys(values.routes || {}).length || 1, 6));
-  }, [values.routes]);
+    saveToLocalStorage();
+  }, [saveToLocalStorage]);
 
-  // แก้ไข Section1.tsx โดยย้ายการจัดเก็บ localStorage ไปใน useEffect เพื่อให้แน่ใจว่าข้อมูลจะถูกบันทึกเมื่อมีการเปลี่ยนแปลงเท่านั้น
-  useEffect(() => {
-    // บันทึกเมื่อมีข้อมูลพร้อมเท่านั้น
-    if (values.industry_type || values.goods_category) {
-      localStorage.setItem(
-        "goodsFormData", // ใช้ key เดียวกับ GoodsForm
-        JSON.stringify({
-          routes: values.routes || {},
-          amounts: values.amounts || {},
-          industry_type: values.industry_type,
-          goods_category: values.goods_category,
-          name: values.name,
-        })
+
+  // Make sure this useEffect has proper dependencies and doesn't cause infinite loops
+// useEffect(() => {
+//   // Only save to localStorage when there's actual data to save
+//   if (values.industry_type || values.goods_category || values.name) {
+//     const dataToSave = {
+//       routes: values.routes || [],
+//       amounts: values.amounts || [],
+//       industry_type: values.industry_type,
+//       goods_category: values.goods_category,
+//       name: values.name,
+//     };
+    
+//     // Only save if data has actually changed
+//     const currentSaved = localStorage.getItem("goodsFormData");
+//     const newData = JSON.stringify(dataToSave);
+    
+//     if (currentSaved !== newData) {
+//       localStorage.setItem("goodsFormData", newData);
+//     }
+//   }
+// }, [values.industry_type, values.goods_category, values.name, values.routes, values.amounts]);
+
+  // Event handlers
+//   const handleAddRoute = () => {
+//   if (routeCount < 6) {
+//     // Add an empty route slot
+//     const updatedRoutes = [...(values.routes || [])];
+//     updatedRoutes.push('');
+//     onChange("routes", updatedRoutes);
+    
+//     // Also add corresponding empty amount
+//     const updatedAmounts = [...(values.amounts || [])];
+//     updatedAmounts.push('');
+//     onChange("amounts", updatedAmounts);
+//   }
+// };
+
+
+const handleRouteChange = (index: number, value: string) => {
+  console.log(`Route ${index} changing from "${values.routes?.[index] || ''}" to "${value}"`);
+  
+  const updatedRoutes = [...(values.routes || [])];
+  
+  // Ensure array is long enough
+  while (updatedRoutes.length <= index) {
+    updatedRoutes.push('');
+  }
+  
+  updatedRoutes[index] = value;
+  
+  // Keep all routes, don't filter out empty ones in the middle
+  // Only remove trailing empty routes
+  while (updatedRoutes.length > 0 && updatedRoutes[updatedRoutes.length - 1] === '') {
+    updatedRoutes.pop();
+  }
+  
+  console.log('Updated routes:', updatedRoutes);
+  onChange("routes", updatedRoutes);
+};
+
+const handleAmountChange = (index: number, value: string) => {
+  console.log(`Amount ${index} changing to "${value}"`);
+  
+  const updatedAmounts = [...(values.amounts || [])];
+  
+  // Ensure array is long enough
+  while (updatedAmounts.length <= index) {
+    updatedAmounts.push('');
+  }
+  
+  updatedAmounts[index] = value;
+  
+  // Keep all amounts, don't filter out empty ones in the middle
+  // Only remove trailing empty amounts
+  while (updatedAmounts.length > 0 && updatedAmounts[updatedAmounts.length - 1] === '') {
+    updatedAmounts.pop();
+  }
+  
+  console.log('Updated amounts:', updatedAmounts);
+  onChange("amounts", updatedAmounts);
+};
+
+  // Render helpers
+  const renderRouteInputs = () => {
+    if (routesOptions.length === 0) {
+      return (
+        <p style={{
+          color: "#e74c3c",
+          padding: "10px",
+          backgroundColor: "#fceae9",
+          borderRadius: "4px",
+        }}>
+          ไม่มีตัวเลือกวัตถุดิบที่เกี่ยวข้อง
+        </p>
       );
     }
-  }, [
-    values.industry_type,
-    values.goods_category,
-    values.routes,
-    values.amounts,
-    values.name,
-  ]);
+
+    return (
+      <>
+        <h4>Production Routes</h4>
+        <p style={{
+          color: "#666",
+          fontSize: "0.9rem",
+          marginBottom: "10px",
+        }}>
+          Please select up to 6 routes that apply
+        </p>
+                {[...Array(routeCount)].map((_, index) => (
+          <div key={index} style={{ marginBottom: "12px" }}>
+            <div style={{
+              display: "flex",
+              gap: "15px",
+              alignItems: "flex-start",
+            }}>
+              <div style={{ flex: 3 }}>
+                <LabeledAutocompleteMap
+                  caption={`Route ${index + 1}`}
+                  defination="เลือกวัตถุดิบที่เกี่ยวข้อง"
+                  label=""
+                  name={`route_${index}`}
+                  options={routesOptions.map((opt) => ({
+                    ...opt,
+                    value: String(opt.value),
+                  }))}
+                  value={
+                    Array.isArray(values.routes)
+                      ? values.routes[index] || ""
+                      : values.routes?.[index] || ""
+                  }
+                  error={
+                    index === 0 && errors.routes ? errors.routes : undefined
+                  }
+                  onChange={(val) => handleRouteChange(index, String(val))}
+                />
+              </div>
+              <div style={{ flex: 1 }}>
+                <LabeledTextField
+                  type="number"
+                  caption="Amount"
+                  defination="ปริมาณวัตถุดิบที่เกี่ยวข้อง"
+                  label=""
+                  name={`amount_${index}`}
+                  value={
+                    Array.isArray(values.amounts)
+                      ? values.amounts[index] || ""
+                      : values.amounts?.[index] || ""
+                  }
+                  onChange={(e) => handleAmountChange(index, e.target.value)}
+                  inputProps={{
+                    step: "0.01",
+                    min: "0",
+                    placeholder: "Enter amount",
+                    className: "appearance-none",
+                  }}
+                  readOnly={
+                    Array.isArray(values.routes)
+                      ? !values.routes[index]
+                      : !values.routes?.[index]
+                  }
+                />
+              </div>
+            </div>
+          </div>
+        ))}
+
+        {routeCount < 6 && (
+          <button
+            type="button"
+            style={{
+              backgroundColor: "#2ecc71",
+              color: "#fff",
+              padding: "8px 12px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              marginTop: "10px",
+            }}
+            onClick={handleAddRoute}
+          >
+            + เพิ่ม Route
+          </button>
+        )}
+
+        {routesOptions.length > 6 && (
+          <p style={{
+            color: "#e67e22",
+            fontSize: "0.9rem",
+            marginTop: "5px",
+          }}>
+            Note: มีวัตถุดิบมากกว่า 6 รายการ แต่จำกัดให้เลือกได้ไม่เกิน 6
+          </p>
+        )}
+      </>
+    );
+  };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <Section
+        defaultExpanded={true}
+        title="(a) List of aggregated goods categories and corresponding production routes"
+        subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
+        hasError={false}
+      >
+        <div style={{ padding: "2rem", textAlign: "center" }}>
+          <p>Loading...</p>
+        </div>
+      </Section>
+    );
+  }
 
   return (
     <Section
@@ -126,11 +416,11 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
       title="(a) List of aggregated goods categories and corresponding production routes"
       subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
       hasError={
-        !!(errors.industry_type || errors.goods_category || errors.routes)
+        !!(errors.industry_type || errors.goods_category || errors.routes || errors.name)
       }
     >
       <div style={{ marginBottom: "1rem" }}>
-        {/* Industry Type and Goods Category Input */}
+        {/* Industry Type, Goods Category, and Name Input */}
         <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
           <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
@@ -144,9 +434,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               }))}
               value={values.industry_type}
               error={errors.industry_type}
-              onChange={(val) => {
-                onChange("industry_type", String(val));
-              }}
+              onChange={(val) => onChange("industry_type", String(val))}
               required
             />
           </div>
@@ -162,10 +450,9 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               }))}
               value={values.goods_category}
               error={errors.goods_category}
-              onChange={(val) => {
-                onChange("goods_category", String(val));
-              }}
+              onChange={(val) => onChange("goods_category", String(val))}
               required
+              disabled={!values.industry_type}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -173,11 +460,11 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               caption="Name"
               defination="ชื่อ"
               label=""
-              name="ืname"
+              name="name"
               type="text"
               value={values.name}
               onChange={(e) => onChange("name", e.target.value)}
-              error={errors.name} // Pass the error for the helper text
+              error={errors.name}
               helperText={errors.name}
               required
             />
@@ -186,124 +473,8 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
         {/* Production Routes Input */}
         <div style={{ marginBottom: "1rem" }}>
-          {routesOptions.length > 0 ? (
-            <>
-              <h4>Production Routes</h4>
-              <p
-                style={{
-                  color: "#666",
-                  fontSize: "0.9rem",
-                  marginBottom: "10px",
-                }}
-              >
-                Please select up to 6 routes that apply
-              </p>
-              {[...Array(routeCount)].map((_, index) => (
-                <div key={index} style={{ marginBottom: "12px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      gap: "15px",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <div style={{ flex: 3 }}>
-                      <LabeledAutocompleteMap
-                        caption={`Route ${index + 1}`}
-                        defination="เลือกวัตถุดิบที่เกี่ยวข้อง"
-                        label=""
-                        name={`route_${index}`}
-                        options={routesOptions.map((opt) => ({
-                          ...opt,
-                          value: String(opt.value),
-                        }))}
-                        value={values.routes?.[index] || ""}
-                        error={
-                          index === 0 && errors.routes
-                            ? errors.routes
-                            : undefined
-                        }
-                        onChange={(val) => {
-                          const updatedRoutes = {
-                            ...values.routes,
-                            [index]: String(val),
-                          };
-                          onChange("routes", updatedRoutes);
-                        }}
-                      />
-                    </div>
-                    <div style={{ flex: 1 }}>
-                      <LabeledTextField
-                        type="number"
-                        caption="Amount"
-                        defination="ปริมาณวัตถุดิบที่เกี่ยวข้อง"
-                        label=""
-                        name={`amount_${index}`}
-                        value={values.amounts?.[index] || ""}
-                        onChange={(e) => {
-                          const updatedAmounts = {
-                            ...values.amounts,
-                            [index]: e.target.value,
-                          };
-                          onChange("amounts", updatedAmounts);
-                        }}
-                        inputProps={{
-                          step: "0.01",
-                          min: "0",
-                          placeholder: "Enter amount",
-                          className: "appearance-none",
-                        }}
-                        readOnly={!values.routes[index]}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {routeCount < 6 && (
-                <button
-                  type="button"
-                  style={{
-                    backgroundColor: "#2ecc71",
-                    color: "#fff",
-                    padding: "8px 12px",
-                    border: "none",
-                    borderRadius: "4px",
-                    cursor: "pointer",
-                    marginTop: "10px",
-                  }}
-                  onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
-                >
-                  + เพิ่ม Route
-                </button>
-              )}
-              {routesOptions.length > 6 && (
-                <p
-                  style={{
-                    color: "#e67e22",
-                    fontSize: "0.9rem",
-                    marginTop: "5px",
-                  }}
-                >
-                  Note: มีวัตถุดิบมากกว่า 6 รายการ แต่จำกัดให้เลือกได้ไม่เกิน 6
-                </p>
-              )}
-            </>
-          ) : (
-            <p
-              style={{
-                color: "#e74c3c",
-                padding: "10px",
-                backgroundColor: "#fceae9",
-                borderRadius: "4px",
-              }}
-            >
-              ไม่มีตัวเลือกวัตถุดิบที่เกี่ยวข้อง
-            </p>
-          )}
+          {renderRouteInputs()}
         </div>
-
-        {/* Section Button for transitioning to the next step */}
-        <div style={{ display: "flex", justifyContent: "right" }}></div>
       </div>
     </Section>
   );

@@ -49,14 +49,16 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  const reportId = 54;
+  // const reportId = 54;
+  const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL;
+  const reportIdNumber = reportId ? parseInt(reportId, 10) : 0
 
   // State for local form values
   const [localFormValues, setLocalFormValues] = useState<
     GoodsFormProps["formValues"]
   >({
-    report_id: formValues.report_id || reportId,
+    report_id: reportIdNumber || 0 ,
     name: formValues.name || "",
     goods_category: formValues.goods_category || "",
     routes: formValues.routes || [],
@@ -298,8 +300,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             console.log("ℹ️ No existing goods data found, using defaults");
             // Set default form values for new entry
             setLocalFormValues(prev => ({
-              ...prev,
-              report_id: reportId
+              ...prev
             }));
           }
         }

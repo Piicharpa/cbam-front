@@ -32,7 +32,7 @@ const Header: React.FC<HeaderProps> = ({
             justifyContent: 'center'
           }}>
             <img 
-              src="/image/favicon_cbam.ico" 
+              src={`${process.env.PUBLIC_URL}/image/favicon_cbam.png`}
               alt="TGO Logo"
               style={{
                 width: '48px',
@@ -41,12 +41,12 @@ const Header: React.FC<HeaderProps> = ({
               }}
             />
           </Box>
-          <Box>
+          <Box> 
             <Typography variant="h5" sx={{ 
               color: '#1a1a1a', 
               marginBottom: '4px', 
               fontWeight: '600',
-              fontSize: '1.5rem'
+              fontSize: '1.5rem',
             }}>
               CBAM Carbon Footprint Platform
             </Typography>

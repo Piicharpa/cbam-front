@@ -8,7 +8,7 @@ import { CountryOption } from '../../components/dropdown/contriesmap';
 import { fetchGoodsData, getRoutesOptions, OptionType } from '../../components/dropdown/goods';
 import { justification } from '../../components/dropdown/justification';
 import Box from '@mui/material/Box';
-import type { PrecursorSubmitData } from '../PrecursorsForm'; // Import the shared type
+import type { PrecursorSubmitData} from '../PrecursorsForm'; // Import the shared type
 
 interface PrecursorFieldsProps {
   index: number;

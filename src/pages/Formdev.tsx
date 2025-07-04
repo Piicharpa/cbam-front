@@ -1,4 +1,5 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom"; // เพิ่ม useNavigate
 import {
   Container,
   Stepper,
@@ -32,9 +33,7 @@ import VerifierForm from "../forms/VerifierForm";
 import GoodsForm from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
 import SourceForm from "../forms/SourceForm";
-// import EmissionForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
-
 import { Theme } from "@mui/material/styles";
 import EmissionForm from "../forms/EmissionForm";
 
@@ -45,16 +44,55 @@ const StyledBox = styled(Box)(({ theme }: { theme: Theme }) => ({
   transition: "background-color 0.3s ease",
 }));
 
+// ตรวจสอบว่า steps มีค่าหรือไม่ และสร้าง fallback steps หากไม่มี
+const fallbackSteps = [
+  { label: "Summary", description: "สรุปข้อมูล" },
+  { label: "Installation", description: "รายละเอียดสถานที่ติดตั้ง" },
+  { label: "Verifier", description: "ข้อมูลผู้ตรวจสอบ" },
+  { label: "Goods", description: "ข้อมูลสินค้า" },
+  { label: "Precursors", description: "วัตถุดิบตั้งต้น" },
+  { label: "Source", description: "แหล่งที่มา" },
+  { label: "Emission", description: "การปล่อยมลพิษ" },
+];
+
 const Formdev: React.FC = () => {
+  const navigate = useNavigate(); // เพิ่มการใช้ useNavigate
   const [activeStep, setActiveStep] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
+  // สร้างตัวแปรเพื่อเก็บ reportId จาก local storage หรือกำหนดค่าเริ่มต้น
+  const [reportId, setReportId] = useState<number | null>(null);
+
+  // ใช้ useEffect เพื่อโหลด reportId จาก localStorage และเก็บไว้ในสเตท
+  useEffect(() => {
+    const storedReportId = localStorage.getItem('cbam_report_id');
+    if (storedReportId) {
+      setReportId(parseInt(storedReportId, 10));
+    } else {
+      // ถ้าไม่มี reportId ใน localStorage กำหนดค่าเริ่มต้น
+      setReportId(54); // หรือค่าที่เหมาะสมกับแอปของคุณ
+    }
+  }, []);
+
+  // ตรวจสอบ steps ก่อนใช้งาน
+  const [safeSteps, setSafeSteps] = useState(fallbackSteps);
+  
+  useEffect(() => {
+    // ตรวจสอบว่า steps ที่นำเข้ามามีค่าหรือไม่
+    if (steps && Array.isArray(steps) && steps.length > 0) {
+      console.log("Using imported steps", steps);
+      setSafeSteps(steps);
+    } else {
+      console.warn("Imported steps is invalid or empty, using fallback steps");
+      setSafeSteps(fallbackSteps);
+    }
+  }, []);
+
   // Form refs for submitting
   const SumupFormRef = useRef<any>(null);
   const installationFormRef = useRef<any>(null);
   const verifierFormRef = useRef<any>(null);
   const goodsFormRef = useRef<any>(null);
   const precursorsFormRef = useRef<any>(null);
-  // const amountFormRef = useRef<any>(null);
   const sourceFormRef = useRef<any>(null);
   const emissionFormRef = useRef<any>(null);
 
@@ -64,6 +102,7 @@ const Formdev: React.FC = () => {
     goods_id: "",
     cn_id: "",
   });
+
   const [installationData, setInstallationData] = useState({
     name: "",
     name_specific: "",
@@ -82,6 +121,7 @@ const Formdev: React.FC = () => {
     reporting_period_start: new Date(),
     reporting_period_end: new Date(),
   });
+
   const [verifierData, setVerifierData] = useState({
     installation_name: "",
     address: "",
@@ -97,6 +137,7 @@ const Formdev: React.FC = () => {
     phone: "",
     fax: "",
   });
+
   const [goodsData, setGoodsData] = useState({
     report_id: 0,
     name: "",
@@ -126,7 +167,8 @@ const Formdev: React.FC = () => {
     industry_type: "",
     total_production_amounts: 0,
   });
-  const [precursorsData, setPrecursorsData] = useState({
+
+    const [precursorsData, setPrecursorsData] = useState({
     name: "",
     route_1: "",
     route_1_amounts: 0,
@@ -148,6 +190,7 @@ const Formdev: React.FC = () => {
     source_embedded_indirect_emissions: "",
     justification_for_use_default_values: "",
   });
+
   const [sourceData, setSourceData] = useState({
     p_method: "",
     p_source_stream_name: "",
@@ -169,6 +212,7 @@ const Formdev: React.FC = () => {
     manual_GHG_emissions_balance: "",
     info_qty_assurance: "",
   });
+
   const [emissionData, setEmissionData] = useState({
     generatl_info_on_data_quality: "",
     justification_for_use_default_values: "",
@@ -215,6 +259,12 @@ const Formdev: React.FC = () => {
         case 6:
           if (emissionFormRef.current?.submit) {
             canProceed = await emissionFormRef.current.submit();
+            
+            // ถ้านี่เป็นขั้นตอนสุดท้ายและดำเนินการสำเร็จ นำทางไปยังหน้า report
+            if (canProceed && reportId) {
+              navigate(`/cbam/report?reportId=${reportId}`);
+              return;
+            }
           }
           break;
       }
@@ -222,6 +272,7 @@ const Formdev: React.FC = () => {
       console.error("Form validation failed:", error);
       canProceed = false;
     }
+    
     if (canProceed) {
       setFadeIn(false);
       setTimeout(() => {
@@ -244,6 +295,7 @@ const Formdev: React.FC = () => {
       const isValid = await sourceFormRef.current.submit();
       if (!isValid) return;
     }
+    
     const allData = {
       sumupData,
       installationData,
@@ -253,10 +305,16 @@ const Formdev: React.FC = () => {
       sourceData,
       emissionData
     };
+    
     setFadeIn(false);
     setTimeout(() => {
       alert("✅ Form submitted successfully!");
       setFadeIn(true);
+      
+      // หลังจากส่งฟอร์มสำเร็จ นำทางไปยังหน้า report ถ้ามี reportId
+      if (reportId) {
+        navigate(`/report?reportId=${reportId}`);
+      }
     }, 300);
   };
 
@@ -268,6 +326,7 @@ const Formdev: React.FC = () => {
             data={sumupData}
             onChange={setsumupData}
             onNextStep={handleNext}
+            // ref={SumupFormRef}
           />
         );
       case 1:
@@ -276,6 +335,7 @@ const Formdev: React.FC = () => {
             data={installationData}
             onChange={setInstallationData}
             onNextStep={handleNext}
+            // ref={installationFormRef}
           />
         );
       case 2:
@@ -284,6 +344,7 @@ const Formdev: React.FC = () => {
             data={verifierData}
             onChange={setVerifierData}
             onNextStep={handleNext}
+            // ref={verifierFormRef}
           />
         );
       case 3:
@@ -292,6 +353,7 @@ const Formdev: React.FC = () => {
             formValues={goodsData}
             onChange={setGoodsData}
             onNextStep={handleNext}
+            // ref={goodsFormRef}
           />
         );
       case 4:
@@ -307,6 +369,7 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
+            // ref={precursorsFormRef}
           />
         );
       case 5:
@@ -322,14 +385,15 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
+            // ref={sourceFormRef}
           />
         );
       case 6:
         return (
           <EmissionForm
-            formValues={sourceData}
+            formValues={emissionData} // แก้ไขให้ใช้ emissionData แทน sourceData
             onChange={(formValues) =>
-              setSourceData((prev) => ({
+              setEmissionData((prev) => ({
                 ...prev,
                 ...Object.fromEntries(
                   Object.entries(formValues).map(([k, v]) => [k, v ?? ""])
@@ -337,15 +401,17 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
+            // ref={emissionFormRef}
           />
         );
-      default:
-        return <Typography>Unknown step</Typography>;
+        //     default:
+        // return <Typography>Unknown step</Typography>;
     }
   };
 
-  const progress = ((activeStep + 1) / steps.length) * 100;
-  const isLastStep = activeStep === steps.length - 1;
+  // คำนวณความคืบหน้าโดยใช้ safeSteps แทน steps เพื่อป้องกัน error
+  const progress = ((activeStep + 1) / safeSteps.length) * 100;
+  const isLastStep = activeStep === safeSteps.length - 1;
 
   return (
     <ThemeProvider theme={theme}>
@@ -368,15 +434,27 @@ const Formdev: React.FC = () => {
             Complete all steps to submit your declaration for the Carbon Border
             Adjustment Mechanism
           </Typography>
+          
+          {reportId && (
+            <Typography
+              variant="caption"
+              color="text.secondary"
+              sx={{ position: "relative", zIndex: 1, display: 'block', mt: 1 }}
+            >
+              Report ID: {reportId}
+            </Typography>
+          )}
         </HeaderBanner>
+
         <StepperContainer elevation={1} progress={progress}>
           <Stepper
             alternativeLabel
             activeStep={activeStep}
             connector={<ColorlibConnector />}
           >
-            {steps.map((step, index) => (
-              <Step key={step.label}>
+            {/* ใช้ safeSteps ที่ตรวจสอบแล้วว่าไม่เป็น undefined และใช้ optional chaining */}
+            {safeSteps.map((step, index) => (
+              <Step key={step?.label ? step.label : `step-${index}`}>
                 <StepLabel StepIconComponent={ColorlibStepIcon}>
                   <Typography
                     variant="subtitle1"
@@ -391,7 +469,8 @@ const Formdev: React.FC = () => {
                           : "text.primary",
                     }}
                   >
-                    {step.label}
+                    {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
+                    {step?.label || `Step ${index + 1}`}
                   </Typography>
                   <Typography
                     variant="caption"
@@ -401,13 +480,15 @@ const Formdev: React.FC = () => {
                       fontSize: 12,
                     }}
                   >
-                    {step.description}
+                    {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
+                    {step?.description || ""}
                   </Typography>
                 </StepLabel>
               </Step>
             ))}
           </Stepper>
         </StepperContainer>
+
         <Fade in={fadeIn} timeout={500}>
           <Box sx={{ minHeight: "450px", position: "relative" }}>
             <TopRightCircle />
@@ -417,6 +498,7 @@ const Formdev: React.FC = () => {
             </ContentPaper>
           </Box>
         </Fade>
+
         <NavigationContainer>
           <Button
             disabled={activeStep === 0}
@@ -426,7 +508,7 @@ const Formdev: React.FC = () => {
             Back
           </Button>
           <Box sx={{ position: "relative" }}>
-            {activeStep < steps.length - 1 && (
+            {activeStep < safeSteps.length - 1 ? (
               <Button
                 onClick={handleNext}
                 variant="contained"
@@ -439,13 +521,25 @@ const Formdev: React.FC = () => {
               >
                 Continue to Next Step
               </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                variant="contained"
+                color="primary"
+                sx={{
+                  background: "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
+                  fontWeight: 600,
+                }}
+              >
+                Submit Final Form
+              </Button>
             )}
-            {/* <ButtonDecoration isLastStep={false} /> หยุดส่ง isLastStep ตรงนี้ */}
           </Box>
         </NavigationContainer>
+
         <Box mt={4} sx={{ textAlign: "center" }}>
           <Typography
-            component="div" // เปลี่ยน <p> เป็น <div>
+            component="div"
             variant="body2"
             color="text.secondary"
             sx={{
@@ -456,7 +550,7 @@ const Formdev: React.FC = () => {
             }}
           >
             <span>
-              Step {activeStep + 1} of {steps.length}
+              Step {activeStep + 1} of {safeSteps.length}
             </span>
           </Typography>
           <Typography
@@ -468,11 +562,13 @@ const Formdev: React.FC = () => {
               fontStyle: "italic",
             }}
           >
+            {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
             {isLastStep
               ? "Final step - Review your information before submission"
-              : `Currently in ${steps[activeStep].label} stage - ${steps[activeStep].description}`}
+              : `Currently in ${safeSteps[activeStep]?.label || `Step ${activeStep + 1}`} stage - ${safeSteps[activeStep]?.description || ""}`}
           </Typography>
         </Box>
+
         <Box mt={3} sx={{ textAlign: "center" }}>
           <Typography
             variant="caption"
@@ -500,8 +596,30 @@ const Formdev: React.FC = () => {
             </Box>
           </Typography>
         </Box>
+
+        {/* ส่วนแสดงข้อมูลเพื่อการดีบัก (เฉพาะโหมดพัฒนา) */}
+        {process.env.NODE_ENV === 'development' && (
+          <Box mt={4} p={2} sx={{ backgroundColor: '#f5f5f5', borderRadius: 2, fontSize: '0.75rem' }}>
+            <Typography variant="subtitle2" gutterBottom>Debug Information</Typography>
+            <Box>
+              <Typography variant="body2">Active Step: {activeStep}</Typography>
+              <Typography variant="body2">Report ID: {reportId}</Typography>
+              <Typography variant="body2">Steps Count: {safeSteps.length}</Typography>
+              <Typography variant="body2">Progress: {progress.toFixed(1)}%</Typography>
+            </Box>
+            <Box mt={1}>
+              <details>
+                <summary>Steps Structure</summary>
+                <pre style={{ overflow: 'auto', maxHeight: '200px' }}>
+                  {JSON.stringify(safeSteps, null, 2)}
+                </pre>
+              </details>
+            </Box>
+          </Box>
+        )}
       </Container>
     </ThemeProvider>
   );
 };
+
 export default Formdev;

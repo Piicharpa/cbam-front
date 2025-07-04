@@ -32,6 +32,22 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
   setFormValues,
   setFormErrors,
 }) => {
+  // แสดงข้อมูลเพื่อการดีบัก
+  console.log("Source_sec2 received formValues:", formValues);
+
+  // สร้าง dropdown options
+  const generalInfoOptions = generalinfo?.map((item) => item?.name || "") || [];
+  const justificationOptions =
+    justification?.map((item) => item?.name || "") || [];
+  const qualityAssuranceOptions =
+    qualityassurance?.map((item) => item?.name || "") || [];
+
+  console.log("Options available:", {
+    generalInfoOptions,
+    justificationOptions,
+    qualityAssuranceOptions,
+  });
+
   return (
     <>
       {/* Box1: GHG emissions and energy consumption */}
@@ -45,7 +61,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           defination="กรอกปริมาณรวมของการปล่อย Emission ทางอ้อม"
           label=""
           name="manual_fuel_balance"
-          value={formValues.manual_fuel_balance}
+          value={formValues.manual_fuel_balance || ""}
           onChange={handleInputChange}
           error={formErrors.manual_fuel_balance}
           helperText={formErrors.manual_fuel_balance}
@@ -62,7 +78,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           defination=""
           label=""
           name="manual_GHG_emissions_balance"
-          value={formValues.manual_GHG_emissions_balance}
+          value={formValues.manual_GHG_emissions_balance || ""}
           onChange={handleInputChange}
           error={formErrors.manual_GHG_emissions_balance}
           helperText={formErrors.manual_GHG_emissions_balance}
@@ -87,13 +103,13 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           defination="ข้อมูลทั่วไปเกี่ยวกับคุณภาพของข้อมูล"
           label=""
           name="generatl_info_on_data_quality"
-          value={formValues.generatl_info_on_data_quality}
+          value={formValues.generatl_info_on_data_quality || ""}
           onChange={(value: string) => {
+            console.log("Selected value:", value);
             setFormValues((prev) => ({
               ...prev,
               generatl_info_on_data_quality: value,
             }));
-            // Clear any errors when the field is updated
             setFormErrors((prev) => ({
               ...prev,
               generatl_info_on_data_quality: "",
@@ -101,7 +117,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           }}
           error={formErrors.generatl_info_on_data_quality}
           helperText={formErrors.generatl_info_on_data_quality}
-          options={generalinfo.map((item) => item.name)}
+          options={generalInfoOptions}
           required
         />
         <LabeledAutocomplete
@@ -109,7 +125,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           defination="เหตุผลในการใช้ค่าปกติ (ถ้าเกี่ยวข้อง)"
           label=""
           name="justification_for_use_default_values"
-          value={formValues.justification_for_use_default_values}
+          value={formValues.justification_for_use_default_values || ""}
           onChange={(value: string) => {
             setFormValues((prev) => ({
               ...prev,
@@ -123,7 +139,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           }}
           error={formErrors.justification_for_use_default_values}
           helperText={formErrors.justification_for_use_default_values}
-          options={justification.map((item: { name: string }) => item.name)}
+          options={justificationOptions}
           required
         />
         <LabeledAutocomplete
@@ -131,7 +147,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           defination="ข้อมูลการประกันคุณภาพ "
           label=""
           name="information_quality_ssurance"
-          value={formValues.information_quality_ssurance}
+          value={formValues.information_quality_ssurance || ""}
           onChange={(value: string) => {
             setFormValues((prev) => ({
               ...prev,
@@ -145,10 +161,30 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           }}
           error={formErrors.information_quality_ssurance}
           helperText={formErrors.information_quality_ssurance}
-          options={qualityassurance.map((item) => item.name)}
+          options={qualityAssuranceOptions}
           required
         />
       </Box>
+
+      {/* Debug info - จะแสดงเฉพาะเมื่ออยู่ใน development mode */}
+      {process.env.NODE_ENV === "development" && (
+        <Box
+          mt={1}
+          p={2}
+          sx={{
+            backgroundColor: "#f8f9fa",
+            borderRadius: 1,
+            fontSize: "0.75rem",
+          }}
+        >
+          <details>
+            <summary style={{ cursor: "pointer" }}>Form Values Debug</summary>
+            <pre style={{ whiteSpace: "pre-wrap" }}>
+              {JSON.stringify(formValues, null, 2)}
+            </pre>
+          </details>
+        </Box>
+      )}
     </>
   );
 };

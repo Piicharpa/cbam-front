@@ -1,10 +1,27 @@
-import React, { useState, useEffect } from "react";
-import { Container, Typography, Grid, Box } from "@mui/material";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Container,
+  Typography,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { useNavigate, useLocation } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
-import Source_sec1, { ProcessEmissionSection } from "./formsections/Source/Source_sec1";
 import Source_sec2 from "./formsections/Source/Source_sec2";
+
+// Define an interface for the expected API response structure
+// interface EmissionApiResponse {
+//   id?: number;
+//   report_id?: number;
+//   generatl_info_on_data_quality?: string;
+//   justification_for_use_default_values?: string;
+//   manual_fuel_balance?: string | number;
+//   manual_GHG_emissions_balance?: string | number;
+//   info_qty_assurance?: string;
+//   [key: string]: any; // Allow other fields
+// }
 
 interface EmissionFormProps {
   formValues: {
@@ -25,132 +42,312 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const reportId = 54; // Placeholder for demonstration
-  const apiUrl = process.env.REACT_APP_API_URL;
+
+  // Get reportId from query parameters, localStorage or use default
+
+  const reportId = 54 ;
+  const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
+
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formValues, setFormValues] = useState({
-    // Initialize form values
-    reportId: "",
-    manual_fuel_balance: externalFormValues.manual_fuel_balance || "",
-    manual_GHG_emissions_balance: externalFormValues.manual_GHG_emissions_balance || "",
-    generatl_info_on_data_quality: externalFormValues.generatl_info_on_data_quality || "",
-    justification_for_use_default_values: externalFormValues.justification_for_use_default_values || "",
-    information_quality_ssurance: externalFormValues.info_qty_assurance || "",
-  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiData, setApiData] = useState<any>(null);
+  const [dataFetched, setDataFetched] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Effect to check for missing reportId
+  // State สำหรับค่าในฟอร์มที่จะแสดงผล
+  const [formValues, setFormValues] = useState({
+    reportId: reportId.toString(),
+    manual_fuel_balance: "",
+    manual_GHG_emissions_balance: "",
+    generatl_info_on_data_quality: "",
+    justification_for_use_default_values: "",
+    information_quality_ssurance: "", // รับค่า info_qty_assurance จาก API
+  });
+
+  const formInitializedRef = useRef(false);
+
+  // ฟังก์ชันดึงข้อมูลจาก API ที่ปรับปรุงแล้ว
+  // Fix for fetching and handling the emission data
+  const fetchEmissionData = async () => {
+    if (!reportId) return;
+    setIsLoading(true);
+    try {
+      console.log(`🔍 Fetching emission data for reportId: ${reportId}`);
+      const response = await fetch(`${apiUrl}/api/cbam/c_emission/report/${reportId}`);
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          console.log("📝 No emission data found for this report.");
+          setApiData(null);
+          return;
+        }
+        throw new Error(
+          `Failed to fetch data: ${response.status} ${response.statusText}`
+        );
+      }
+
+      const data = await response.json();
+      console.log("📊 API Response:", data);
+
+      // Handle the array response - use the most recent entry (last in the array)
+      if (Array.isArray(data) && data.length > 0) {
+        // Sort by id in descending order to get the most recent entry
+        const mostRecentEntry = [...data].sort((a, b) => b.id - a.id)[0];
+        setApiData(mostRecentEntry);
+
+        // Update form values with the most recent data
+        setFormValues({
+          reportId: reportId.toString(),
+          manual_fuel_balance:
+            mostRecentEntry.manual_fuel_balance?.toString() || "",
+          manual_GHG_emissions_balance:
+            mostRecentEntry.manual_GHG_emissions_balance?.toString() || "",
+          generatl_info_on_data_quality:
+            mostRecentEntry.generatl_info_on_data_quality || "",
+          justification_for_use_default_values:
+            mostRecentEntry.justification_for_use_default_values || "",
+          information_quality_ssurance:
+            mostRecentEntry.info_qty_assurance || "",
+        });
+
+        console.log("✅ Form values updated from API data:", {
+          reportId: reportId.toString(),
+          manual_fuel_balance:
+            mostRecentEntry.manual_fuel_balance?.toString() || "",
+          manual_GHG_emissions_balance:
+            mostRecentEntry.manual_GHG_emissions_balance?.toString() || "",
+          generatl_info_on_data_quality:
+            mostRecentEntry.generatl_info_on_data_quality || "",
+          justification_for_use_default_values:
+            mostRecentEntry.justification_for_use_default_values || "",
+          information_quality_ssurance:
+            mostRecentEntry.info_qty_assurance || "",
+        });
+      } else if (!Array.isArray(data) && data) {
+        // Handle case where API returns a single object
+        setApiData(data);
+        setFormValues({
+          reportId: reportId.toString(),
+          manual_fuel_balance: data.manual_fuel_balance?.toString() || "",
+          manual_GHG_emissions_balance:
+            data.manual_GHG_emissions_balance?.toString() || "",
+          generatl_info_on_data_quality:
+            data.generatl_info_on_data_quality || "",
+          justification_for_use_default_values:
+            data.justification_for_use_default_values || "",
+          information_quality_ssurance: data.info_qty_assurance || "",
+        });
+      } else {
+        console.log("No data returned from API or unexpected format");
+        setApiData(null);
+      }
+    } catch (error) {
+      console.error("❌ Error fetching emission data:", error);
+    } finally {
+      setIsLoading(false);
+      setDataFetched(true);
+    }
+  };
+
+  // Effect สำหรับการดึงข้อมูลครั้งแรกเมื่อคอมโพเนนต์โหลด
   useEffect(() => {
-    if (!reportId) {
-      console.error("Missing reportId");
-      alert("Please select a report first.");
+    if (!formInitializedRef.current) {
+      fetchEmissionData();
+      formInitializedRef.current = true;
     }
   }, [reportId]);
 
   // Input change handler
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormValues((prev) => ({ ...prev, [name]: value }));
-    
+
+    // Clear any error when field is edited
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
+
+    // Notify parent component if onChange prop is provided
+    if (onChange) {
+      const updatedValues = { ...formValues, [name]: value };
+      const parentValues = {
+        generatl_info_on_data_quality:
+          updatedValues.generatl_info_on_data_quality,
+        justification_for_use_default_values:
+          updatedValues.justification_for_use_default_values,
+        manual_fuel_balance: updatedValues.manual_fuel_balance,
+        manual_GHG_emissions_balance:
+          updatedValues.manual_GHG_emissions_balance,
+        info_qty_assurance: updatedValues.information_quality_ssurance,
+      };
+      onChange(parentValues);
+    }
   };
 
-  // Form validation function
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-    
-    const requiredFields = [
-      "manual_fuel_balance",
-      "manual_GHG_emissions_balance",
-      "generatl_info_on_data_quality",
-      "justification_for_use_default_values",
-      "information_quality_ssurance",
-    ];
+  // Function to refresh data from API
+  const handleRefreshData = async () => {
+    await fetchEmissionData();
+  };
 
-    requiredFields.forEach((field) => {
-      if (!formValues[field as keyof typeof formValues]) {
-        newErrors[field] = "This field is required";
+  // จัดการ submit ฟอร์ม
+  const handleSubmit = (e: React.FormEvent) => {
+  e.preventDefault();
+  if (isSubmitting) return;
+  setIsSubmitting(true);
+  
+  // Form validation
+  const newErrors: { [key: string]: string } = {};
+  const requiredFields = [
+    "manual_fuel_balance",
+    "manual_GHG_emissions_balance",
+    "generatl_info_on_data_quality",
+    "justification_for_use_default_values",
+    "information_quality_ssurance",
+  ];
+  
+  requiredFields.forEach((field) => {
+    if (!formValues[field as keyof typeof formValues]) {
+      newErrors[field] = "This field is required";
+    }
+  });
+  
+  if (Object.keys(newErrors).length > 0) {
+    setFormErrors(newErrors);
+    setIsSubmitting(false);
+    return;
+  }
+  
+  // Prepare data for API
+  const payload: any = {
+    report_id: reportId,
+    generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+    justification_for_use_default_values: formValues.justification_for_use_default_values,
+    manual_fuel_balance: parseFloat(formValues.manual_fuel_balance || "0"),
+    manual_GHG_emissions_balance: parseFloat(formValues.manual_GHG_emissions_balance || "0"),
+    info_qty_assurance: formValues.information_quality_ssurance,
+    manual_total_indirect_emissions: null,
+  };
+  
+  // Determine if we're updating an existing record or creating a new one
+  const isUpdate = apiData && apiData.id;
+  const method = isUpdate ? "PUT" : "POST";
+  const url = isUpdate
+    ? `${apiUrl}/api/cbam/c_emission/${apiData.id}`
+    : `${apiUrl}/api/cbam/c_emission`;
+    
+  if (isUpdate) {
+    payload.id = apiData.id;
+  }
+  
+  console.log(`🔄 ${method} request to: ${url}`, payload);
+  
+  // Send data to API
+  fetch(url, {
+    method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => {
+      if (!response.ok) {
+        return response.text().then((text) => {
+          throw new Error(`API Error (${response.status}): ${text}`);
+        });
       }
-    });
-
-    // If there are validation errors, set the errors and return false
-    if (Object.keys(newErrors).length > 0) {
-      setFormErrors(newErrors);
-      return false;
-    }
-    
-    return true;
-  };
-
-  // Prepare the payload
-  const constructPayload = () => {
-    return {
-      report_id: reportId,
-      generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
-      justification_for_use_default_values: formValues.justification_for_use_default_values,
-      manual_fuel_balance: formValues.manual_fuel_balance,
-      manual_GHG_emissions_balance: formValues.manual_GHG_emissions_balance,
-      info_qty_assurance: formValues.information_quality_ssurance,
-    };
-  };
-
-  // API submission function
-  const submitData = async (payload: any) => {
-    const response = await fetch(`${apiUrl}/api/cbam/c_emission`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Submission error: ${errorText}`);
-    }
-    return response.json(); // Return response if needed
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (isSubmitting) return; // Prevent multiple submissions
-
-    setIsSubmitting(true);
-
-    // Validate form before submitting
-    if (!validateForm()) {
-      setIsSubmitting(false);
-      return;
-    }
-
-    const payload = constructPayload();
-
-    try {
-      await submitData(payload);
-      alert("✅ Data submitted successfully");
-      navigate(`/report?reportId=${reportId}`);
-    } catch (error: any) {
-      console.error("Submission error:", error);
+      return response.json();
+    })
+    .then((responseData) => {
+      console.log("✅ API Response:", responseData);
+      setApiData(responseData);
+      alert(`✅ Data ${isUpdate ? "updated" : "submitted"} successfully`);
+      
+      // Move to next step or navigate to report page
+      if (onNextStep) {
+         navigate(`/report?reportId=${reportId}`);
+      } 
+    })
+    .catch((error) => {
+      console.error("❌ Error:", error);
       alert(`❌ Error: ${error.message}`);
-    } finally {
+    })
+    .finally(() => {
       setIsSubmitting(false);
-    }
-  };
+    });
+};
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>
       <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3} alignItems="stretch">
-          <Box>
-            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
-              Installation's emission at source stream and emission source level
-            </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-              การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
-            </Typography>
+          <Box
+            sx={{
+              width: "100%",
+              mb: 3,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box>
+              <Typography
+                variant="h5"
+                fontWeight="bold"
+                gutterBottom
+                color="#1976d2"
+              >
+                Installation's emission at source stream and emission source
+                level
+              </Typography>
+              <Typography
+                variant="subtitle1"
+                color="text.secondary"
+                gutterBottom
+              >
+                การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
+              </Typography>
+
+              {/* Show data status */}
+              {apiData &&
+                (Array.isArray(apiData) ? apiData[0]?.id : apiData.id) && (
+                  <Typography
+                    variant="body2"
+                    color="success.main"
+                    sx={{ mt: 1 }}
+                  >
+                    ✅ Data loaded from database (ID:{" "}
+                    {Array.isArray(apiData) ? apiData[0]?.id : apiData.id})
+                  </Typography>
+                )}
+
+              {isLoading && (
+                <Box display="flex" alignItems="center" mt={1}>
+                  <CircularProgress size={20} sx={{ mr: 1 }} />
+                  <Typography variant="body2" color="text.secondary">
+                    Loading data...
+                  </Typography>
+                </Box>
+              )}
+            </Box>
+
+            {/* Refresh button */}
+            <button
+              type="button"
+              onClick={handleRefreshData}
+              style={{
+                background: "none",
+                border: "1px solid #ccc",
+                borderRadius: "4px",
+                padding: "8px 16px",
+                cursor: "pointer",
+                fontSize: "14px",
+              }}
+              disabled={isLoading}
+            >
+              {isLoading ? "Loading..." : "Refresh Data"}
+            </button>
           </Box>
 
-          {/* SECTION 2: Installation-level GHG emissions and energy consumption */}
+          {/* SECTION: Installation-level GHG emissions and energy consumption */}
           <Section
             title="(d) Installation-level GHG emissions and energy consumption"
             subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
@@ -166,8 +363,78 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
           </Section>
 
           {/* Submit Button */}
-          <PGButton />
+          <Box
+            sx={{
+              width: "100%",
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: 3,
+            }}
+          >
+            <PGButton />
+            {/* <button
+              type="submit"
+              disabled={isSubmitting}
+              style={{
+                backgroundColor: isSubmitting ? "#888" : "#1976d2",
+                color: "white",
+                padding: "10px 20px",
+                border: "none",
+                // backgroundColor: isSubmitting ? "#888" : "#1976d2",
+                // color: "white",
+                // padding: "10px 20px",
+                // border: "none",
+                borderRadius: "4px",
+                cursor: isSubmitting ? "not-allowed" : "pointer",
+                fontWeight: "bold",
+                fontSize: "14px",
+              }}
+            >
+              {isSubmitting
+                ? "Saving..."
+                : apiData &&
+                  (Array.isArray(apiData) ? apiData[0]?.id : apiData.id)
+                ? "Update Data"
+                : "Save Data"}
+            </button> */}
+          </Box>
         </Grid>
+
+        {/* Debug Information - only visible in development mode */}
+        {process.env.NODE_ENV === "development" && (
+          <Box mt={4} p={2} bgcolor="#f5f5f5" borderRadius={1}>
+            <Typography variant="subtitle2" gutterBottom>
+              Debug Info:
+            </Typography>
+            <Typography variant="body2">Report ID: {reportId}</Typography>
+            <Typography variant="body2">
+              Form Status: {isLoading ? "Loading" : apiData ? "Loaded" : "New"}
+            </Typography>
+            <Typography variant="body2">
+              Data Fetched: {dataFetched ? "Yes" : "No"}
+            </Typography>
+
+            <Box mt={1}>
+              <details>
+                <summary>Current Form Values</summary>
+                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
+                  {JSON.stringify(formValues, null, 2)}
+                </pre>
+              </details>
+            </Box>
+
+            {apiData && (
+              <Box mt={1}>
+                <details>
+                  <summary>API Data</summary>
+                  <pre style={{ overflow: "auto", maxHeight: "200px" }}>
+                    {JSON.stringify(apiData, null, 2)}
+                  </pre>
+                </details>
+              </Box>
+            )}
+          </Box>
+        )}
       </form>
     </Container>
   );

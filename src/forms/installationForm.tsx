@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
-import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import LabeledTextField from "../components/LabeledTextField";
@@ -12,6 +12,7 @@ import {
 
 interface InstallationFormProps {
   data: {
+    reportId: number;
     name: string;
     name_specific: string;
     eco_activity: string;
@@ -41,22 +42,26 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
-  // Get report ID and company ID (fixed for demo or from params)
-  // const reportId = localStorage.getItem("reportId");
-  // const companyId = localStorage.companyId;
-  const reportId = 54;
-  const companyId = 1;
+  // Get report ID from localStorage (always exists in real situation)
+  const storedReportId = localStorage.getItem("reportId");
+  const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
 
+  const companyId = 1;
   const apiUrl = process.env.REACT_APP_API_URL;
+
   const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [formMode, setFormMode] = useState<"edit" | "create" | "empty">(
+    "empty"
+  );
 
-  // สถานะสำหรับติดตามการโหลด
-  const [isLoadingReport, setIsLoadingReport] = useState(true);
-  const [isLoadingInstallation, setIsLoadingInstallation] = useState(false);
+  // Initialize form values with today's date
+  const getTodayDate = () => new Date();
 
   const [formValues, setFormValues] = useState({
+    reportId: reportId || 0,
     name: data.name || "",
     name_specific: data.name_specific || "",
     eco_activity: data.eco_activity || "",
@@ -71,17 +76,13 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     email: data.email || "",
     tel: data.tel || "",
     unlocode: data.unlocode || "",
-    reporting_period_start: data.reporting_period_start
-      ? new Date(data.reporting_period_start)
-      : new Date(),
-    reporting_period_end: data.reporting_period_end
-      ? new Date(data.reporting_period_end)
-      : new Date(),
+    reporting_period_start: getTodayDate(),
+    reporting_period_end: getTodayDate(),
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // ตัวช่วยจัดรูปแบบวันที่
+  // Date formatter
   const formatDate = (date: any): string => {
     if (!date) return "";
     if (date instanceof Date) return date.toISOString().split("T")[0];
@@ -89,16 +90,72 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     return "";
   };
 
-  // เพิ่มฟังก์ชันสำหรับดึง installation ล่าสุดของบริษัท
-  const fetchLatestInstallation = async (companyId: number) => {
+  // 🏭 Fetch specific installation data (for EDIT mode)
+  const fetchInstallationData = async (installationId: number) => {
     try {
-      setIsLoadingInstallation(true);
+      console.log(`🔍 Fetching installation data for ID: ${installationId}`);
 
-      // ดึงข้อมูล installations ทั้งหมดของบริษัท
       const response = await fetch(
-        `${apiUrl}/api/cbam/installation/company/${companyId}`
+        `${apiUrl}/api/cbam/installation/${installationId}`
       );
+      if (!response.ok) {
+        throw new Error(`Error fetching installation: ${response.statusText}`);
+      }
 
+      const installationDataArray = await response.json();
+
+      if (installationDataArray && installationDataArray.length > 0) {
+        const installationData = installationDataArray[0];
+        console.log(
+          "✅ Found installation data for EDIT mode:",
+          installationData
+        );
+
+        // Update form values with existing installation data + today's dates
+        const updatedFormValues = {
+          reportId: reportId || 0,
+          name: installationData.name || "",
+          name_specific: installationData.name_specific || "",
+          eco_activity: installationData.eco_activity || "",
+          address: installationData.address || "",
+          city: installationData.city || "",
+          country_id: installationData.country_id
+            ? String(installationData.country_id)
+            : "",
+          post_code: installationData.post_code || "",
+          po_box: installationData.po_box || "",
+          latitude: installationData.latitude || "",
+          longitude: installationData.longitude || "",
+          author_represent: installationData.author_represent || "",
+          email: installationData.email || "",
+          tel: installationData.phone || "", // phone -> tel
+          unlocode: installationData.unlocode || "",
+          // Set dates to today as requested
+          reporting_period_start: getTodayDate(),
+          reporting_period_end: getTodayDate(),
+        };
+
+        setFormValues(updatedFormValues);
+        onChange(updatedFormValues);
+        setFormMode("edit");
+
+        return installationData.id;
+      }
+    } catch (error) {
+      console.error("❌ Error fetching installation data:", error);
+    }
+
+    return null;
+  };
+
+  // 🏢 Fetch latest installation from company (for CREATE mode)
+  const fetchLatestCompanyInstallation = async (companyId: number) => {
+    try {
+      console.log(`🔍 Fetching latest installation for company: ${companyId}`);
+
+      const response = await fetch(
+        `${apiUrl}/api/cbam/report/company/${companyId}`
+      );
       if (!response.ok) {
         throw new Error(
           `Error fetching company installations: ${response.statusText}`
@@ -106,331 +163,211 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       const installations = await response.json();
-      console.log("Fetched company installations:", installations);
 
       if (installations && installations.length > 0) {
-        // ถ้าข้อมูลเรียงจากเก่าไปใหม่ ตัวล่าสุดจะอยู่ตำแหน่งสุดท้ายของ array
+        // Take the last item as requested
         const latestInstallation = installations[installations.length - 1];
-        console.log("Using latest installation:", latestInstallation);
-
-        // อัปเดตฟอร์มด้วยข้อมูล installation ล่าสุด
-        setFormValues({
-          name: latestInstallation.name || "",
-          name_specific: latestInstallation.name_specific || "",
-          eco_activity: latestInstallation.eco_activity || "",
-          address: latestInstallation.address || "",
-          city: latestInstallation.city || "",
-          country_id: latestInstallation.country_id
-            ? String(latestInstallation.country_id)
-            : "",
-          post_code: latestInstallation.post_code || "",
-          po_box: latestInstallation.po_box || "",
-          latitude: latestInstallation.latitude || "",
-          longitude: latestInstallation.longitude || "",
-          author_represent: latestInstallation.author_represent || "",
-          email: latestInstallation.email || "",
-          tel: latestInstallation.phone || "", // หมายเหตุ: phone ในฐานข้อมูลแต่ tel ในฟอร์ม
-          unlocode: latestInstallation.unlocode || "",
-          reporting_period_start: existingData?.reporting_period_start
-            ? new Date(existingData.reporting_period_start)
-            : new Date(),
-          reporting_period_end: existingData?.reporting_period_end
-            ? new Date(existingData.reporting_period_end)
-            : new Date(),
-        });
-
-        // อัปเดต parent component
-        onChange({
-          name: latestInstallation.name || "",
-          name_specific: latestInstallation.name_specific || "",
-          eco_activity: latestInstallation.eco_activity || "",
-          address: latestInstallation.address || "",
-          city: latestInstallation.city || "",
-          country_id: latestInstallation.country_id
-            ? String(latestInstallation.country_id)
-            : "",
-          post_code: latestInstallation.post_code || "",
-          po_box: latestInstallation.po_box || "",
-          latitude: latestInstallation.latitude || "",
-          longitude: latestInstallation.longitude || "",
-          author_represent: latestInstallation.author_represent || "",
-          email: latestInstallation.email || "",
-          tel: latestInstallation.phone || "",
-          unlocode: latestInstallation.unlocode || "",
-          reporting_period_start: existingData?.reporting_period_start
-            ? new Date(existingData.reporting_period_start)
-            : new Date(),
-          reporting_period_end: existingData?.reporting_period_end
-            ? new Date(existingData.reporting_period_end)
-            : new Date(),
-        });
-
-        return latestInstallation.id; // ส่งคืน ID ของ installation ล่าสุด
-      }
-
-      return null; // ไม่พบ installation
-    } catch (error) {
-      console.error("Error fetching latest installation:", error);
-      return null;
-    } finally {
-      setIsLoadingInstallation(false);
-    }
-  };
-
-  const fetchCompanyReports = async () => {
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/cbam/report/company/${companyId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Error fetching company reports: ${response.statusText}`
-        );
-      }
-
-      const reports = await response.json();
-      console.log("Fetched company reports:", reports);
-
-      // กรองหารายงานที่มี installation_id แล้ว
-      const reportsWithInstallation = reports.filter(
-        (report: any) => report.installation_id
-      );
-
-      if (reportsWithInstallation.length > 0) {
         console.log(
-          "Found report with installation:",
-          reportsWithInstallation[0]
+          "✅ Found latest installation for CREATE mode:",
+          latestInstallation
         );
-        // นำ installation_id จากรายงานแรกที่พบไปดึงข้อมูล
-        await fetchInstallationData(reportsWithInstallation[0].installation_id);
+
+        const latestinstallationId = latestInstallation.installation_id;
+
+        const latestdata_response = await fetch(
+          `${apiUrl}/api/cbam/installation/${latestinstallationId}`
+        );
+
+        const latestdata = await latestdata_response.json();
+
+        // Update form with basic info but set dates to today
+        const updatedFormValues = {
+          reportId: reportId || 0,
+          name: latestdata.name || "",
+          name_specific: latestdata.name_specific || "",
+          eco_activity: latestdata.eco_activity || "",
+          address: latestdata.address || "",
+          city: latestdata.city || "",
+          country_id: latestdata.country_id
+            ? String(latestdata.country_id)
+            : "",
+          post_code: latestdata.post_code || "",
+          po_box: latestdata.po_box || "",
+          latitude: latestdata.latitude || "",
+          longitude: latestdata.longitude || "",
+          author_represent: latestdata.author_represent || "",
+          email: latestdata.email || "",
+          tel: latestdata.phone || "",
+          unlocode: latestdata.unlocode || "",
+          // Set dates to today as requested
+          reporting_period_start: getTodayDate(),
+          reporting_period_end: getTodayDate(),
+        };
+
+        setFormValues(updatedFormValues);
+        onChange(updatedFormValues);
+        setFormMode("create");
       } else {
-        console.log(
-          "No reports with installation found, trying to fetch latest installation"
-        );
-        // ถ้าไม่พบรายงานที่มี installation ให้ดึง installation ล่าสุดแทน
-        await fetchLatestInstallation(companyId);
+        console.log("ℹ️ No previous installations found, showing empty form");
+        setFormMode("empty");
       }
     } catch (error) {
-      console.error("Error fetching company reports:", error);
-      console.log("Trying to fetch latest installation as fallback");
-      // ถ้าดึงข้อมูลรายงานไม่สำเร็จ ให้ลองดึง installation ล่าสุด
-      await fetchLatestInstallation(companyId);
-    } finally {
-      setIsLoadingInstallation(false);
+      console.error("❌ Error fetching latest installation:", error);
+      console.log("ℹ️ Fallback to empty form");
+      setFormMode("empty");
     }
   };
 
-  // ดึงข้อมูล installation สำหรับแสดงในฟอร์ม
-  const fetchInstallationData = async (installationId: number) => {
-    if (!installationId) {
-      console.error("No installation ID provided to fetch");
-      return;
-    }
-
-    setIsLoadingInstallation(true);
-
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/cbam/installation/${installationId}`
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Error fetching installation data: ${response.statusText}`
-        );
-      }
-
-      const installationDataArray = await response.json();
-      console.log("Fetched installation data:", installationDataArray);
-
-      // สำคัญ: ข้อมูลเป็น array ต้องดึง element แรกออกมา
-      if (installationDataArray && installationDataArray.length > 0) {
-        const installationData = installationDataArray[0];
-        console.log("Using installation data:", installationData);
-
-        // อัปเดตค่าในฟอร์มด้วยข้อมูลจาก API
-        setFormValues((prev) => ({
-          ...prev,
-          name: installationData.name || prev.name,
-          name_specific: installationData.name_specific || prev.name_specific,
-          eco_activity: installationData.eco_activity || prev.eco_activity,
-          address: installationData.address || prev.address,
-          city: installationData.city || prev.city,
-          country_id: installationData.country_id
-            ? String(installationData.country_id)
-            : prev.country_id,
-          post_code: installationData.post_code || prev.post_code,
-          po_box: installationData.po_box || prev.po_box,
-          latitude: installationData.latitude || prev.latitude,
-          longitude: installationData.longitude || prev.longitude,
-          author_represent:
-            installationData.author_represent || prev.author_represent,
-          email: installationData.email || prev.email,
-          tel: installationData.phone || prev.tel, // หมายเหตุ: phone ในฐานข้อมูลแต่ tel ในฟอร์ม
-          unlocode: installationData.unlocode || prev.unlocode,
-        }));
-
-        // อัปเดต parent component
-        onChange({
-          ...formValues,
-          name: installationData.name || formValues.name,
-          name_specific:
-            installationData.name_specific || formValues.name_specific,
-          eco_activity:
-            installationData.eco_activity || formValues.eco_activity,
-          address: installationData.address || formValues.address,
-          city: installationData.city || formValues.city,
-          country_id: installationData.country_id
-            ? String(installationData.country_id)
-            : formValues.country_id,
-          post_code: installationData.post_code || formValues.post_code,
-          po_box: installationData.po_box || formValues.po_box,
-          latitude: installationData.latitude || formValues.latitude,
-          longitude: installationData.longitude || formValues.longitude,
-          author_represent:
-            installationData.author_represent || formValues.author_represent,
-          email: installationData.email || formValues.email,
-          tel: installationData.phone || formValues.tel,
-          unlocode: installationData.unlocode || formValues.unlocode,
-        });
-      } else {
-        console.warn("No installation data found for ID:", installationId);
-      }
-    } catch (error) {
-      console.error("Error fetching installation data:", error);
-    } finally {
-      setIsLoadingInstallation(false);
-    }
-  };
-
-  // เริ่มการดึงข้อมูลหลักเมื่อโหลดคอมโพเนนต์
-  // เริ่มการดึงข้อมูลหลักเมื่อโหลดคอมโพเนนต์
+  // 🔍 Main data loading logic
   useEffect(() => {
-    const fetchMainData = async () => {
-      setIsLoadingReport(true);
+    const loadInstallationData = async () => {
+      setIsLoading(true);
 
       try {
-        // ดึงข้อมูลรายงาน ID 54 โดยตรง แทนที่จะใช้ reportId จาก state
+        // Case 1: No reportId - show empty form (shouldn't happen in real life)
+        if (!reportId) {
+          console.log("⚠️ No reportId found - showing empty form");
+          setFormMode("empty");
+          setIsLoading(false);
+          return;
+        }
+
+        // Case 2: Fetch report data to check if it has installation_id
+        console.log(`🔍 Checking report ${reportId} for existing installation`);
+
         const reportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`
         );
-
         if (!reportResponse.ok) {
-          throw new Error("Failed to fetch report data");
+          throw new Error(
+            `Failed to fetch report: ${reportResponse.statusText}`
+          );
         }
 
         const reportData = await reportResponse.json();
-        console.log("Fetched report data:", reportData);
+        console.log("📋 Report data:", reportData);
 
         if (reportData && reportData.length > 0) {
-          setExistingData(reportData[0]);
+          const report = reportData[0];
+          setExistingData(report);
 
-          // ถ้า report มี installation_id ให้ดึงข้อมูล installation
-          if (reportData[0].installation_id) {
+          if (report.installation_id) {
+            // ✅ SCENARIO 1: EDIT MODE - Report has installation_id
             console.log(
-              "Report has installation_id, fetching installation data"
+              "🔄 EDIT MODE: Report has installation_id, fetching installation data"
             );
-            await fetchInstallationData(reportData[0].installation_id);
+            await fetchInstallationData(report.installation_id);
           } else {
+            // ✅ SCENARIO 2: CREATE MODE - Report has no installation_id
             console.log(
-              "Report does not have installation_id, checking other reports from company"
+              "🆕 CREATE MODE: Report has no installation_id, fetching latest company installation"
             );
-            // ถ้า report ไม่มี installation_id ให้ดึงข้อมูลจาก company reports
-            await fetchCompanyReports();
+            await fetchLatestCompanyInstallation(companyId);
           }
+        } else {
+          console.log("⚠️ No report data found - showing empty form");
+          setFormMode("empty");
         }
       } catch (error) {
-        console.error("Error fetching report data:", error);
-        console.log("Error with report data, trying company reports");
-        // ถ้าดึงข้อมูล report ไม่สำเร็จ ก็ลองดึงข้อมูลจาก company reports
-        await fetchCompanyReports();
+        console.error("❌ Error in main data loading:", error);
+        console.log("🔄 Fallback: trying to get latest company installation");
+        await fetchLatestCompanyInstallation(companyId);
       } finally {
-        setIsLoadingReport(false);
+        setIsLoading(false);
       }
     };
 
-    fetchMainData();
-  }, [apiUrl, companyId]); // ไม่ใช้ reportId เป็น dependency เพราะเราใช้ค่า hard-coded 54
+    loadInstallationData();
+  }, [apiUrl, reportId, companyId]);
 
-  // โหลดข้อมูลประเทศ
+  // Load countries
   useEffect(() => {
     const loadCountries = async () => {
-      const { countries, defaultCountry } = await fetchCountries();
-      setCountries(countries);
+      try {
+        const result = (await fetchCountries()) as {
+          countries: CountryOption[];
+          defaultCountry: CountryOption | null;
+        };
 
-      // อัปเดต unlocode หลังจากโหลดข้อมูลประเทศแล้ว
-      // และมี country_id อยู่แล้ว
-      if (countries.length > 0 && formValues.country_id) {
-        const selectedCountry = countries.find(
-          (c) => String(c.value) === formValues.country_id
-        );
+        setCountries(result.countries);
+        console.log(`✅ Loaded ${result.countries.length} countries`);
 
-        if (selectedCountry) {
+        // Auto-select default country if none selected
+        if (result.defaultCountry && !formValues.country_id) {
+          const defaultCountryData = {
+            ...formValues,
+            country_id: String(result.defaultCountry.value),
+            unlocode: String(result.defaultCountry.abbreviation),
+          };
+
           setFormValues((prev) => ({
             ...prev,
-            unlocode: selectedCountry.abbreviation || prev.unlocode,
+            country_id: String(result.defaultCountry!.value),
+            unlocode: String(result.defaultCountry!.abbreviation),
           }));
 
-          onChange({
-            ...formValues,
-            unlocode: selectedCountry.abbreviation || formValues.unlocode,
-          });
+          onChange(defaultCountryData);
         }
-      }
-      // ถ้ายังไม่มี country_id
-      else if (defaultCountry && !formValues.country_id) {
-        onChange({
-          ...formValues,
-          country_id: String(defaultCountry.value),
-          unlocode: String(defaultCountry.abbreviation),
-        });
-
-        setFormValues((prev) => ({
-          ...prev,
-          country_id: String(defaultCountry.value),
-          unlocode: String(defaultCountry.abbreviation),
-        }));
+      } catch (error) {
+        console.error("❌ Error loading countries:", error);
       }
     };
 
     loadCountries();
-  }, [formValues.country_id]);
+  }, []);
 
-  // จัดการการเปลี่ยนแปลงค่าในฟอร์ม
+  // Handle form field changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+
     setFormValues((prev) => ({ ...prev, [name]: value }));
 
+    // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    const updatedFormValues = { ...formValues, [name]: value };
+    // Update parent component
+    const updatedFormValues = {
+      ...formValues,
+      [name]: value,
+      reportId: reportId || 0,
+    };
+
     onChange(updatedFormValues as InstallationFormProps["data"]);
   };
 
-  // เพิ่มฟังก์ชันเพื่อตรวจสอบว่ารายงานมีอยู่แล้วหรือไม่
-  const checkReportExists = async (reportId: number): Promise<boolean> => {
-    try {
-      const response = await fetch(`${apiUrl}/api/cbam/report/${reportId}`);
-      if (response.ok) {
-        const data = await response.json();
-        return data && data.length > 0;
-      }
-      return false;
-    } catch (error) {
-      console.error("Error checking report existence:", error);
-      return false;
+  // Handle country selection - Fix the type issue
+  const handleCountryChange = (
+    countryValue: string | number | (string | number)[]
+  ) => {
+    // Convert to string to handle all possible types
+    const value = String(countryValue);
+    const selectedCountry = countries.find((c) => String(c.value) === value);
+
+    const updatedFormValues = {
+      ...formValues,
+      country_id: value,
+      unlocode: selectedCountry?.abbreviation || "",
+    };
+
+    setFormValues(updatedFormValues);
+    onChange(updatedFormValues);
+
+    // Clear country error
+    if (formErrors.country_id) {
+      setFormErrors((prev) => ({ ...prev, country_id: "" }));
     }
   };
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
     setIsSubmitting(true);
 
-    // ตรวจสอบ required fields
+    // Validation
     const requiredFields = [
       "name",
       "address",
@@ -446,14 +383,13 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
     const newErrors: { [key: string]: string } = {};
 
-    // ตรวจสอบฟิลด์ที่จำเป็น
     requiredFields.forEach((field) => {
       if (!formValues[field as keyof typeof formValues]) {
         newErrors[field] = "กรุณากรอกข้อมูล";
       }
     });
 
-    // ตรวจสอบรูปแบบอีเมล
+    // Email validation
     if (
       formValues.email &&
       !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formValues.email)
@@ -461,11 +397,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
     }
 
-    // หากมีข้อผิดพลาด ไม่ดำเนินการต่อ
     if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
 
-      // เลื่อนไปยังฟิลด์แรกที่มีข้อผิดพลาด
+      // Scroll to first error
       const firstErrorField = Object.keys(newErrors)[0];
       const errorElement = document.getElementsByName(firstErrorField)[0];
       if (errorElement) {
@@ -477,7 +412,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     }
 
     try {
-      // สร้าง payload สำหรับ installation
+      // 1. Create/Update Installation
       const installationPayload = {
         name: formValues.name,
         name_specific: formValues.name_specific || null,
@@ -494,109 +429,142 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         phone: formValues.tel || null,
       };
 
-      console.log("ส่งข้อมูล installation:", installationPayload);
+      console.log(
+        `📤 ${formMode.toUpperCase()} MODE: Saving installation data`
+      );
 
-      // ตรวจสอบว่าต้องอัปเดตหรือสร้างใหม่
-      const installationId = existingData?.installation_id;
-      const method = installationId ? "PUT" : "POST";
-      const installationUrl = installationId
-        ? `${apiUrl}/api/cbam/installation/${installationId}`
-        : `${apiUrl}/api/cbam/installation`;
+      // Determine API call based on mode
+      let installationResponse;
+      let newInstallationId;
 
-      // ส่งข้อมูล installation
-      const response = await fetch(installationUrl, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(installationPayload),
-      });
+      if (formMode === "edit" && existingData?.installation_id) {
+        // UPDATE existing installation
+        console.log(
+          `🔄 Updating installation ID: ${existingData.installation_id}`
+        );
 
-      if (!response.ok) {
-        const errorText = await response.text();
+        installationResponse = await fetch(
+          `${apiUrl}/api/cbam/installation/${existingData.installation_id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(installationPayload),
+          }
+        );
+
+        newInstallationId = existingData.installation_id;
+      } else {
+        // CREATE new installation
+        console.log("🆕 Creating new installation");
+
+        installationResponse = await fetch(`${apiUrl}/api/cbam/installation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(installationPayload),
+        });
+      }
+
+      if (!installationResponse.ok) {
+        const errorText = await installationResponse.text();
         console.error(
-          `❌ การส่งข้อมูล installation ผิดพลาด (${method}):`,
+          `❌ Installation ${formMode === "edit" ? "update" : "create"} error:`,
           errorText
         );
         throw new Error(
-          `ไม่สามารถ${method === "PUT" ? "อัปเดต" : "สร้าง"}ข้อมูลสถานประกอบการ`
+          `Cannot ${formMode === "edit" ? "update" : "create"} installation`
         );
       }
 
-      const installationData = await response.json();
-      console.log("บันทึกข้อมูล installation สำเร็จ:", installationData);
+      const installationResult = await installationResponse.json();
+      console.log("✅ Installation saved successfully:", installationResult);
 
-      // หา installation_id จากการสร้างใหม่หรือใช้ของเดิม
-      const newInstallationId = installationData.id || installationId;
+      // Get installation ID (for new installations)
+      if (formMode !== "edit") {
+        newInstallationId = installationResult.id;
+      }
 
-      // เตรียม payload สำหรับอัปเดตรายงาน
+      // 2. Update Report with installation_id (as requested)
+      console.log(
+        `🔗 Updating report ${reportId} with installation_id: ${newInstallationId}`
+      );
+
       const reportUpdatePayload = {
         installation_id: newInstallationId,
         company_id: companyId,
         reporting_period_start: formatDate(formValues.reporting_period_start),
         reporting_period_end: formatDate(formValues.reporting_period_end),
-        // อาจเพิ่มฟิลด์อื่นๆ ที่จำเป็นสำหรับการสร้างรายงานใหม่ เช่น company_id, goods_id, industry_type_id, etc.
       };
 
-      // ตรวจสอบว่ารายงานมีอยู่แล้วหรือไม่
-      const reportExists = await checkReportExists(reportId);
-
-      // กำหนด method และ URL ตามผลการตรวจสอบ
-      const reportMethod = reportExists ? "PUT" : "POST";
-      const reportUrl = `${apiUrl}/api/cbam/report${
-        reportExists ? `/${reportId}` : ""
-      }`;
-
-      console.log(
-        `อัปเดตรายงาน ID ${reportId} ด้วยวิธี ${reportMethod}:`,
-        reportUpdatePayload
+      const reportUpdateResponse = await fetch(
+        `${apiUrl}/api/cbam/report/${reportId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(reportUpdatePayload),
+        }
       );
-
-      // ส่งคำขอ API
-      const reportUpdateResponse = await fetch(reportUrl, {
-        method: reportMethod,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(reportUpdatePayload),
-      });
 
       if (!reportUpdateResponse.ok) {
         const errorText = await reportUpdateResponse.text();
-        console.error(
-          `❌ การ${method === "PUT" ? "อัปเดต" : "สร้าง"}รายงานผิดพลาด:`,
-          errorText
-        );
-        alert(
-          `บันทึกข้อมูลสถานประกอบการสำเร็จ แต่ไม่สามารถ${
-            method === "PUT" ? "อัปเดต" : "สร้าง"
-          }รายงานได้`
-        );
-      } else {
-        console.log(`${method === "PUT" ? "อัปเดต" : "สร้าง"}รายงานสำเร็จ`);
-        alert(
-          `บันทึกข้อมูลสถานประกอบการและ${
-            method === "PUT" ? "อัปเดต" : "สร้าง"
-          }รายงานสำเร็จ!`
+        console.error("❌ Report update error:", errorText);
+        throw new Error(
+          `Could not update report with installation: ${errorText}`
         );
       }
 
-      // แจ้ง parent component และเปลี่ยนขั้นตอน
-      onChange(formValues);
-      onNextStep?.();
+      const reportResult = await reportUpdateResponse.json();
+      console.log(
+        "✅ Report updated successfully with installation_id:",
+        reportResult
+      );
+
+      // 3. Keep reportId in localStorage as requested
+      localStorage.setItem("reportId", String(reportId));
+      localStorage.setItem("cbam_report_id", String(reportId));
+      console.log(`💾 Kept reportId ${reportId} in localStorage for next page`);
+
+      // Success message
+      const modeText = formMode === "edit" ? "updated" : "created";
+      alert(
+        `✅ Success!\n` +
+          `🏭 Installation ${modeText} successfully\n` +
+          `🔗 Report #${reportId} linked with installation\n` +
+          `📋 Ready for next step`
+      );
+
+      // Move to next step
+      onNextStep();
     } catch (err: any) {
-      console.error("❌ การบันทึกแบบฟอร์มผิดพลาด:", err.message || err);
-      alert(`เกิดข้อผิดพลาด: ${err.message}`);
+      console.error("❌ Form submission error:", err);
+      alert(`❌ Error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // แสดงฟอร์ม
+  // Show loading state
+  if (isLoading) {
+    return (
+      <Container
+        maxWidth="md"
+        style={{ paddingTop: "2rem", textAlign: "center" }}
+      >
+        <Typography variant="h6" gutterBottom>
+          🔍 Loading installation data...
+        </Typography>
+      </Container>
+    );
+  }
+
   return (
     <Container
       maxWidth="md"
       style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
     >
       <form onSubmit={handleSubmit} noValidate>
-        <Grid container spacing={3} alignItems="stretch">
-          <Box>
+        <Grid container spacing={3}>
+          {/* Header Section */}
+          <Grid size={12}>
             <Typography
               variant="h5"
               fontWeight="bold"
@@ -609,334 +577,589 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               รายละเอียดสถานประกอบการ
             </Typography>
 
-            {/* แสดงข้อมูล report และ installation */}
-            {existingData ? (
-              <Box
-                mt={2}
-                p={2}
-                sx={{ backgroundColor: "#f5f5f5", borderRadius: 1 }}
-              >
-                <Typography variant="subtitle2" fontWeight="bold">
-                  ข้อมูลรายงาน:
-                </Typography>
-                <Typography variant="body2">
-                  รหัสรายงาน:{" "}
-                  {reportId || "ไม่ระบุ (สร้างข้อมูลสถานประกอบการอย่างเดียว)"}
-                </Typography>
-                <Typography variant="body2">
-                  ประเภทอุตสาหกรรม:{" "}
-                  {existingData.industry_type_name || "ไม่ระบุ"}
-                </Typography>
-                <Typography variant="body2">
-                  หมวดหมู่สินค้า:{" "}
-                  {existingData.goods_category_name || "ไม่ระบุ"}
-                </Typography>
-                <Typography variant="body2">
-                  ชื่อ: {existingData.name || "ไม่ระบุ"}
-                </Typography>
-                <Typography
-                  variant="body2"
-                  sx={{
-                    mt: 1,
-                    color: existingData.installation_id ? "green" : "orange",
-                  }}
-                >
-                  สถานะสถานประกอบการ:{" "}
-                  {existingData.installation_id
-                    ? `มีข้อมูลอยู่แล้ว (ID: ${existingData.installation_id})`
-                    : "ยังไม่มีข้อมูล - กรุณากรอกข้อมูล"}
-                </Typography>
-              </Box>
-            ) : (
-              <Box
-                mt={2}
-                p={2}
-                sx={{ backgroundColor: "#f0f8ff", borderRadius: 1 }}
-              >
-                <Typography variant="subtitle2" fontWeight="bold">
-                  สร้างข้อมูลสถานประกอบการใหม่
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  กรุณากรอกข้อมูลสถานประกอบการ
-                </Typography>
-              </Box>
-            )}
-          </Box>
-
-          {/* ส่วนของฟอร์มรายงาน */}
-          <Section
-            title="Reporting Period"
-            subtitle=""
-            hasError={
-              !!formErrors.reporting_period_start ||
-              !!formErrors.reporting_period_end
-            }
-            defaultExpanded
-          >
-            <div
-              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
-            >
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  caption="Start Time"
-                  defination="เริ่มต้น"
-                  label=""
-                  name="reporting_period_start"
-                  type="date"
-                  value={formatDate(formValues.reporting_period_start)}
-                  onChange={handleInputChange}
-                  error={!!formErrors.reporting_period_start}
-                  helperText={formErrors.reporting_period_start || ""}
-                  required
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  caption="End Time"
-                  defination="สิ้นสุด"
-                  label=""
-                  name="reporting_period_end"
-                  type="date"
-                  value={formatDate(formValues.reporting_period_end)}
-                  onChange={handleInputChange}
-                  error={!!formErrors.reporting_period_end}
-                  helperText={formErrors.reporting_period_end || ""}
-                  required
-                />
-              </div>
-            </div>
-          </Section>
-
-          {/* Installation form */}
-          <Section
-            title="Installation form"
-            subtitle=""
-            hasError={Object.values(formErrors).some((e) => !!e)}
-            defaultExpanded
-          >
-            <LabeledTextField
-              caption="Name of the installation (ENG)"
-              defination="ชื่อสถานประกอบการเป็นภาษาอังกฤษ (Installation Name - English)"
-              label=""
-              name="name"
-              value={formValues.name}
-              onChange={handleInputChange}
-              error={!!formErrors.name}
-              helperText={formErrors.name || ""}
-              required
-            />
-            <LabeledTextField
-              caption="Name of the installation (TH)"
-              defination="ชื่อของสถานที่ผลิต เช่น โรงงาน เหมือง (Installation Name - Optional)"
-              label=""
-              name="name_specific"
-              value={formValues.name_specific}
-              onChange={handleInputChange}
-              error={!!formErrors.name_specific}
-              helperText={formErrors.name_specific || ""}
-            />
-            <LabeledTextField
-              caption="Economic activity"
-              defination="เลือกประเภทของกิจกรรมหลักในสถานประกอบการ (Economic Activity)"
-              label=""
-              name="eco_activity"
-              value={formValues.eco_activity}
-              onChange={handleInputChange}
-              error={!!formErrors.eco_activity}
-              helperText={formErrors.eco_activity || ""}
-            />
-            <LabeledTextField
-              caption="Street, Number"
-              defination="ถนน เลขที่ (Street, Number)"
-              label=""
-              name="address"
-              value={formValues.address}
-              onChange={handleInputChange}
-              error={!!formErrors.address}
-              helperText={formErrors.address || ""}
-              required
-            />
-            <LabeledTextField
-              caption="City"
-              defination="ชื่อจังหวัดหรือเมือง (City)"
-              label=""
-              name="city"
-              value={formValues.city}
-              onChange={handleInputChange}
-              error={!!formErrors.city}
-              helperText={formErrors.city || ""}
-              required
-            />
-            <div
-              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
-            >
-              <div style={{ flex: 1 }}>
-                <LabeledAutocompleteMap
-                  caption="Country"
-                  defination="เลือกประเทศที่สถานประกอบการตั้งอยู่ (Country)"
-                  label=""
-                  options={countries.map((c) => ({
-                    ...c,
-                    value: String(c.value),
-                  }))}
-                  value={formValues.country_id}
-                  name="country_id"
-                  required
-                  onChange={(val) => {
-                    const selected = countries.find(
-                      (c) => String(c.value) === val
-                    );
-                    setFormValues((prev) => ({
-                      ...prev,
-                      country_id: String(val),
-                      unlocode: selected?.abbreviation || "",
-                    }));
-                    // Update the parent component
-                    onChange({
-                      ...formValues,
-                      country_id: String(val),
-                      unlocode: selected?.abbreviation || "",
-                    });
-                    // Clear error when country is selected
-                    if (formErrors.country_id) {
-                      setFormErrors((prev) => ({ ...prev, country_id: "" }));
-                    }
-                  }}
-                  error={formErrors.country_id || ""}
-                />
-                <LabeledTextField
-                  caption="Post code"
-                  defination="รหัสไปรษณีย์ (Post Code)"
-                  label=""
-                  type="number"
-                  name="post_code"
-                  value={formValues.post_code}
-                  onChange={handleInputChange}
-                  error={!!formErrors.post_code}
-                  helperText={formErrors.post_code || ""}
-                  required
-                />
-                <LabeledTextField
-                  caption="Coordinates of the main emission source (latitude)"
-                  defination="พิกัดละติจูดของแหล่งปล่อยก๊าซหลัก (Latitude) เช่น 13.7563"
-                  label=""
-                  type="number"
-                  name="latitude"
-                  value={formValues.latitude}
-                  onChange={handleInputChange}
-                  error={!!formErrors.latitude}
-                  helperText={formErrors.latitude || ""}
-                  required
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  caption="UNLOCODE"
-                  defination="รหัสประเทศ"
-                  label=""
-                  name="unlocode"
-                  value={formValues.unlocode}
-                  readOnly
-                  onChange={() => {}}
-                  error={!!formErrors.unlocode}
-                  helperText={formErrors.unlocode || ""}
-                  required
-                />
-                <LabeledTextField
-                  caption="P.O. Box"
-                  defination="หมายเลขตู้ไปรษณีย์ (ถ้ามี) (P.O. Box)"
-                  label=""
-                  type="text"
-                  name="po_box"
-                  value={formValues.po_box}
-                  onChange={handleInputChange}
-                  error={!!formErrors.po_box}
-                  helperText={formErrors.po_box || ""}
-                  required
-                />
-                <LabeledTextField
-                  caption="Coordinates of the main emission source (longitude)"
-                  defination="พิกัดลองจิจูดของแหล่งปล่อยก๊าซหลัก (Longitude) เช่น 100.5018"
-                  label=""
-                  type="number"
-                  name="longitude"
-                  value={formValues.longitude}
-                  onChange={handleInputChange}
-                  error={!!formErrors.longitude}
-                  helperText={formErrors.longitude || ""}
-                  required
-                />
-              </div>
-            </div>
-            <LabeledTextField
-              caption="Name of authorized representative"
-              defination="ชื่อหน่วยงานมาฐานแห่งชาติที่ให้การรับรอง"
-              label=""
-              name="author_represent"
-              value={formValues.author_represent}
-              onChange={handleInputChange}
-              error={!!formErrors.author_represent}
-              helperText={formErrors.author_represent || ""}
-              required
-            />
-            <div
-              style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}
-            >
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  type="email"
-                  caption="Email"
-                  defination="อีเมล"
-                  label=""
-                  name="email"
-                  value={formValues.email}
-                  onChange={handleInputChange}
-                  error={!!formErrors.email}
-                  helperText={formErrors.email || ""}
-                  required
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  type="tel"
-                  caption="Telephone"
-                  defination="หมายเลขทะเบียนที่ออกโดยหน่วยงานรับรอง"
-                  label=""
-                  name="tel"
-                  value={formValues.tel}
-                  onChange={handleInputChange}
-                  error={!!formErrors.tel}
-                  helperText={formErrors.tel || ""}
-                  required
-                />
-              </div>
-            </div>
-          </Section>
-
-          {/* Submit button */}
-          <PGButton
-            text={existingData?.installation_id ? "Update" : "Save"}
-            loading={isSubmitting}
-          />
-
-          {/* Debug info - remove in production */}
-          {process.env.NODE_ENV === "development" && (
+            {/* Mode Indicator */}
             <Box
-              mt={4}
+              mt={2}
               p={2}
               sx={{
-                backgroundColor: "#f5f5f5",
+                backgroundColor:
+                  formMode === "edit"
+                    ? "#fff3e0"
+                    : formMode === "create"
+                    ? "#e8f5e8"
+                    : "#f0f8ff",
                 borderRadius: 1,
-                fontSize: "0.8rem",
+                border: `1px solid ${
+                  formMode === "edit"
+                    ? "#ffcc02"
+                    : formMode === "create"
+                    ? "#4caf50"
+                    : "#2196f3"
+                }`,
               }}
             >
-              <Typography variant="caption" component="pre">
-                Report ID: {reportId}
-              </Typography>
-              <Typography variant="caption" component="pre">
-                Existing Data: {JSON.stringify(existingData, null, 2)}
+              {formMode === "edit" && (
+                <>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="bold"
+                    color="#f57c00"
+                  >
+                    🔄 EDIT MODE
+                  </Typography>
+                  <Typography variant="body2">
+                    Editing existing installation (ID:{" "}
+                    {existingData?.installation_id})
+                  </Typography>
+                </>
+              )}
+
+              {formMode === "create" && (
+                <>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="bold"
+                    color="#2e7d32"
+                  >
+                    🆕 CREATE MODE
+                  </Typography>
+                  <Typography variant="body2">
+                    Creating new installation (pre-filled with latest company
+                    data)
+                  </Typography>
+                </>
+              )}
+
+              {formMode === "empty" && (
+                <>
+                  <Typography
+                    variant="subtitle2"
+                    fontWeight="bold"
+                    color="#1976d2"
+                  >
+                    📝 NEW FORM
+                  </Typography>
+                  <Typography variant="body2">
+                    Creating new installation (empty form)
+                  </Typography>
+                </>
+              )}
+
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                <strong>Report ID:</strong> {reportId} |{" "}
+                <strong>Company ID:</strong> {companyId}
               </Typography>
             </Box>
+          </Grid>
+
+          {/* Reporting Period Section */}
+          <Grid size={12}>
+            <Section
+              title="Reporting Period"
+              subtitle="Set reporting dates"
+              hasError={
+                !!formErrors.reporting_period_start ||
+                !!formErrors.reporting_period_end
+              }
+              defaultExpanded
+            >
+              <Grid container spacing={2}>
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Start Time"
+                    defination="วันที่เริ่มต้นรายงาน"
+                    label=""
+                    name="reporting_period_start"
+                    type="date"
+                    value={formatDate(formValues.reporting_period_start)}
+                    onChange={handleInputChange}
+                    error={!!formErrors.reporting_period_start}
+                    helperText={formErrors.reporting_period_start || ""}
+                    required
+                  />
+                </Grid>
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="End Time"
+                    defination="วันที่สิ้นสุดรายงาน"
+                    label=""
+                    name="reporting_period_end"
+                    type="date"
+                    value={formatDate(formValues.reporting_period_end)}
+                    onChange={handleInputChange}
+                    error={!!formErrors.reporting_period_end}
+                    helperText={formErrors.reporting_period_end || ""}
+                    required
+                  />
+                </Grid>
+              </Grid>
+            </Section>
+          </Grid>
+
+          {/* Installation Form Section */}
+          <Grid size={12}>
+            <Section
+              title="Installation Information"
+              subtitle="Fill in installation details"
+              hasError={Object.values(formErrors).some((e) => !!e)}
+              defaultExpanded
+            >
+              <Grid container spacing={2}>
+                {/* Name Fields */}
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Name of the installation (ENG)"
+                    defination="ชื่อสถานประกอบการเป็นภาษาอังกฤษ"
+                    label=""
+                    name="name"
+                    value={formValues.name}
+                    onChange={handleInputChange}
+                    error={!!formErrors.name}
+                    helperText={formErrors.name || ""}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Name of the installation (TH)"
+                    defination="ชื่อสถานประกอบการเป็นภาษาไทย (ไม่บังคับ)"
+                    label=""
+                    name="name_specific"
+                    value={formValues.name_specific}
+                    onChange={handleInputChange}
+                    error={!!formErrors.name_specific}
+                    helperText={formErrors.name_specific || ""}
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Economic activity"
+                    defination="กิจกรรมทางเศรษฐกิจหลัก"
+                    label=""
+                    name="eco_activity"
+                    value={formValues.eco_activity}
+                    onChange={handleInputChange}
+                    error={!!formErrors.eco_activity}
+                    helperText={formErrors.eco_activity || ""}
+                  />
+                </Grid>
+
+                {/* Address Fields */}
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Street, Number"
+                    defination="ถนน เลขที่"
+                    label=""
+                    name="address"
+                    value={formValues.address}
+                    onChange={handleInputChange}
+                    error={!!formErrors.address}
+                    helperText={formErrors.address || ""}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="City"
+                    defination="เมือง/จังหวัด"
+                    label=""
+                    name="city"
+                    value={formValues.city}
+                    onChange={handleInputChange}
+                    error={!!formErrors.city}
+                    helperText={formErrors.city || ""}
+                    required
+                  />
+                </Grid>
+
+                {/* Country and Location */}
+                <Grid size={12}>
+                  <LabeledAutocompleteMap
+                    caption="Country"
+                    defination="เลือกประเทศ"
+                    label=""
+                    options={countries.map((c) => ({
+                      ...c,
+                      value: String(c.value),
+                    }))}
+                    value={formValues.country_id}
+                    name="country_id"
+                    required
+                    onChange={handleCountryChange}
+                    error={formErrors.country_id || ""}
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="UNLOCODE"
+                    defination="รหัสประเทศ (อัตโนมัติ)"
+                    label=""
+                    name="unlocode"
+                    value={formValues.unlocode}
+                    readOnly
+                    onChange={() => {}}
+                    error={!!formErrors.unlocode}
+                    helperText={formErrors.unlocode || ""}
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Post code"
+                    defination="รหัสไปรษณีย์"
+                    label=""
+                    type="text"
+                    name="post_code"
+                    value={formValues.post_code}
+                    onChange={handleInputChange}
+                    error={!!formErrors.post_code}
+                    helperText={formErrors.post_code || ""}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="P.O. Box"
+                    defination="ตู้ไปรษณีย์ (ไม่บังคับ)"
+                    label=""
+                    name="po_box"
+                    value={formValues.po_box}
+                    onChange={handleInputChange}
+                    error={!!formErrors.po_box}
+                    helperText={formErrors.po_box || ""}
+                  />
+                </Grid>
+
+                {/* Coordinates */}
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Coordinates (latitude)"
+                    defination="พิกัดละติจูด เช่น 13.7563"
+                    label=""
+                    type="number"
+                    // step="any"
+                    name="latitude"
+                    value={formValues.latitude}
+                    onChange={handleInputChange}
+                    error={!!formErrors.latitude}
+                    helperText={formErrors.latitude || ""}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Coordinates (longitude)"
+                    defination="พิกัดลองจิจูด เช่น 100.5018"
+                    label=""
+                    type="number"
+                    // step="any"
+                    name="longitude"
+                    value={formValues.longitude}
+                    onChange={handleInputChange}
+                    error={!!formErrors.longitude}
+                    helperText={formErrors.longitude || ""}
+                    required
+                  />
+                </Grid>
+
+                {/* Representative Info */}
+                <Grid size={12}>
+                  <LabeledTextField
+                    caption="Name of authorized representative"
+                    defination="ชื่อผู้มีอำนาจลงนาม"
+                    label=""
+                    name="author_represent"
+                    value={formValues.author_represent}
+                    onChange={handleInputChange}
+                    error={!!formErrors.author_represent}
+                    helperText={formErrors.author_represent || ""}
+                    required
+                  />
+                </Grid>
+
+                {/* Contact Info */}
+                <Grid size={12}>
+                  <LabeledTextField
+                    type="email"
+                    caption="Email"
+                    defination="อีเมล"
+                    label=""
+                    name="email"
+                    value={formValues.email}
+                    onChange={handleInputChange}
+                    error={!!formErrors.email}
+                    helperText={formErrors.email || ""}
+                    required
+                  />
+                </Grid>
+
+                <Grid size={12}>
+                  <LabeledTextField
+                    type="tel"
+                    caption="Telephone"
+                    defination="หมายเลขโทรศัพท์"
+                    label=""
+                    name="tel"
+                    value={formValues.tel}
+                    onChange={handleInputChange}
+                    error={!!formErrors.tel}
+                    helperText={formErrors.tel || ""}
+                    required
+                  />
+                </Grid>
+              </Grid>
+            </Section>
+          </Grid>
+
+          {/* Submit Button */}
+          <Grid size={12}>
+            <Box display="flex" justifyContent="center" mt={2}>
+              <PGButton
+                text={
+                  formMode === "edit"
+                    ? "Update Installation"
+                    : "Create Installation"
+                }
+                loading={isSubmitting}
+                type="submit"
+              />
+            </Box>
+          </Grid>
+
+          {/* Debug Information - Development Only */}
+          {process.env.NODE_ENV === "development" && (
+            <Grid size={12}>
+              <Box
+                mt={4}
+                p={2}
+                sx={{
+                  backgroundColor: "#f5f5f5",
+                  borderRadius: 1,
+                  fontSize: "0.8rem",
+                  border: "1px solid #ddd",
+                }}
+              >
+                <details>
+                  <summary
+                    style={{
+                      cursor: "pointer",
+                      fontWeight: "bold",
+                      marginBottom: "1rem",
+                    }}
+                  >
+                    🐛 Debug Information (Development Mode)
+                  </summary>
+
+                  <Grid container spacing={2}>
+                    <Grid size={12}>
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        fontWeight="bold"
+                      >
+                        Mode & IDs:
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Form Mode:</strong> {formMode}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Report ID (localStorage):</strong>{" "}
+                        {reportId || "not set"}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Company ID:</strong> {companyId}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Installation ID:</strong>{" "}
+                        {existingData?.installation_id || "not set"}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Loading:</strong> {isLoading ? "Yes" : "No"}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Submitting:</strong>{" "}
+                        {isSubmitting ? "Yes" : "No"}
+                      </Typography>
+                    </Grid>
+
+                    <Grid size={12}>
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        fontWeight="bold"
+                      >
+                        Form Status:
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Countries Loaded:</strong> {countries.length}
+                      </Typography>
+                      <Typography variant="caption" component="div">
+                        <strong>Form Errors:</strong>{" "}
+                        {Object.keys(formErrors).length}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        sx={{
+                          color:
+                            formMode === "edit"
+                              ? "orange"
+                              : formMode === "create"
+                              ? "green"
+                              : "blue",
+                        }}
+                      >
+                        <strong>Action:</strong>{" "}
+                        {formMode === "edit"
+                          ? "Will UPDATE existing installation"
+                          : formMode === "create"
+                          ? "Will CREATE new installation"
+                          : "Will CREATE new installation (empty form)"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+
+                  <Box mt={2}>
+                    <Typography
+                      variant="caption"
+                      component="div"
+                      fontWeight="bold"
+                    >
+                      Existing Data:
+                    </Typography>
+                    <Box
+                      component="pre"
+                      sx={{
+                        fontSize: "10px",
+                        overflow: "auto",
+                        maxHeight: "150px",
+                        backgroundColor: "#fff",
+                        p: 1,
+                        border: "1px solid #ddd",
+                        borderRadius: 1,
+                        mt: 1,
+                      }}
+                    >
+                      {JSON.stringify(existingData, null, 2)}
+                    </Box>
+                  </Box>
+
+                  <Box mt={2}>
+                    <Typography
+                      variant="caption"
+                      component="div"
+                      fontWeight="bold"
+                    >
+                      Current Form Values:
+                    </Typography>
+                    <Box
+                      component="pre"
+                      sx={{
+                        fontSize: "10px",
+                        overflow: "auto",
+                        maxHeight: "200px",
+                        backgroundColor: "#fff",
+                        p: 1,
+                        border: "1px solid #ddd",
+                        borderRadius: 1,
+                        mt: 1,
+                      }}
+                    >
+                      {JSON.stringify(
+                        {
+                          ...formValues,
+                          reporting_period_start: formatDate(
+                            formValues.reporting_period_start
+                          ),
+                          reporting_period_end: formatDate(
+                            formValues.reporting_period_end
+                          ),
+                        },
+                        null,
+                        2
+                      )}
+                    </Box>
+                  </Box>
+
+                  {Object.keys(formErrors).length > 0 && (
+                    <Box mt={2}>
+                      <Typography
+                        variant="caption"
+                        component="div"
+                        fontWeight="bold"
+                        color="red"
+                      >
+                        Form Errors ({Object.keys(formErrors).length}):
+                      </Typography>
+                      <Box
+                        component="pre"
+                        sx={{
+                          fontSize: "10px",
+                          overflow: "auto",
+                          maxHeight: "100px",
+                          backgroundColor: "#fff",
+                          p: 1,
+                          border: "1px solid #ff9999",
+                          borderRadius: 1,
+                          mt: 1,
+                          color: "red",
+                        }}
+                      >
+                        {JSON.stringify(formErrors, null, 2)}
+                      </Box>
+                    </Box>
+                  )}
+
+                  <Box
+                    mt={2}
+                    p={1}
+                    sx={{ backgroundColor: "#e3f2fd", borderRadius: 1 }}
+                  >
+                    <Typography
+                      variant="caption"
+                      component="div"
+                      fontWeight="bold"
+                    >
+                      Logic Summary:
+                    </Typography>
+                    <Typography variant="caption" component="div">
+                      1. Get reportId from localStorage:{" "}
+                      <strong>{reportId}</strong>
+                    </Typography>
+                    <Typography variant="caption" component="div">
+                      2. Check if report has installation_id:{" "}
+                      <strong>
+                        {existingData?.installation_id ? "YES" : "NO"}
+                      </strong>
+                    </Typography>
+                    <Typography variant="caption" component="div">
+                      3. Mode determined:{" "}
+                      <strong>{formMode.toUpperCase()}</strong>
+                    </Typography>
+                    <Typography variant="caption" component="div">
+                      4. Data source:{" "}
+                      <strong>
+                        {formMode === "edit"
+                          ? "Specific installation data"
+                          : formMode === "create"
+                          ? "Latest company installation"
+                          : "Empty form"}
+                      </strong>
+                    </Typography>
+                    <Typography variant="caption" component="div">
+                      5. Dates set to:{" "}
+                      <strong>Today ({formatDate(getTodayDate())})</strong>
+                    </Typography>
+                  </Box>
+                </details>
+              </Box>
+            </Grid>
           )}
         </Grid>
       </form>

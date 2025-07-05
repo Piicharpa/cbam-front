@@ -64,7 +64,7 @@ const TabE_PurchasedPrecursors = ({
     useEffect(() => {
       if (reportId) {
         fetch(
-          `${apiUrl}/api/cbam/excelreport/E_PurchasedPrecursors/${reportId}`
+          `${apiUrl}/api/cbam/excelreport/E_PurchPrec/${reportId}`
         )
           .then((res) => res.json())
           .then((data) => {

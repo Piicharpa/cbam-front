@@ -131,8 +131,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
   // Use report ID from props if available, otherwise use default
-  // const reportId = propsReportId || 54;
-  const reportId = 23;
+  const reportId = propsReportId;
+  // const reportId = 23;
 
   // Fetch existing data for this precursor based on report ID and index
   // Fetch existing data for this precursor based on report ID and index

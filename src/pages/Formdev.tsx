@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom"; // เพิ่ม useNavigate
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
   Container,
   Stepper,
@@ -44,7 +44,7 @@ const StyledBox = styled(Box)(({ theme }: { theme: Theme }) => ({
   transition: "background-color 0.3s ease",
 }));
 
-// ตรวจสอบว่า steps มีค่าหรือไม่ และสร้าง fallback steps หากไม่มี
+// Fallback steps if imported steps aren't available
 const fallbackSteps = [
   { label: "Summary", description: "สรุปข้อมูล" },
   { label: "Installation", description: "รายละเอียดสถานที่ติดตั้ง" },
@@ -56,28 +56,54 @@ const fallbackSteps = [
 ];
 
 const Formdev: React.FC = () => {
-  const navigate = useNavigate(); // เพิ่มการใช้ useNavigate
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams] = useSearchParams();
+
   const [activeStep, setActiveStep] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
-  // สร้างตัวแปรเพื่อเก็บ reportId จาก local storage หรือกำหนดค่าเริ่มต้น
+
+  // State for tracking reportId and edit mode
   const [reportId, setReportId] = useState<number | null>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
 
-  // ใช้ useEffect เพื่อโหลด reportId จาก localStorage และเก็บไว้ในสเตท
-  useEffect(() => {
-    const storedReportId = localStorage.getItem('cbam_report_id');
-    if (storedReportId) {
-      setReportId(parseInt(storedReportId, 10));
-    } else {
-      // ถ้าไม่มี reportId ใน localStorage กำหนดค่าเริ่มต้น
-      setReportId(54); // หรือค่าที่เหมาะสมกับแอปของคุณ
-    }
-  }, []);
-
-  // ตรวจสอบ steps ก่อนใช้งาน
+  // Safe steps state
   const [safeSteps, setSafeSteps] = useState(fallbackSteps);
-  
+
+  // Check for reportId in URL query parameter and update localStorage
   useEffect(() => {
-    // ตรวจสอบว่า steps ที่นำเข้ามามีค่าหรือไม่
+    // Get reportId from URL query params if present
+    const queryReportId = searchParams.get("reportId");
+
+    if (queryReportId) {
+      // If reportId is in URL, store it in localStorage
+      const parsedId = parseInt(queryReportId, 10);
+      localStorage.setItem("cbam_report_id", queryReportId);
+      setReportId(parsedId);
+      setIsEditMode(true);
+      console.log(
+        `⚡ Edit mode activated for report ID: ${parsedId}, stored in localStorage`
+      );
+    } else {
+      // If not in URL, check localStorage
+      const storedReportId = localStorage.getItem("cbam_report_id");
+      if (storedReportId) {
+        setReportId(parseInt(storedReportId, 10));
+        setIsEditMode(true);
+        console.log(`📋 Using report ID from localStorage: ${storedReportId}`);
+      } else {
+        // No reportId available - we're in create mode
+        localStorage.removeItem("cbam_report_id"); // Clear any previous value
+        setReportId(null);
+        setIsEditMode(false);
+        console.log("✨ Create mode - no report ID available");
+      }
+    }
+  }, [searchParams]);
+
+  // Initialize steps
+  useEffect(() => {
+    // Check if imported steps are valid
     if (steps && Array.isArray(steps) && steps.length > 0) {
       console.log("Using imported steps", steps);
       setSafeSteps(steps);
@@ -88,7 +114,7 @@ const Formdev: React.FC = () => {
   }, []);
 
   // Form refs for submitting
-  const SumupFormRef = useRef<any>(null);
+  const sumupFormRef = useRef<any>(null);
   const installationFormRef = useRef<any>(null);
   const verifierFormRef = useRef<any>(null);
   const goodsFormRef = useRef<any>(null);
@@ -97,13 +123,15 @@ const Formdev: React.FC = () => {
   const emissionFormRef = useRef<any>(null);
 
   // Form data states
-  const [sumupData, setsumupData] = useState({
+  const [sumupData, setSumupData] = useState({
+    // reportId: 0,
     industry_id: "",
     goods_id: "",
     cn_id: "",
   });
 
   const [installationData, setInstallationData] = useState({
+    reportId: 0,
     name: "",
     name_specific: "",
     eco_activity: "",
@@ -123,6 +151,7 @@ const Formdev: React.FC = () => {
   });
 
   const [verifierData, setVerifierData] = useState({
+    reportId: 0,
     installation_name: "",
     address: "",
     city: "",
@@ -168,7 +197,8 @@ const Formdev: React.FC = () => {
     total_production_amounts: 0,
   });
 
-    const [precursorsData, setPrecursorsData] = useState({
+  const [precursorsData, setPrecursorsData] = useState({
+    reportId: 0,
     name: "",
     route_1: "",
     route_1_amounts: 0,
@@ -192,6 +222,7 @@ const Formdev: React.FC = () => {
   });
 
   const [sourceData, setSourceData] = useState({
+    reportId: 0,
     p_method: "",
     p_source_stream_name: "",
     p_activity_data: "",
@@ -214,6 +245,7 @@ const Formdev: React.FC = () => {
   });
 
   const [emissionData, setEmissionData] = useState({
+    reportId: 0,
     generatl_info_on_data_quality: "",
     justification_for_use_default_values: "",
     manual_fuel_balance: "",
@@ -221,14 +253,28 @@ const Formdev: React.FC = () => {
     info_qty_assurance: "",
   });
 
+  // Update form data with reportId when it changes
+  useEffect(() => {
+    if (reportId) {
+      console.log(`Updating form data states with reportId: ${reportId}`);
+      setSumupData((prev) => ({ ...prev, reportId }));
+      setInstallationData((prev) => ({ ...prev, reportId }));
+      setVerifierData((prev) => ({ ...prev, reportId }));
+      setGoodsData((prev) => ({ ...prev, report_id: reportId }));
+      setPrecursorsData((prev) => ({ ...prev, reportId }));
+      setSourceData((prev) => ({ ...prev, reportId }));
+      setEmissionData((prev) => ({ ...prev, reportId }));
+    }
+  }, [reportId]);
+
   // Handle form navigation with animations
   const handleNext = async () => {
     let canProceed = true;
     try {
       switch (activeStep) {
         case 0:
-          if (SumupFormRef.current?.submit) {
-            canProceed = await SumupFormRef.current.submit();
+          if (sumupFormRef.current?.submit) {
+            canProceed = await sumupFormRef.current.submit();
           }
           break;
         case 1:
@@ -259,11 +305,14 @@ const Formdev: React.FC = () => {
         case 6:
           if (emissionFormRef.current?.submit) {
             canProceed = await emissionFormRef.current.submit();
-            
-            // ถ้านี่เป็นขั้นตอนสุดท้ายและดำเนินการสำเร็จ นำทางไปยังหน้า report
-            if (canProceed && reportId) {
-              navigate(`/cbam/report?reportId=${reportId}`);
-              return;
+
+            // If this is the last step and submission is successful, navigate to report
+            if (canProceed) {
+              const currentReportId = localStorage.getItem("cbam_report_id");
+              if (currentReportId) {
+                navigate(`/cbam/report?reportId=${currentReportId}`);
+                return;
+              }
             }
           }
           break;
@@ -272,7 +321,7 @@ const Formdev: React.FC = () => {
       console.error("Form validation failed:", error);
       canProceed = false;
     }
-    
+
     if (canProceed) {
       setFadeIn(false);
       setTimeout(() => {
@@ -295,87 +344,107 @@ const Formdev: React.FC = () => {
       const isValid = await sourceFormRef.current.submit();
       if (!isValid) return;
     }
-    
-    const allData = {
-      sumupData,
-      installationData,
-      verifierData,
-      goodsData,
-      precursorsData,
-      sourceData,
-      emissionData
-    };
-    
+
     setFadeIn(false);
     setTimeout(() => {
       alert("✅ Form submitted successfully!");
       setFadeIn(true);
-      
-      // หลังจากส่งฟอร์มสำเร็จ นำทางไปยังหน้า report ถ้ามี reportId
-      if (reportId) {
-        navigate(`/report?reportId=${reportId}`);
+
+      // After successful form submission, navigate to report page
+      const currentReportId = localStorage.getItem("cbam_report_id");
+      if (currentReportId) {
+        navigate(`/cbam/report?reportId=${currentReportId}`);
       }
     }, 300);
   };
 
+  // Render the current step content without passing reportId as prop
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
         return (
           <SumupForm
-            data={sumupData}
-            onChange={setsumupData}
+            data={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              industry_id: sumupData.industry_id,
+              goods_id: sumupData.goods_id,
+              cn_id: sumupData.cn_id,
+            }}
+            onChange={setSumupData}
             onNextStep={handleNext}
-            // ref={SumupFormRef}
+            // Not passing reportId - component will get from localStorage
+            // ref={sumupFormRef}
           />
         );
       case 1:
         return (
           <InstallationForm
-            data={installationData}
+            data={installationData} // Just pass the entire object as is
             onChange={setInstallationData}
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={installationFormRef}
           />
         );
       case 2:
         return (
           <VerifierForm
-            data={verifierData}
+            data={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              ...verifierData,
+            }}
             onChange={setVerifierData}
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={verifierFormRef}
           />
         );
       case 3:
         return (
           <GoodsForm
-            formValues={goodsData}
+            formValues={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              ...goodsData,
+            }}
             onChange={setGoodsData}
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={goodsFormRef}
           />
         );
       case 4:
         return (
           <PrecursorsForm
-            formValues={precursorsData}
+            formValues={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              ...precursorsData,
+            }}
             onChange={(formValues) =>
               setPrecursorsData((prev) => ({
                 ...prev,
                 ...Object.fromEntries(
-                  Object.entries(formValues).map(([k, v]) => [k, v ?? (typeof prev[k as keyof typeof prev] === "number" ? 0 : "")])
+                  Object.entries(formValues).map(([k, v]) => [
+                    k,
+                    v ??
+                      (typeof prev[k as keyof typeof prev] === "number"
+                        ? 0
+                        : ""),
+                  ])
                 ),
               }))
             }
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={precursorsFormRef}
           />
         );
       case 5:
         return (
           <SourceForm
-            formValues={sourceData}
+            formValues={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              ...sourceData,
+            }}
             onChange={(formValues) =>
               setSourceData((prev) => ({
                 ...prev,
@@ -385,13 +454,17 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={sourceFormRef}
           />
         );
       case 6:
         return (
           <EmissionForm
-            formValues={emissionData} // แก้ไขให้ใช้ emissionData แทน sourceData
+            formValues={{
+              // reportId: 0, // Note: Will actually use reportId from localStorage
+              ...emissionData,
+            }}
             onChange={(formValues) =>
               setEmissionData((prev) => ({
                 ...prev,
@@ -401,15 +474,16 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
+            // Not passing reportId - component will get from localStorage
             // ref={emissionFormRef}
           />
         );
-        //     default:
-        // return <Typography>Unknown step</Typography>;
+      default:
+        return <Typography>Unknown step</Typography>;
     }
   };
 
-  // คำนวณความคืบหน้าโดยใช้ safeSteps แทน steps เพื่อป้องกัน error
+  // Calculate progress based on active step
   const progress = ((activeStep + 1) / safeSteps.length) * 100;
   const isLastStep = activeStep === safeSteps.length - 1;
 
@@ -424,24 +498,25 @@ const Formdev: React.FC = () => {
             gutterBottom
             sx={{ position: "relative", zIndex: 1 }}
           >
-            CBAM Declaration Form
+            {isEditMode ? "Edit CBAM Report" : "CBAM Declaration Form"}
           </Typography>
           <Typography
             variant="body1"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            Complete all steps to submit your declaration for the Carbon Border
-            Adjustment Mechanism
+            {isEditMode
+              ? "Make changes to your Carbon Border Adjustment Mechanism declaration"
+              : "Complete all steps to submit your declaration for the Carbon Border Adjustment Mechanism"}
           </Typography>
-          
+
           {reportId && (
             <Typography
               variant="caption"
               color="text.secondary"
-              sx={{ position: "relative", zIndex: 1, display: 'block', mt: 1 }}
+              sx={{ position: "relative", zIndex: 1, display: "block", mt: 1 }}
             >
-              Report ID: {reportId}
+              Report ID: {reportId} {isEditMode ? "(Edit Mode)" : ""}
             </Typography>
           )}
         </HeaderBanner>
@@ -452,7 +527,6 @@ const Formdev: React.FC = () => {
             activeStep={activeStep}
             connector={<ColorlibConnector />}
           >
-            {/* ใช้ safeSteps ที่ตรวจสอบแล้วว่าไม่เป็น undefined และใช้ optional chaining */}
             {safeSteps.map((step, index) => (
               <Step key={step?.label ? step.label : `step-${index}`}>
                 <StepLabel StepIconComponent={ColorlibStepIcon}>
@@ -469,7 +543,6 @@ const Formdev: React.FC = () => {
                           : "text.primary",
                     }}
                   >
-                    {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
                     {step?.label || `Step ${index + 1}`}
                   </Typography>
                   <Typography
@@ -480,7 +553,6 @@ const Formdev: React.FC = () => {
                       fontSize: 12,
                     }}
                   >
-                    {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
                     {step?.description || ""}
                   </Typography>
                 </StepLabel>
@@ -515,7 +587,8 @@ const Formdev: React.FC = () => {
                 color="primary"
                 endIcon={<span>→</span>}
                 sx={{
-                  background: "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
+                  background:
+                    "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
                   fontWeight: 600,
                 }}
               >
@@ -525,15 +598,18 @@ const Formdev: React.FC = () => {
               <Button
                 onClick={handleSubmit}
                 variant="contained"
-                color="primary"
+                color="secondary"
+                endIcon={<span>✓</span>}
                 sx={{
-                  background: "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
+                  background:
+                    "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
                   fontWeight: 600,
                 }}
               >
-                Submit Final Form
+                {isEditMode ? "Update Report" : "Submit Report"}
               </Button>
             )}
+             <ButtonDecoration isLastStep={isLastStep} />
           </Box>
         </NavigationContainer>
 
@@ -562,13 +638,13 @@ const Formdev: React.FC = () => {
               fontStyle: "italic",
             }}
           >
-            {/* ใช้ optional chaining เพื่อป้องกัน undefined */}
             {isLastStep
               ? "Final step - Review your information before submission"
-              : `Currently in ${safeSteps[activeStep]?.label || `Step ${activeStep + 1}`} stage - ${safeSteps[activeStep]?.description || ""}`}
+              : `Currently in ${
+                  safeSteps[activeStep]?.label || `Step ${activeStep + 1}`
+                } stage - ${safeSteps[activeStep]?.description || ""}`}
           </Typography>
         </Box>
-
         <Box mt={3} sx={{ textAlign: "center" }}>
           <Typography
             variant="caption"
@@ -597,21 +673,82 @@ const Formdev: React.FC = () => {
           </Typography>
         </Box>
 
-        {/* ส่วนแสดงข้อมูลเพื่อการดีบัก (เฉพาะโหมดพัฒนา) */}
-        {process.env.NODE_ENV === 'development' && (
-          <Box mt={4} p={2} sx={{ backgroundColor: '#f5f5f5', borderRadius: 2, fontSize: '0.75rem' }}>
-            <Typography variant="subtitle2" gutterBottom>Debug Information</Typography>
+        {/* Cancel editing button - only show in edit mode */}
+        {isEditMode && (
+          <Box mt={2} sx={{ textAlign: "center" }}>
+            <Button
+              variant="text"
+              color="error"
+              onClick={() => {
+                // Clear localStorage and redirect to form
+                localStorage.removeItem("cbam_report_id");
+                navigate("/cbam/formdev");
+              }}
+              sx={{ fontSize: "0.8rem" }}
+            >
+              Cancel editing
+            </Button>
+          </Box>
+        )}
+
+        {/* Debug information - only in development */}
+        {process.env.NODE_ENV === "development" && (
+          <Box
+            mt={4}
+            p={2}
+            sx={{
+              backgroundColor: "#f5f5f5",
+              borderRadius: 2,
+              fontSize: "0.75rem",
+            }}
+          >
+            <Typography variant="subtitle2" gutterBottom>
+              Debug Information
+            </Typography>
             <Box>
               <Typography variant="body2">Active Step: {activeStep}</Typography>
               <Typography variant="body2">Report ID: {reportId}</Typography>
-              <Typography variant="body2">Steps Count: {safeSteps.length}</Typography>
-              <Typography variant="body2">Progress: {progress.toFixed(1)}%</Typography>
+              <Typography variant="body2">
+                Is Edit Mode: {isEditMode ? "Yes" : "No"}
+              </Typography>
+              <Typography variant="body2">
+                LocalStorage Report ID:{" "}
+                {localStorage.getItem("cbam_report_id") || "not set"}
+              </Typography>
+              <Typography variant="body2">
+                Steps Count: {safeSteps.length}
+              </Typography>
+              <Typography variant="body2">
+                Progress: {progress.toFixed(1)}%
+              </Typography>
             </Box>
+
             <Box mt={1}>
               <details>
                 <summary>Steps Structure</summary>
-                <pre style={{ overflow: 'auto', maxHeight: '200px' }}>
+                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
                   {JSON.stringify(safeSteps, null, 2)}
+                </pre>
+              </details>
+            </Box>
+
+            <Box mt={1}>
+              <details>
+                <summary>Form Data</summary>
+                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
+                  {JSON.stringify(
+                    {
+                      sumupData,
+                      installationData,
+                      verifierData,
+                      goodsData,
+                      precursorsData,
+                      sourceData,
+                      emissionData,
+                    },
+                    null,
+                    2
+                  )}
                 </pre>
               </details>
             </Box>

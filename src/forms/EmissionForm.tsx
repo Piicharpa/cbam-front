@@ -45,7 +45,8 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
 
   // Get reportId from query parameters, localStorage or use default
 
-  const reportId = 54 ;
+  // const reportId = 54 ;
+  const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -54,9 +55,11 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
   const [dataFetched, setDataFetched] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  console.log(reportId);
+
   // State สำหรับค่าในฟอร์มที่จะแสดงผล
   const [formValues, setFormValues] = useState({
-    reportId: reportId.toString(),
+    reportId: reportId || "", // Convert null to empty string to satisfy type requirements
     manual_fuel_balance: "",
     manual_GHG_emissions_balance: "",
     generatl_info_on_data_quality: "",
@@ -73,7 +76,9 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
     setIsLoading(true);
     try {
       console.log(`🔍 Fetching emission data for reportId: ${reportId}`);
-      const response = await fetch(`${apiUrl}/api/cbam/c_emission/report/${reportId}`);
+      const response = await fetch(
+        `${apiUrl}/api/cbam/c_emission/report/${reportId}`
+      );
 
       if (!response.ok) {
         if (response.status === 404) {
@@ -97,7 +102,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
 
         // Update form values with the most recent data
         setFormValues({
-          reportId: reportId.toString(),
+          reportId: reportId?.toString() || "", // Ensure string type
           manual_fuel_balance:
             mostRecentEntry.manual_fuel_balance?.toString() || "",
           manual_GHG_emissions_balance:
@@ -192,88 +197,91 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
 
   // จัดการ submit ฟอร์ม
   const handleSubmit = (e: React.FormEvent) => {
-  e.preventDefault();
-  if (isSubmitting) return;
-  setIsSubmitting(true);
-  
-  // Form validation
-  const newErrors: { [key: string]: string } = {};
-  const requiredFields = [
-    "manual_fuel_balance",
-    "manual_GHG_emissions_balance",
-    "generatl_info_on_data_quality",
-    "justification_for_use_default_values",
-    "information_quality_ssurance",
-  ];
-  
-  requiredFields.forEach((field) => {
-    if (!formValues[field as keyof typeof formValues]) {
-      newErrors[field] = "This field is required";
-    }
-  });
-  
-  if (Object.keys(newErrors).length > 0) {
-    setFormErrors(newErrors);
-    setIsSubmitting(false);
-    return;
-  }
-  
-  // Prepare data for API
-  const payload: any = {
-    report_id: reportId,
-    generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
-    justification_for_use_default_values: formValues.justification_for_use_default_values,
-    manual_fuel_balance: parseFloat(formValues.manual_fuel_balance || "0"),
-    manual_GHG_emissions_balance: parseFloat(formValues.manual_GHG_emissions_balance || "0"),
-    info_qty_assurance: formValues.information_quality_ssurance,
-    manual_total_indirect_emissions: null,
-  };
-  
-  // Determine if we're updating an existing record or creating a new one
-  const isUpdate = apiData && apiData.id;
-  const method = isUpdate ? "PUT" : "POST";
-  const url = isUpdate
-    ? `${apiUrl}/api/cbam/c_emission/${apiData.id}`
-    : `${apiUrl}/api/cbam/c_emission`;
-    
-  if (isUpdate) {
-    payload.id = apiData.id;
-  }
-  
-  console.log(`🔄 ${method} request to: ${url}`, payload);
-  
-  // Send data to API
-  fetch(url, {
-    method,
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  })
-    .then((response) => {
-      if (!response.ok) {
-        return response.text().then((text) => {
-          throw new Error(`API Error (${response.status}): ${text}`);
-        });
+    e.preventDefault();
+    if (isSubmitting) return;
+    setIsSubmitting(true);
+
+    // Form validation
+    const newErrors: { [key: string]: string } = {};
+    const requiredFields = [
+      "manual_fuel_balance",
+      "manual_GHG_emissions_balance",
+      "generatl_info_on_data_quality",
+      "justification_for_use_default_values",
+      "information_quality_ssurance",
+    ];
+
+    requiredFields.forEach((field) => {
+      if (!formValues[field as keyof typeof formValues]) {
+        newErrors[field] = "This field is required";
       }
-      return response.json();
-    })
-    .then((responseData) => {
-      console.log("✅ API Response:", responseData);
-      setApiData(responseData);
-      alert(`✅ Data ${isUpdate ? "updated" : "submitted"} successfully`);
-      
-      // Move to next step or navigate to report page
-      if (onNextStep) {
-         navigate(`/report?reportId=${reportId}`);
-      } 
-    })
-    .catch((error) => {
-      console.error("❌ Error:", error);
-      alert(`❌ Error: ${error.message}`);
-    })
-    .finally(() => {
-      setIsSubmitting(false);
     });
-};
+
+    if (Object.keys(newErrors).length > 0) {
+      setFormErrors(newErrors);
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Prepare data for API
+    const payload: any = {
+      report_id: reportId,
+      generatl_info_on_data_quality: formValues.generatl_info_on_data_quality,
+      justification_for_use_default_values:
+        formValues.justification_for_use_default_values,
+      manual_fuel_balance: parseFloat(formValues.manual_fuel_balance || "0"),
+      manual_GHG_emissions_balance: parseFloat(
+        formValues.manual_GHG_emissions_balance || "0"
+      ),
+      info_qty_assurance: formValues.information_quality_ssurance,
+      manual_total_indirect_emissions: null,
+    };
+
+    // Determine if we're updating an existing record or creating a new one
+    const isUpdate = apiData && apiData.id;
+    const method = isUpdate ? "PUT" : "POST";
+    const url = isUpdate
+      ? `${apiUrl}/api/cbam/c_emission/${apiData.id}`
+      : `${apiUrl}/api/cbam/c_emission`;
+
+    if (isUpdate) {
+      payload.id = apiData.id;
+    }
+
+    console.log(`🔄 ${method} request to: ${url}`, payload);
+
+    // Send data to API
+    fetch(url, {
+      method,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(`API Error (${response.status}): ${text}`);
+          });
+        }
+        return response.json();
+      })
+      .then((responseData) => {
+        console.log("✅ API Response:", responseData);
+        setApiData(responseData);
+        alert(`✅ Data ${isUpdate ? "updated" : "submitted"} successfully`);
+
+        // Move to next step or navigate to report page
+        if (onNextStep) {
+          navigate(`/report?reportId=${reportId}`);
+        }
+      })
+      .catch((error) => {
+        console.error("❌ Error:", error);
+        alert(`❌ Error: ${error.message}`);
+      })
+      .finally(() => {
+        setIsSubmitting(false);
+      });
+  };
 
   return (
     <Container maxWidth="md" sx={{ py: 4 }}>

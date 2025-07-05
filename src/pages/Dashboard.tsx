@@ -1,4 +1,4 @@
-import React, { useState  } from "react";
+import React, { useState } from "react";
 import {
   Container,
   Stepper,
@@ -14,10 +14,15 @@ import {
   stepConnectorClasses,
   styled,
   StepIconProps,
+  IconButton,
+  Tooltip,
 } from "@mui/material";
 import BarChartIcon from "@mui/icons-material/BarChart";
 import DescriptionIcon from "@mui/icons-material/Description";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import EditIcon from "@mui/icons-material/Edit";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
+import { useNavigate } from "react-router-dom";
 import TableDashboard from "../dashboard/TableDashboard";
 import SumupForm from "../forms/SumupForm";
 
@@ -146,12 +151,10 @@ const ColorlibStepIconRoot = styled("div")<{
 // Step icon component
 function ColorlibStepIcon(props: StepIconProps) {
   const { active, completed, className } = props;
-
   const icons: { [index: string]: React.ReactElement } = {
     1: <BarChartIcon />,
     // 2: <DescriptionIcon />,
   };
-
   return (
     <ColorlibStepIconRoot
       ownerState={{ completed, active }}
@@ -170,6 +173,17 @@ const steps = [
 
 const Form: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
+  const navigate = useNavigate();
+
+  // Function to handle editing a specific report
+  const handleEditReport = (reportId: string | number) => {
+    navigate(`/cbam/formdev?reportId=${reportId}`);
+  };
+
+  // Function to handle creating a new report
+  const handleCreateNewReport = () => {
+    navigate("/cbam/formdev");
+  };
 
   const handleNext = () => {
     setActiveStep((prevStep) => prevStep + 1);
@@ -187,7 +201,7 @@ const Form: React.FC = () => {
   const renderStepContent = (step: number) => {
     switch (step) {
       case 0:
-        return <TableDashboard />;
+        return <TableDashboard onEditReport={handleEditReport} />;
       default:
         return <Typography>Unknown step</Typography>;
     }
@@ -203,17 +217,37 @@ const Form: React.FC = () => {
             mb: 4,
             background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
             borderLeft: "6px solid #74aa15",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
           }}
         >
-          <Typography variant="h4" color="primary.main" gutterBottom>
-            CBAM Declaration
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            Complete the steps below to submit your carbon border adjustment
-            mechanism declaration
-          </Typography>
+          <Box>
+            <Typography variant="h4" color="primary.main" gutterBottom>
+              CBAM Declaration
+            </Typography>
+                        <Typography variant="body1" color="text.secondary">
+              Complete the steps below to submit your carbon border adjustment
+              mechanism declaration
+            </Typography>
+          </Box>
+          
+          {/* Create New Report button */}
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<AddCircleOutlineIcon />}
+            onClick={handleCreateNewReport}
+            sx={{
+              background: "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
+              fontWeight: 600,
+              letterSpacing: "0.5px",
+            }}
+          >
+            Create New Report
+          </Button>
         </Paper>
-
+        
         {/* Enhanced Stepper */}
         <Paper elevation={1} sx={{ p: 4, mb: 4, position: "relative" }}>
           <Stepper
@@ -248,7 +282,7 @@ const Form: React.FC = () => {
             ))}
           </Stepper>
         </Paper>
-
+        
         {/* Form content with animation */}
         <Box
           sx={{
@@ -303,7 +337,7 @@ const Form: React.FC = () => {
             {renderStepContent(activeStep)}
           </Paper>
         </Box>
-
+        
         {/* Navigation buttons with enhanced styling */}
         <Box
           mt={4}
@@ -338,7 +372,6 @@ const Form: React.FC = () => {
           >
             Back
           </Button>
-
           <Box sx={{ position: "relative" }}>
             {activeStep === steps.length - 1 ? (
               <Button
@@ -371,7 +404,6 @@ const Form: React.FC = () => {
                 Continue to Next Step
               </Button>
             )}
-
             {/* Decorative dots around the main button */}
             <Box
               sx={{
@@ -399,7 +431,7 @@ const Form: React.FC = () => {
             />
           </Box>
         </Box>
-
+        
         {/* Progress indicator */}
         <Box mt={4} sx={{ textAlign: "center" }}>
           <Typography

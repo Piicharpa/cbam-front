@@ -59,7 +59,7 @@ const TabC_EnergyEmissions = ({ formValues, setFormValues, reportId }: TabAProps
          
         useEffect(() => {
             if (reportId) {
-                fetch(`${apiUrl} api/cbam/excelreport/C_Emissions&Energy/${reportId}`)
+                fetch(`${apiUrl}/api/cbam/excelreport/C_Emissions&Energy/${reportId}`)
                     .then((res) => res.json())
                     .then((data) => setTableData(data.metadata))
                     .catch((err) => console.error("Failed to fetch:", err));

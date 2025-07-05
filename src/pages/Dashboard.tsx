@@ -413,7 +413,7 @@ const Form: React.FC = () => {
           }}
         >
           {/* Content paper with subtle pattern */}
-          <Paper
+          {/* <Paper
             elevation={1}
             sx={{
               p: 4,
@@ -442,9 +442,9 @@ const Form: React.FC = () => {
                 pointerEvents: "none",
               },
             }}
-          >
+          > */}
             {renderStepContent(activeStep)}
-          </Paper>
+          {/* </Paper> */}
         </Box>
         
         {/* Navigation buttons with enhanced styling */}
@@ -542,7 +542,7 @@ const Form: React.FC = () => {
         {/* </Box> */}
         
         {/* Progress indicator */}
-        <Box mt={4} sx={{ textAlign: "center" }}>
+        {/* <Box mt={4} sx={{ textAlign: "center" }}>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -552,7 +552,7 @@ const Form: React.FC = () => {
               justifyContent: "center",
               gap: 1,
             }}
-          >
+          > */}
             {/* <span>
               Step {activeStep + 1} of {steps.length}
             </span> */}
@@ -580,8 +580,8 @@ const Form: React.FC = () => {
                 },
               }}
             /> */}
-          </Typography>
-        </Box>
+          {/* </Typography>
+        </Box> */}
 
         {/* Delete Confirmation Dialog */}
         <Dialog
@@ -732,7 +732,7 @@ const Form: React.FC = () => {
         </Snackbar>
 
         {/* Development Debug Panel */}
-        {process.env.NODE_ENV === "development" && (
+        {/* {process.env.NODE_ENV === "development" && (
           <Box
             mt={4}
             p={2}
@@ -758,7 +758,7 @@ const Form: React.FC = () => {
                 </Typography>
                 <Typography variant="caption" component="div">
                   <strong>Company Reports:</strong> {apiUrl}/api/cbam/report/company/1
-                </Typography>
+                </Typography> */}
                 
                 {/* <Box mt={1}>
                   <Typography variant="caption" component="div" fontWeight="bold">
@@ -785,7 +785,7 @@ const Form: React.FC = () => {
                 </Box> */}
 
                 {/* Test Buttons */}
-                <Box mt={2} display="flex" gap={1}>
+                {/* <Box mt={2} display="flex" gap={1}>
                   <button
                     type="button"
                     onClick={() => {
@@ -870,11 +870,11 @@ const Form: React.FC = () => {
                   >
                     Test Error Message
                   </button>
-                </Box>
-              </Box>
+                </Box> */}
+              {/* </Box>
             </details>
           </Box>
-        )}
+        )} */}
       </Container>
     </ThemeProvider>
   );

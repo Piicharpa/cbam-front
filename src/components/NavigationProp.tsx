@@ -70,22 +70,22 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
             background: scrolled 
               ? `linear-gradient(135deg, ${alpha(theme.palette.background.paper, 0.9)}, ${alpha(theme.palette.background.paper, 0.7)})`
               : "transparent",
-            transition: "all 0.3s ease",
+            // transition: "all 0.3s ease",
             borderRadius: scrolled ? 0 : "0 0 24px 24px",
-            boxShadow: scrolled 
-              ? `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`
-              : "none",
+            // boxShadow: scrolled 
+            //   ? `0 4px 20px ${alpha(theme.palette.common.black, 0.1)}`
+            //   : "none",
             borderBottom: `1px solid ${alpha(theme.palette.divider, scrolled ? 0.1 : 0)}`,
             mb: 3,
           }}
         >
-          <Toolbar sx={{ py: 1.5 }}>
+          <Toolbar sx={{ py:5 }}>
             <Box 
               display="flex" 
               alignItems="center" 
               justifyContent="space-between" 
               width="100%"
-              px={2}
+              px={8}
             >
               {/* Logo and Brand Section */}
               <Box display="flex" alignItems="center" gap={2}>
@@ -111,7 +111,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 
                 <Box>
                   <Typography 
-                    variant="h6" 
+                    variant="h3" 
                     component="div"
                     sx={{ 
                       fontWeight: 700,
@@ -136,7 +136,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
               </Box>
               
               {/* Navigation Items */}
-              <Box display="flex" alignItems="center" gap={1}>
+              <Box display="flex" alignItems="center" gap={3}>
                 {navItems.map((item) => (
                   <Tooltip title={item.tooltip} arrow key={item.path}>
                     <Button
@@ -202,16 +202,16 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 </Button>
                 
                 {/* Notifications */}
-                <Tooltip title="Notifications">
+                {/* <Tooltip title="Notifications">
                   <IconButton color="inherit" sx={{ ml: 1 }}>
                     <Badge badgeContent={notificationCount} color="error">
                       <NotificationsIcon color="action" />
                     </Badge>
                   </IconButton>
-                </Tooltip>
+                </Tooltip> */}
                 
                 {/* User Profile */}
-                <Box 
+                {/* <Box 
                   sx={{ 
                     display: "flex",
                     alignItems: "center",
@@ -253,13 +253,15 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                       fontSize: '1rem'
                     }} 
                   />
-                </Box>
-              </Box>
+                
+              
+            </Box> */}
+            </Box>
             </Box>
           </Toolbar>
           
           {/* Secondary Navigation */}
-          <Collapse in={scrolled}>
+          {/* <Collapse in={scrolled}>
             <Box 
               sx={{ 
                 px: 4, 
@@ -299,7 +301,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 </Button>
               ))}
             </Box>
-          </Collapse>
+          </Collapse> */}
         </AppBar>
       </Fade>
       
@@ -307,7 +309,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
       <Fade in={mounted} timeout={800}>
         <Box sx={{ px: { xs: 2, md: 4 } }}>
           {/* Page Header */}
-          <Grow in={mounted} timeout={1000}>
+          {/* <Grow in={mounted} timeout={1000}>
             <Box 
               sx={{ 
                 mb: 4,
@@ -317,8 +319,8 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 alignItems: { xs: 'flex-start', sm: 'center' },
                 gap: 2
               }}
-            >
-              <Box>
+            > */}
+              {/* <Box>
                 <Typography 
                   variant="h4" 
                   fontWeight={700}
@@ -333,16 +335,16 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                 >
                  เอกสาร <strong>CBAM</strong> ส่งไป <strong>EU</strong> ล่าสุด
                 </Typography>
-              </Box>
+              </Box> */}
               
-              <Box 
+              {/* <Box 
                 sx={{ 
                   display: 'flex', 
                   gap: 2,
                   mt: { xs: 2, sm: 0 }
                 }}
-              >
-                <Button
+              > */}
+                {/* <Button
                   variant="outlined"
                   color="primary"
                   size="small"
@@ -367,10 +369,10 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                   }}
                 >
                   More Options
-                </Button>
-              </Box>
-            </Box>
-          </Grow>
+                </Button> */}
+              {/* </Box>
+            </Box> */}
+          {/* </Grow> */}
           
           {/* Main Content with Animation */}
           <Fade in={mounted} timeout={1200}>

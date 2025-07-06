@@ -493,8 +493,8 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                   isSubmitting
                     ? "Saving..."
                     : isEditMode
-                    ? "Update Report"
-                    : "Save Report"
+                    ? "Update"
+                    : "Save"
                 }
                 loading={isSubmitting}
                 type="submit"

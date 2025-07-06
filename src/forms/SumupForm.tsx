@@ -368,7 +368,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                 )}
 
                 {/* Mode indicator */}
-                {isEditMode ? (
+                {/* {isEditMode ? (
                   <div
                     style={{
                       color: "#1976d2",
@@ -393,7 +393,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                   >
                     <strong>🆕 Create Mode:</strong> Creating a new report
                   </div>
-                )}
+                )} */}
 
                 {/* Industry Type Selection */}
                 <LabeledAutocompleteMap
@@ -468,7 +468,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                 )}
 
                 {/* Progress Indicator */}
-                <div
+                {/* <div
                   style={{
                     padding: "0.75rem",
                     backgroundColor: "#fff3e0",
@@ -479,7 +479,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                 >
                   <strong>Next Step:</strong> After saving, you'll configure
                   installation details
-                </div>
+                </div> */}
               </div>
             </Section>
           </Grid>

@@ -1,8 +1,17 @@
 import React, { useState, useEffect } from "react";
-import { Container, Typography, Grid, Box, CircularProgress } from "@mui/material";
+import {
+  Container,
+  Typography,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
-import { fetchCountries, CountryOption } from "../components/dropdown/contriesmap";
+import {
+  fetchCountries,
+  CountryOption,
+} from "../components/dropdown/contriesmap";
 import Section1 from "./formsections/Goods/Goods_sec1";
 import Section2 from "./formsections/Goods/Goods_sec2";
 import Section3 from "./formsections/Goods/Goods_sec3";
@@ -58,7 +67,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
   // Default values for the form
   const getDefaultFormValues = () => ({
-     report_id: reportId || 0 ,
+    report_id: reportId || 0,
     name: formValues.name || "",
     goods_category: formValues.goods_category || "",
     routes: formValues.routes || [],
@@ -90,9 +99,9 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     total_production_amounts: formValues.total_production_amounts || 0,
   });
 
-  const [localFormValues, setLocalFormValues] = useState<GoodsFormProps["formValues"]>(
-    getDefaultFormValues()
-  );
+  const [localFormValues, setLocalFormValues] = useState<
+    GoodsFormProps["formValues"]
+  >(getDefaultFormValues());
 
   // --- Fetch countries on mount ---
   useEffect(() => {
@@ -126,10 +135,14 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         setExistingData(report);
         if (report && report.goods_id) {
           // 2. fetch goods data (edit mode)
-          const goodsRes = await fetch(`${apiUrl}/api/cbam/d_goods/${report.goods_id}`);
+          const goodsRes = await fetch(
+            `${apiUrl}/api/cbam/d_goods/${report.goods_id}`
+          );
           if (!goodsRes.ok) throw new Error(`Failed to fetch goods`);
           const goodsDataRes = await goodsRes.json();
-          const goodsData = Array.isArray(goodsDataRes) ? goodsDataRes[0] : goodsDataRes;
+          const goodsData = Array.isArray(goodsDataRes)
+            ? goodsDataRes[0]
+            : goodsDataRes;
           const extractedValues = {
             report_id: goodsData.report_id || reportId,
             name: String(goodsData.name || ""),
@@ -137,32 +150,67 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             industry_type: String(goodsData.industry_type || ""),
             routes: (() => {
               if (!goodsData.routes) return [];
-              try { return JSON.parse(goodsData.routes); } catch { return []; }
+              try {
+                return JSON.parse(goodsData.routes);
+              } catch {
+                return [];
+              }
             })(),
             amounts: (() => {
               if (!goodsData.amounts) return [];
-              try { return JSON.parse(goodsData.amounts); } catch { return []; }
+              try {
+                return JSON.parse(goodsData.amounts);
+              } catch {
+                return [];
+              }
             })(),
-            total_consumed_within_installation: Number(goodsData.total_consumed_within_installation ?? 0),
-            consumed_in_others_amounts: Number(goodsData.consumed_in_others_amounts ?? 0),
-            condumed_non_cbam_goods_amounts: Number(goodsData.condumed_non_cbam_goods_amounts ?? 0),
-            total_production_amounts: Number(goodsData.total_production_amounts ?? 0),
-            produced_for_market_amount: Number(goodsData.produced_for_market_amount ?? 0),
-            has_heat: goodsData.has_heat === 1 || goodsData.has_heat === "1" ? 1 : 0,
-            has_waste_gases: goodsData.has_waste_gases === 1 || goodsData.has_waste_gases === "1" ? 1 : 0,
+            total_consumed_within_installation: Number(
+              goodsData.total_consumed_within_installation ?? 0
+            ),
+            consumed_in_others_amounts: Number(
+              goodsData.consumed_in_others_amounts ?? 0
+            ),
+            condumed_non_cbam_goods_amounts: Number(
+              goodsData.condumed_non_cbam_goods_amounts ?? 0
+            ),
+            total_production_amounts: Number(
+              goodsData.total_production_amounts ?? 0
+            ),
+            produced_for_market_amount: Number(
+              goodsData.produced_for_market_amount ?? 0
+            ),
+            has_heat:
+              goodsData.has_heat === 1 || goodsData.has_heat === "1" ? 1 : 0,
+            has_waste_gases:
+              goodsData.has_waste_gases === 1 ||
+              goodsData.has_waste_gases === "1"
+                ? 1
+                : 0,
             direct_emissions: Number(goodsData.direct_emissions ?? 0),
             imported_heat_value: Number(goodsData.imported_heat_value ?? 0),
             exported_heat_value: Number(goodsData.exported_heat_value ?? 0),
             ef_imported_heat: Number(goodsData.ef_imported_heat ?? 0),
             ef_exported_heat: Number(goodsData.ef_exported_heat ?? 0),
-            electricity_consumption_value: Number(goodsData.electricity_consumption_value ?? 0),
+            electricity_consumption_value: Number(
+              goodsData.electricity_consumption_value ?? 0
+            ),
             ef_electricity: Number(goodsData.ef_electricity ?? 0),
-            source_of_ef_electricity: String(goodsData.source_of_ef_electricity ?? ""),
-            exported_electricity_value: Number(goodsData.exported_electricity_value ?? 0),
-            ef_exported_electricity: Number(goodsData.ef_exported_electricity ?? 0),
-            imported_wgases_amount: Number(goodsData.imported_wgases_amount ?? 0),
+            source_of_ef_electricity: String(
+              goodsData.source_of_ef_electricity ?? ""
+            ),
+            exported_electricity_value: Number(
+              goodsData.exported_electricity_value ?? 0
+            ),
+            ef_exported_electricity: Number(
+              goodsData.ef_exported_electricity ?? 0
+            ),
+            imported_wgases_amount: Number(
+              goodsData.imported_wgases_amount ?? 0
+            ),
             ef_imported_wgases: Number(goodsData.ef_imported_wgases ?? 0),
-            exported_wgases_amount: Number(goodsData.exported_wgases_amount ?? 0),
+            exported_wgases_amount: Number(
+              goodsData.exported_wgases_amount ?? 0
+            ),
             ef_exported_wgases: Number(goodsData.ef_exported_wgases ?? 0),
           };
           setLocalFormValues(extractedValues);
@@ -221,7 +269,8 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     const errors: { [key: string]: string } = {};
     requiredFields.forEach((field) => {
       const value = localFormValues[field as keyof typeof localFormValues];
-      if (!value && value !== 0) errors[field] = `${field.replace(/_/g, " ")} is required`;
+      if (!value && value !== 0)
+        errors[field] = `${field.replace(/_/g, " ")} is required`;
     });
     if (
       localFormValues.routes.length === 0 ||
@@ -245,9 +294,12 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         industry_type: parseInt(localFormValues.industry_type) || 0,
         routes: JSON.stringify(localFormValues.routes || []),
         amounts: JSON.stringify(localFormValues.amounts || []),
-        total_consumed_within_installation: Number(localFormValues.total_consumed_within_installation) || 0,
-        consumed_in_others_amounts: Number(localFormValues.consumed_in_others_amounts) || 0,
-        condumed_non_cbam_goods_amounts: Number(localFormValues.condumed_non_cbam_goods_amounts) || 0,
+        total_consumed_within_installation:
+          Number(localFormValues.total_consumed_within_installation) || 0,
+        consumed_in_others_amounts:
+          Number(localFormValues.consumed_in_others_amounts) || 0,
+        condumed_non_cbam_goods_amounts:
+          Number(localFormValues.condumed_non_cbam_goods_amounts) || 0,
         has_heat: localFormValues.has_heat ? 1 : 0,
         has_waste_gases: localFormValues.has_waste_gases ? 1 : 0,
         direct_emissions: Number(localFormValues.direct_emissions) || 0,
@@ -255,16 +307,23 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         exported_heat_value: Number(localFormValues.exported_heat_value) || 0,
         ef_imported_heat: Number(localFormValues.ef_imported_heat) || 0,
         ef_exported_heat: Number(localFormValues.ef_exported_heat) || 0,
-        electricity_consumption_value: Number(localFormValues.electricity_consumption_value) || 0,
+        electricity_consumption_value:
+          Number(localFormValues.electricity_consumption_value) || 0,
         ef_electricity: Number(localFormValues.ef_electricity) || 0,
         source_of_ef_electricity: localFormValues.source_of_ef_electricity,
-        exported_electricity_value: Number(localFormValues.exported_electricity_value) || 0,
-        ef_exported_electricity: Number(localFormValues.ef_exported_electricity) || 0,
-        total_production_amounts: Number(localFormValues.total_production_amounts) || 0,
-        produced_for_market_amount: Number(localFormValues.produced_for_market_amount) || 0,
-        imported_wgases_amount: Number(localFormValues.imported_wgases_amount) || 0,
+        exported_electricity_value:
+          Number(localFormValues.exported_electricity_value) || 0,
+        ef_exported_electricity:
+          Number(localFormValues.ef_exported_electricity) || 0,
+        total_production_amounts:
+          Number(localFormValues.total_production_amounts) || 0,
+        produced_for_market_amount:
+          Number(localFormValues.produced_for_market_amount) || 0,
+        imported_wgases_amount:
+          Number(localFormValues.imported_wgases_amount) || 0,
         ef_imported_wgases: Number(localFormValues.ef_imported_wgases) || 0,
-        exported_wgases_amount: Number(localFormValues.exported_wgases_amount) || 0,
+        exported_wgases_amount:
+          Number(localFormValues.exported_wgases_amount) || 0,
         ef_exported_wgases: Number(localFormValues.ef_exported_wgases) || 0,
       };
       let response, newGoodsId;
@@ -316,7 +375,10 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
   if (isLoading) {
     return (
-      <Container maxWidth="md" style={{ paddingTop: "2rem", textAlign: "center" }}>
+      <Container
+        maxWidth="md"
+        style={{ paddingTop: "2rem", textAlign: "center" }}
+      >
         <CircularProgress />
         <Typography variant="h6" gutterBottom sx={{ mt: 2 }}>
           Loading goods data...
@@ -326,15 +388,29 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   }
 
   return (
-    <Container maxWidth="md" style={{ paddingTop: "2rem", paddingBottom: "2rem" }}>
+    <Container
+      maxWidth="md"
+      style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
+    >
       <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3}>
           {/* Header Section */}
           <Grid size={12}>
-            <Typography variant="h4" fontWeight="bold" gutterBottom color="#1976d2">
+            <Typography
+              variant="h5"
+              fontSize="32px"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
               Aggregated goods categories and relevant production processes
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            <Typography
+              variant="subtitle1"
+              fontSize="22px"
+              color="text.secondary"
+              gutterBottom
+            >
               รายละเอียดของกลุ่มสินค้าและกระบวนการผลิต
             </Typography>
           </Grid>
@@ -366,10 +442,18 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           <Grid size={12}>
             <Section2
               values={{
-                total_production_amounts: String(localFormValues.total_production_amounts ?? ""),
-                consumed_in_others_amounts: String(localFormValues.consumed_in_others_amounts ?? ""),
-                produced_for_market_amount: String(localFormValues.produced_for_market_amount ?? ""),
-                condumed_non_cbam_goods_amounts: String(localFormValues.condumed_non_cbam_goods_amounts ?? ""),
+                total_production_amounts: String(
+                  localFormValues.total_production_amounts ?? ""
+                ),
+                consumed_in_others_amounts: String(
+                  localFormValues.consumed_in_others_amounts ?? ""
+                ),
+                produced_for_market_amount: String(
+                  localFormValues.produced_for_market_amount ?? ""
+                ),
+                condumed_non_cbam_goods_amounts: String(
+                  localFormValues.condumed_non_cbam_goods_amounts ?? ""
+                ),
               }}
               errors={formErrors}
               onChange={handleInputChange}
@@ -387,7 +471,12 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           </Grid>
           {/* Form submission button */}
           <Grid size={12}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mt={3}>
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mt={3}
+            >
               {Object.keys(formErrors).length > 0 && (
                 <Box>
                   <Typography color="error" variant="body2" fontWeight="bold">
@@ -412,8 +501,8 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                     isSubmitting
                       ? "Saving..."
                       : formMode === "edit"
-                      ? "Update Goods Data"
-                      : "Create Goods Data"
+                      ? "Update"
+                      : "Create"
                   }
                   loading={isSubmitting}
                   type="submit"

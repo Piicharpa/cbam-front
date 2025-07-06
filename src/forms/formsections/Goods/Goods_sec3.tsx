@@ -5,6 +5,7 @@ import { Box } from "@mui/material";
 import Section from "../../../components/Section";
 import LabeledTextField from "../../../components/LabeledTextField";
 import LabeledCheckbox from "../../../components/LabeledCheckBox";
+import LabeledAutocomplete from "../../../components/LabeledAutoComplete";
 
 interface Props {
   values: any;
@@ -14,12 +15,7 @@ interface Props {
   countries: any[]; // options for autocomplete
 }
 
-const Section3: React.FC<Props> = ({
-  values,
-  errors,
-  onChange,
-  setValues,
-}) => {
+const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
   const [electricitySources, setElectricitySources] = useState<
     { id: number; name: string }[]
   >([]);
@@ -44,11 +40,9 @@ const Section3: React.FC<Props> = ({
 
   return (
     <Section
-      title="(c) Calculation of the attributed emissions"
+      title = "Calculation of the attributed emissions"
       subtitle="การคำนวณการปล่อยก๊าซเรือนกระจกจากกระบวนการผลิต"
-      hasError={
-        !!(errors.source_of_ef_electricity)
-      }
+      hasError={!!errors.source_of_ef_electricity}
     >
       {/* Box 1: Measurable Heat */}
       <Box mb={3}>
@@ -149,7 +143,6 @@ const Section3: React.FC<Props> = ({
                 value={values.ef_imported_wgases}
                 onChange={onChange}
                 error={errors.ef_imported_wgases}
-                
               />
               <LabeledTextField
                 type="number"
@@ -160,7 +153,6 @@ const Section3: React.FC<Props> = ({
                 value={values.ef_exported_wgases}
                 onChange={onChange}
                 error={errors.ef_exported_wgases}
-                
               />
             </div>
 
@@ -174,7 +166,6 @@ const Section3: React.FC<Props> = ({
                 value={values.imported_wgases_amount}
                 onChange={onChange}
                 error={errors.imported_wgases_amount}
-                
               />
               <LabeledTextField
                 type="number"
@@ -185,14 +176,13 @@ const Section3: React.FC<Props> = ({
                 value={values.exported_wgases_amount}
                 onChange={onChange}
                 error={errors.exported_wgases_amount}
-                
               />
             </div>
           </div>
         )}
       </Box>
 
-      <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+      <div style={{ textAlign: "left", marginBottom: "1.5rem", fontSize: "18px" }}>
         <strong> Directly attributable emissions (DirEm*) </strong>
       </div>
       <Box mb={3}>
@@ -210,9 +200,9 @@ const Section3: React.FC<Props> = ({
       </Box>
 
       {/* Box 3: Indirect emissions from electricity consumption"*/}
-      <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+      <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "18px"}}>
         <strong> Indirect emissions from electricity consumption </strong>
-        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "0.9rem" }}>
+        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
           ปริมาณการปล่อยก๊าซเรือนกระจกทางอ้อมจากไฟฟ้า
         </p>
       </div>
@@ -246,7 +236,7 @@ const Section3: React.FC<Props> = ({
           </div>
 
           <div style={{ flex: 1 }}>
-            {/* <LabeledAutoComplete
+            <LabeledAutocomplete
               caption="Source of the emission factor"
               defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
               label=""
@@ -260,24 +250,15 @@ const Section3: React.FC<Props> = ({
                   source_of_ef_electricity: val,
                 }))
               }
-            /> */}
-            <LabeledTextField
-              caption="Source of the emission factor"
-              defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
-              label=""
-              name="source_of_ef_electricity"
-              value={values.source_of_ef_electricity}
-              error={errors.source_of_ef_electricity}
-              onChange={onChange}required
             />
           </div>
         </div>
       </Box>
 
       {/* Box 4: Electricity exported from the production process*/}
-      <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+      <div style={{ textAlign: "left", marginBottom: "1.5rem", fontSize: "18px"}}>
         <strong> Electricity exported from the production process</strong>
-        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "0.9rem" }}>
+        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
           ปริมาณไฟฟ้าที่ส่งออกจากกระบวนการผลิต
         </p>
       </div>
@@ -288,7 +269,7 @@ const Section3: React.FC<Props> = ({
             <LabeledTextField
               type="number"
               caption="Emission factor of the electricity"
-              defination="กรอกค่า Emission factor ของไฟฟ้าที่ส่งออกจากกระบวนการผลิต"
+              defination="กรอกค่า Emission factor ที่ส่งออกจากกระบวนการผลิต"
               label=""
               name="ef_electricity"
               value={values.ef_electricity}

@@ -74,13 +74,8 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        console.log(
-          "🔍 Fetching CBAM reports from:",
-          `${apiUrl}/api/cbam/report/company/1`
-        );
         const response = await axios.get(`${apiUrl}/api/cbam/report/company/1`);
         const raw = response.data;
-        console.log("📋 Raw API response:", raw);
         const items = Array.isArray(raw) ? raw : [raw];
 
         const mapped: CBAMData[] = items.map((item: any) => {
@@ -97,7 +92,6 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
           };
         });
 
-        console.log("✅ Mapped CBAM data:", mapped);
         setData(mapped);
         setFilteredData(mapped);
       } catch (err) {
@@ -163,14 +157,12 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
     .sort();
 
   const handleEdit = (reportId: number) => {
-    console.log("✏️ Edit report clicked for ID:", reportId);
     if (onEditReport) {
       onEditReport(reportId);
     }
   };
 
   const handleDelete = (reportId: number) => {
-    console.log("🗑️ Delete report clicked for ID:", reportId);
     if (onDeleteReport) {
       onDeleteReport(reportId);
     }
@@ -213,51 +205,51 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
             />
           </Grid>
           <div
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: "16px",
+            style={{
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "16px",
+            }}
+          >
+            <div style={{ flex: 1 }}>
+              <Button
+                color="secondary"
+                variant="outlined"
+                fullWidth
+                startIcon={<CalendarTodayIcon />}
+                onClick={() => {
+                  setStartDate(dayjs().subtract(30, "day"));
+                  setEndDate(dayjs());
+                  setShowFilters(true);
+                }}
+                sx={{
+                  height: "100%",
+                  borderRadius: 2,
+                  textTransform: "none",
                 }}
               >
-           <div style={{ flex: 1 }}>
-            <Button
-              color="secondary"
-              variant="outlined"
-              fullWidth
-              startIcon={<CalendarTodayIcon />}
-              onClick={() => {
-                setStartDate(dayjs().subtract(30, "day"));
-                setEndDate(dayjs());
-                setShowFilters(true);
-              }}
-              sx={{
-                height: "100%",
-                borderRadius: 2,
-                textTransform: "none",
-              }}
-            >
-              Last 30 Days
-            </Button>
-          </div>
-           <div style={{ flex: 1 }}>
-            <Button
-              fullWidth
-              startIcon={<TuneIcon />}
-              onClick={() => setShowFilters(!showFilters)}
-              variant={showFilters ? "contained" : "outlined"}
-              color="primary"
-              sx={{
-                height: "100%",
-                borderRadius: 2,
-                textTransform: "none",
-              }}
-            >
-              {showFilters ? "Hide Filters" : "Show Filters"}
-            </Button>
-          </div>
+                Last 30 Days
+              </Button>
+            </div>
+            <div style={{ flex: 1 }}>
+              <Button
+                fullWidth
+                startIcon={<TuneIcon />}
+                onClick={() => setShowFilters(!showFilters)}
+                variant={showFilters ? "contained" : "outlined"}
+                color="primary"
+                sx={{
+                  height: "100%",
+                  borderRadius: 2,
+                  textTransform: "none",
+                }}
+              >
+                {showFilters ? "Hide Filters" : "Show Filters"}
+              </Button>
+            </div>
           </div>
         </Grid>
- 
+
         {/* Collapsible filters section */}
         <Collapse in={showFilters}>
           <Paper
@@ -273,7 +265,6 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
             <Typography variant="subtitle2" gutterBottom fontWeight={600}>
               Filter Reports
             </Typography>
-           
 
             <Grid container spacing={2} alignItems="center">
               <Grid size={6.4}>

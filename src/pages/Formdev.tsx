@@ -81,22 +81,18 @@ const Formdev: React.FC = () => {
       localStorage.setItem("reportId", queryReportId);
       setReportId(parsedId);
       setIsEditMode(true);
-      console.log(
-        `⚡ Edit mode activated for report ID: ${parsedId}, stored in localStorage`
-      );
+      
     } else {
       // If not in URL, check localStorage
       const storedReportId = localStorage.getItem("reportId");
       if (storedReportId) {
         setReportId(parseInt(storedReportId, 10));
         setIsEditMode(true);
-        console.log(`📋 Using report ID from localStorage: ${storedReportId}`);
       } else {
         // No reportId available - we're in create mode
         localStorage.removeItem("reportId"); // Clear any previous value
         setReportId(null);
         setIsEditMode(false);
-        console.log("✨ Create mode - no report ID available");
       }
     }
   }, [searchParams]);
@@ -105,7 +101,6 @@ const Formdev: React.FC = () => {
   useEffect(() => {
     // Check if imported steps are valid
     if (steps && Array.isArray(steps) && steps.length > 0) {
-      console.log("Using imported steps", steps);
       setSafeSteps(steps);
     } else {
       console.warn("Imported steps is invalid or empty, using fallback steps");
@@ -256,7 +251,6 @@ const Formdev: React.FC = () => {
   // Update form data with reportId when it changes
   useEffect(() => {
     if (reportId) {
-      console.log(`Updating form data states with reportId: ${reportId}`);
       setSumupData((prev) => ({ ...prev, reportId }));
       setInstallationData((prev) => ({ ...prev, reportId }));
       setVerifierData((prev) => ({ ...prev, reportId }));

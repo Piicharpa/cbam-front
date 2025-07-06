@@ -95,7 +95,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
         throw new Error(`Failed to delete emission record: ${errorText}`);
       }
 
-      console.log(`Successfully deleted emission record ${db_id}`);
       return true;
     } catch (error) {
       console.error(`Error deleting emission record ${db_id}:`, error);
@@ -450,11 +449,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
     }
 
     try {
-      console.log("Sending API requests...");
-
       // 1. First delete any records that have been removed
       for (const recordId of removedRecordIds) {
-        console.log(`Deleting emission record ${recordId}`);
         await deleteEmissionRecord(recordId);
       }
 
@@ -492,8 +488,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
           ? `${apiUrl}/api/cbam/b_emission/${section.db_id}`
           : `${apiUrl}/api/cbam/b_emission`;
 
-        console.log(`Using ${method} request to ${url}`, payload);
-
         const response = await fetch(url, {
           method,
           headers: { "Content-Type": "application/json" },
@@ -511,7 +505,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
         }
 
         const responseData = await response.json();
-        console.log(`${method} response:`, responseData);
       }
 
       // Navigate to report page after successful submission
@@ -534,6 +527,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
         <Grid container spacing={3} alignItems="stretch">
           <Box>
             <Typography
+              fontSize="32px"
               variant="h5"
               fontWeight="bold"
               gutterBottom
@@ -541,7 +535,12 @@ const SourceForm: React.FC<SourceFormProps> = ({
             >
               Installation's emission at source stream and emission source level
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            <Typography
+              fontSize="22px"
+              variant="subtitle1"
+              color="text.secondary"
+              gutterBottom
+            >
               การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
             </Typography>
           </Box>
@@ -562,17 +561,12 @@ const SourceForm: React.FC<SourceFormProps> = ({
             />
           </Section>
 
-          {/* Summary of removed records (optional, helpful for debugging) */}
-          {/* {removedRecordIds.length > 0 && (
-            <Box mt={2} p={2} sx={{ backgroundColor: '#fff9e3', borderRadius: 1 }}>
-              <Typography variant="body2">
-                {removedRecordIds.length} record(s) will be removed on save.
-              </Typography>
-            </Box>
-          )} */}
-
           {/* Submit button */}
-          <PGButton text="Save" />
+          <PGButton
+            text={reportId ? "Update" : "Create"}
+            loading={isSubmitting}
+            type="submit"
+          />
         </Grid>
       </form>
     </Container>

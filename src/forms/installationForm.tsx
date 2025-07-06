@@ -93,7 +93,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   // 🏭 Fetch specific installation data (for EDIT mode)
   const fetchInstallationData = async (installationId: number) => {
     try {
-      console.log(`🔍 Fetching installation data for ID: ${installationId}`);
 
       const response = await fetch(
         `${apiUrl}/api/cbam/installation/${installationId}`
@@ -106,10 +105,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       if (installationDataArray && installationDataArray.length > 0) {
         const installationData = installationDataArray[0];
-        console.log(
-          "✅ Found installation data for EDIT mode:",
-          installationData
-        );
+        
 
         // Update form values with existing installation data + today's dates
         const updatedFormValues = {
@@ -151,7 +147,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   // 🏢 Fetch latest installation from company (for CREATE mode)
   const fetchLatestCompanyInstallation = async (companyId: number) => {
     try {
-      console.log(`🔍 Fetching latest installation for company: ${companyId}`);
 
       const response = await fetch(
         `${apiUrl}/api/cbam/report/company/${companyId}`
@@ -167,10 +162,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       if (installations && installations.length > 0) {
         // Take the last item as requested
         const latestInstallation = installations[installations.length - 1];
-        console.log(
-          "✅ Found latest installation for CREATE mode:",
-          latestInstallation
-        );
+        
 
         const latestinstallationId = latestInstallation.installation_id;
 
@@ -208,12 +200,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         onChange(updatedFormValues);
         setFormMode("create");
       } else {
-        console.log("ℹ️ No previous installations found, showing empty form");
         setFormMode("empty");
       }
     } catch (error) {
       console.error("❌ Error fetching latest installation:", error);
-      console.log("ℹ️ Fallback to empty form");
       setFormMode("empty");
     }
   };
@@ -226,15 +216,12 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       try {
         // Case 1: No reportId - show empty form (shouldn't happen in real life)
         if (!reportId) {
-          console.log("⚠️ No reportId found - showing empty form");
           setFormMode("empty");
           setIsLoading(false);
           return;
         }
 
         // Case 2: Fetch report data to check if it has installation_id
-        console.log(`🔍 Checking report ${reportId} for existing installation`);
-
         const reportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`
         );
@@ -245,7 +232,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         }
 
         const reportData = await reportResponse.json();
-        console.log("📋 Report data:", reportData);
 
         if (reportData && reportData.length > 0) {
           const report = reportData[0];
@@ -253,24 +239,18 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
           if (report.installation_id) {
             // ✅ SCENARIO 1: EDIT MODE - Report has installation_id
-            console.log(
-              "🔄 EDIT MODE: Report has installation_id, fetching installation data"
-            );
+            
             await fetchInstallationData(report.installation_id);
           } else {
             // ✅ SCENARIO 2: CREATE MODE - Report has no installation_id
-            console.log(
-              "🆕 CREATE MODE: Report has no installation_id, fetching latest company installation"
-            );
+            
             await fetchLatestCompanyInstallation(companyId);
           }
         } else {
-          console.log("⚠️ No report data found - showing empty form");
           setFormMode("empty");
         }
       } catch (error) {
         console.error("❌ Error in main data loading:", error);
-        console.log("🔄 Fallback: trying to get latest company installation");
         await fetchLatestCompanyInstallation(companyId);
       } finally {
         setIsLoading(false);
@@ -290,7 +270,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         };
 
         setCountries(result.countries);
-        console.log(`✅ Loaded ${result.countries.length} countries`);
 
         // Auto-select default country if none selected
         if (result.defaultCountry && !formValues.country_id) {
@@ -429,9 +408,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         phone: formValues.tel || null,
       };
 
-      console.log(
-        `📤 ${formMode.toUpperCase()} MODE: Saving installation data`
-      );
+      
 
       // Determine API call based on mode
       let installationResponse;
@@ -439,9 +416,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       if (formMode === "edit" && existingData?.installation_id) {
         // UPDATE existing installation
-        console.log(
-          `🔄 Updating installation ID: ${existingData.installation_id}`
-        );
+       
 
         installationResponse = await fetch(
           `${apiUrl}/api/cbam/installation/${existingData.installation_id}`,
@@ -455,7 +430,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         newInstallationId = existingData.installation_id;
       } else {
         // CREATE new installation
-        console.log("🆕 Creating new installation");
 
         installationResponse = await fetch(`${apiUrl}/api/cbam/installation`, {
           method: "POST",
@@ -476,7 +450,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       const installationResult = await installationResponse.json();
-      console.log("✅ Installation saved successfully:", installationResult);
 
       // Get installation ID (for new installations)
       if (formMode !== "edit") {
@@ -484,9 +457,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       // 2. Update Report with installation_id (as requested)
-      console.log(
-        `🔗 Updating report ${reportId} with installation_id: ${newInstallationId}`
-      );
+      
 
       const reportUpdatePayload = {
         installation_id: newInstallationId,
@@ -513,15 +484,11 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       const reportResult = await reportUpdateResponse.json();
-      console.log(
-        "✅ Report updated successfully with installation_id:",
-        reportResult
-      );
+     
 
       // 3. Keep reportId in localStorage as requested
       localStorage.setItem("reportId", String(reportId));
       localStorage.setItem("cbam_report_id", String(reportId));
-      console.log(`💾 Kept reportId ${reportId} in localStorage for next page`);
 
       // Success message
       const modeText = formMode === "edit" ? "updated" : "created";
@@ -566,6 +533,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           {/* Header Section */}
           <Grid size={12}>
             <Typography
+            fontSize="32px"
               variant="h5"
               fontWeight="bold"
               gutterBottom
@@ -573,12 +541,12 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             >
               About the installation
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            <Typography fontSize="20px" variant="subtitle1" color="text.secondary" gutterBottom>
               รายละเอียดสถานประกอบการ
             </Typography>
 
             {/* Mode Indicator */}
-            <Box
+            {/* <Box
               mt={2}
               p={2}
               sx={{
@@ -649,7 +617,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <strong>Report ID:</strong> {reportId} |{" "}
                 <strong>Company ID:</strong> {companyId}
               </Typography>
-            </Box>
+            </Box> */}
           </Grid>
 
           {/* Reporting Period Section */}
@@ -661,7 +629,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 !!formErrors.reporting_period_start ||
                 !!formErrors.reporting_period_end
               }
-              defaultExpanded
+              // defaultExpanded
             >
               <Grid container spacing={2}>
                 <Grid size={12}>
@@ -923,244 +891,14 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
               <PGButton
                 text={
                   formMode === "edit"
-                    ? "Update Installation"
-                    : "Create Installation"
+                    ? "Update"
+                    : "Create"
                 }
                 loading={isSubmitting}
                 type="submit"
               />
             </Box>
           </Grid>
-
-          {/* Debug Information - Development Only */}
-          {/* {process.env.NODE_ENV === "development" && (
-            <Grid size={12}>
-              <Box
-                mt={4}
-                p={2}
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  fontSize: "0.8rem",
-                  border: "1px solid #ddd",
-                }}
-              >
-                <details>
-                  <summary
-                    style={{
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    🐛 Debug Information (Development Mode)
-                  </summary>
-
-                  <Grid container spacing={2}>
-                    <Grid size={12}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                      >
-                        Mode & IDs:
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Form Mode:</strong> {formMode}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Report ID (localStorage):</strong>{" "}
-                        {reportId || "not set"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Company ID:</strong> {companyId}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Installation ID:</strong>{" "}
-                        {existingData?.installation_id || "not set"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Loading:</strong> {isLoading ? "Yes" : "No"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Submitting:</strong>{" "}
-                        {isSubmitting ? "Yes" : "No"}
-                      </Typography>
-                    </Grid>
-
-                    <Grid size={12}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                      >
-                        Form Status:
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Countries Loaded:</strong> {countries.length}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Form Errors:</strong>{" "}
-                        {Object.keys(formErrors).length}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        sx={{
-                          color:
-                            formMode === "edit"
-                              ? "orange"
-                              : formMode === "create"
-                              ? "green"
-                              : "blue",
-                        }}
-                      >
-                        <strong>Action:</strong>{" "}
-                        {formMode === "edit"
-                          ? "Will UPDATE existing installation"
-                          : formMode === "create"
-                          ? "Will CREATE new installation"
-                          : "Will CREATE new installation (empty form)"}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Box mt={2}>
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Existing Data:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: "10px",
-                        overflow: "auto",
-                        maxHeight: "150px",
-                        backgroundColor: "#fff",
-                        p: 1,
-                        border: "1px solid #ddd",
-                        borderRadius: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {JSON.stringify(existingData, null, 2)}
-                    </Box>
-                  </Box>
-
-                  <Box mt={2}>
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Current Form Values:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: "10px",
-                        overflow: "auto",
-                        maxHeight: "200px",
-                        backgroundColor: "#fff",
-                        p: 1,
-                        border: "1px solid #ddd",
-                        borderRadius: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {JSON.stringify(
-                        {
-                          ...formValues,
-                          reporting_period_start: formatDate(
-                            formValues.reporting_period_start
-                          ),
-                          reporting_period_end: formatDate(
-                            formValues.reporting_period_end
-                          ),
-                        },
-                        null,
-                        2
-                      )}
-                    </Box>
-                  </Box>
-
-                  {Object.keys(formErrors).length > 0 && (
-                    <Box mt={2}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                        color="red"
-                      >
-                        Form Errors ({Object.keys(formErrors).length}):
-                      </Typography>
-                      <Box
-                        component="pre"
-                        sx={{
-                          fontSize: "10px",
-                          overflow: "auto",
-                          maxHeight: "100px",
-                          backgroundColor: "#fff",
-                          p: 1,
-                          border: "1px solid #ff9999",
-                          borderRadius: 1,
-                          mt: 1,
-                          color: "red",
-                        }}
-                      >
-                        {JSON.stringify(formErrors, null, 2)}
-                      </Box>
-                    </Box>
-                  )}
-
-                  <Box
-                    mt={2}
-                    p={1}
-                    sx={{ backgroundColor: "#e3f2fd", borderRadius: 1 }}
-                  >
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Logic Summary:
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      1. Get reportId from localStorage:{" "}
-                      <strong>{reportId}</strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      2. Check if report has installation_id:{" "}
-                      <strong>
-                        {existingData?.installation_id ? "YES" : "NO"}
-                      </strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      3. Mode determined:{" "}
-                      <strong>{formMode.toUpperCase()}</strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      4. Data source:{" "}
-                      <strong>
-                        {formMode === "edit"
-                          ? "Specific installation data"
-                          : formMode === "create"
-                          ? "Latest company installation"
-                          : "Empty form"}
-                      </strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      5. Dates set to:{" "}
-                      <strong>Today ({formatDate(getTodayDate())})</strong>
-                    </Typography>
-                  </Box>
-                </details>
-              </Box>
-            </Grid>
-          )} */}
         </Grid>
       </form>
     </Container>

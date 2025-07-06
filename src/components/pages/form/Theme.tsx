@@ -37,7 +37,7 @@ const theme = createTheme({
     fontFamily: "'Poppins', 'Roboto', 'Arial', sans-serif",
     h4: {
       fontWeight: 600,
-      fontSize: 25
+      fontSize: 30
     },
     button: {
       textTransform: "none",

@@ -41,7 +41,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
       <Typography
         variant="caption"
         color="#0290c4"
-        style={{ fontWeight: 600, fontSize: 13 }}
+        style={{ fontWeight: 600, fontSize: "18px" }}
       >
         {caption} {required && <span style={{ color: 'red' }}>*</span>}
       </Typography>
@@ -50,7 +50,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
       <Typography
         variant="caption"
         color="#74aa15"
-        style={{ marginBottom: "0.25rem", display: "block", fontSize: 10 }}
+        style={{ marginBottom: "0.25rem", display: "block", fontSize: "16px" }}
       >
         {defination}
       </Typography>

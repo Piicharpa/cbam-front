@@ -21,9 +21,16 @@ interface Props {
 const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
   return (
     <Section
-      title="(b) Amount of aggregated goods"
+      title="Amount of aggregated goods"
       subtitle="ปริมาณการผลิต"
-      hasError={!!(errors.total_production_amounts || errors.consumed_in_others_amounts || errors.produced_for_market_amount || errors.condumed_non_cbam_goods_amounts)}
+      hasError={
+        !!(
+          errors.total_production_amounts ||
+          errors.consumed_in_others_amounts ||
+          errors.produced_for_market_amount ||
+          errors.condumed_non_cbam_goods_amounts
+        )
+      }
     >
       <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
         <div style={{ flex: 1 }}>
@@ -35,7 +42,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             name="total_production_amounts"
             value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_production_amounts}  // Pass the error for the helper text
+            error={errors.total_production_amounts} // Pass the error for the helper text
             helperText={errors.total_production_amounts} // Show error as helper text
             inputProps={{
               step: "any",
@@ -80,7 +87,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             }}
             required
           />
-          
+
           <LabeledTextField
             type="number"
             caption="Consumed for non-CBAM goods"

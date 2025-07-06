@@ -213,7 +213,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     setRouteCount(maxFilledRoute);
   };
 
-  console.log("localStorage : ", localStorage);
   // Map API data to PrecursorSubmitData - fixed to match database structure
   const mapApiDataToPrecursorData = (
     data: PrecursorApiData
@@ -566,7 +565,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         }}
       >
         <div>
-          <h4 style={{ margin: 0 }}>
+          <h4 style={{ margin: 0 , fontSize: "18px"}}>
             Precursor {index}
             {existingData?.id && ` (ID: ${existingData.id})`}
           </h4>
@@ -607,7 +606,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                 color: "white",
                 padding: "5px 10px",
                 borderRadius: "4px",
-                fontSize: "12px",
+                fontSize: "20px",
               }}
             >
               {existingData ? "Loaded" : "Saved"}
@@ -631,29 +630,29 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
       {/* Form fields */}
       {precursorOptions.length > 0 ? (
-      precursorOptions.map((precursor, idx) => (
-      <LabeledAutocomplete
-        caption="Purchased precursor"
-        defination="รายการวัตถุดิบ precursor"
-        label=""
-        name={`purchased_precursors_${index}`}
-        options={precursorOptions}
-        value={String(fieldValues[`purchased_precursors_${index}`] || "")}
-        onChange={(val) =>
-          handleInputChange(`purchased_precursors_${index}`, val)
-        }
-        error={
-          fieldErrors[`purchased_precursors_${index}`] ||
-          formErrors[`purchased_precursors_${index}`]
-        }
-        disabled={loadingPrecursors}
-        readOnly
-      />
-       ))
-    ) : (
-      // {loadingPrecursors && <span>Loading...</span>}
-      // {noPrecursors && (
-        <span style={{ color: "#ff9800", fontSize: 13 }}>
+        precursorOptions.map((precursor, idx) => (
+          <LabeledAutocomplete
+            caption="Purchased precursor"
+            defination="รายการวัตถุดิบ precursor"
+            label=""
+            name={`purchased_precursors_${index}`}
+            options={precursorOptions}
+            value={String(fieldValues[`purchased_precursors_${index}`] || "")}
+            onChange={(val) =>
+              handleInputChange(`purchased_precursors_${index}`, val)
+            }
+            error={
+              fieldErrors[`purchased_precursors_${index}`] ||
+              formErrors[`purchased_precursors_${index}`]
+            }
+            disabled={loadingPrecursors}
+            readOnly
+          />
+        ))
+      ) : (
+        // {loadingPrecursors && <span>Loading...</span>}
+        // {noPrecursors && (
+        <span style={{ color: "#ff9800", fontSize: "18px" }}>
           ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
         </span>
       )}
@@ -745,6 +744,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                   borderRadius: "10px",
                   cursor: "pointer",
                   marginRight: "10px",
+                  fontSize: "14px"
+
                 }}
                 onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
               >
@@ -761,6 +762,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                   border: "none",
                   borderRadius: "10px",
                   cursor: "pointer",
+                  fontSize: "14px"
                 }}
                 onClick={() => setRouteCount((prev) => prev - 1)}
               >
@@ -772,7 +774,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       </Box>
 
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "18px", color: "#0290c4"}}>
           <strong>
             Specific embedded direct emissions (SEE (direct)) Unit: tCO2e/t
           </strong>
@@ -826,7 +828,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       </Box>
 
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "20px" , color: "#0290c4"}}>
           <strong>
             Specific electricity consumption (for SEE (indirect)) Unit: MWh/t
           </strong>
@@ -915,31 +917,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           marginTop: "20px",
         }}
       >
-        {/* {previousData && (
-          <button
-            type="button"
-            style={{
-              backgroundColor: "#f0ad4e",
-              color: "#fff",
-              padding: "10px 20px",
-              border: "none",
-              borderRadius: "10px",
-              cursor: "pointer",
-              fontWeight: "bold",
-              fontSize: "14px",
-            }}
-            onClick={() => {
-              // กู้คืนข้อมูลจาก previousData
-              if (previousData) {
-                setExistingData(previousData);
-                updateFieldsFromApiData(previousData);
-              }
-            }}
-          >
-            Restore Previous Data
-          </button>
-        )} */}
-
         <div
           style={{
             display: "flex",
@@ -968,36 +945,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           </button>
         </div>
       </div>
-
-      {/* API Response Display (only in development mode) */}
-      {/* {process.env.NODE_ENV === "development" && apiResponse && (
-        <div
-          style={{
-            marginTop: "20px",
-            padding: "10px",
-            backgroundColor: "#f5f5f5",
-            borderRadius: "4px",
-            fontSize: "12px",
-            overflow: "auto",
-            maxHeight: "200px",
-          }}
-        >
-          <details>
-            <summary
-              style={{
-                cursor: "pointer",
-                fontWeight: "bold",
-                color: "#2c3e50",
-              }}
-            >
-              API Response Details
-            </summary>
-            <pre style={{ margin: "10px 0 0" }}>
-              {JSON.stringify(apiResponse, null, 2)}
-            </pre>
-          </details>
-        </div>
-      )} */}
     </div>
   );
 };

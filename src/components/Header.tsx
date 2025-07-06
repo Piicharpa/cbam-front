@@ -46,13 +46,13 @@ const Header: React.FC<HeaderProps> = ({
               color: '#1a1a1a', 
               marginBottom: '4px', 
               fontWeight: '600',
-              fontSize: '1.5rem',
+              fontSize: '24px',
             }}>
               CBAM Carbon Footprint Platform
             </Typography>
             <Typography sx={{ 
               color: '#666666', 
-              fontSize: '0.875rem',
+              fontSize: '14px',
               fontWeight: '400'
             }}>
               องค์การบริหารจัดการก๊าซเรือนกระจก (องค์การมหาชน)
@@ -66,7 +66,7 @@ const Header: React.FC<HeaderProps> = ({
             <Typography sx={{ 
               fontWeight: '600', 
               color: '#1a1a1a',
-              fontSize: '0.875rem'
+              fontSize: '14'
             }}>
               {companyName}
             </Typography>

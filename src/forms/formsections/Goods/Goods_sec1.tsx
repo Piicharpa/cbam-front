@@ -15,8 +15,8 @@ interface FormValues {
   name: string;
   industry_type: string;
   goods_category: string;
-  routes: string[]; // Keep as array
-  amounts: string[]; // Keep as array
+  routes: string[]; 
+  amounts: string[]; 
 }
 
 interface FormErrors {
@@ -36,260 +36,217 @@ interface Props {
 }
 
 const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
-  // State management
+  
+  
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
   const [routesOptions, setRoutesOptions] = useState<OptionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Calculate route count based on routes data
-const routeCount = useMemo(() => {
-  if (Array.isArray(values.routes)) {
-    // Show the total number of route slots (including empty ones)
-    // Minimum 1, maximum 6
-    return Math.min(Math.max(values.routes.length, 1), 6);
-  }
-  return 1;
-}, [values.routes]);
+ 
+  const routeCount = useMemo(() => {
+    if (Array.isArray(values.routes)) {
+     
+      return Math.min(Math.max(values.routes.length, 1), 6);
+    }
+    return 1;
+  }, [values.routes]);
 
-// Fix the handleAddRoute function
-const handleAddRoute = () => {
-  const currentRoutes = values.routes || [];
-  const currentAmounts = values.amounts || [];
   
-  // Only add if we haven't reached the limit
-  if (currentRoutes.length < 6) {
-    console.log(`Adding route slot ${currentRoutes.length + 1}`);
-    
-    // Add an empty route slot
-    const updatedRoutes = [...currentRoutes, ''];
-    const updatedAmounts = [...currentAmounts, ''];
-    
-    console.log('New routes array:', updatedRoutes);
-    console.log('New amounts array:', updatedAmounts);
-    
-    onChange("routes", updatedRoutes);
-    onChange("amounts", updatedAmounts);
-  }
-};
+  const handleAddRoute = () => {
+    const currentRoutes = values.routes || [];
+    const currentAmounts = values.amounts || [];
 
- const saveToLocalStorage = useCallback(() => {
-  if (values.industry_type || values.goods_category) {
-    const dataToSave = {
-      routes: values.routes || [], // Changed from {} to []
-      amounts: values.amounts || [], // Changed from {} to []
-      industry_type: values.industry_type,
-      goods_category: values.goods_category,
-      name: values.name,
-    };
     
-    // Only save if data has actually changed
-    const currentSaved = localStorage.getItem("goodsFormData");
-    const newData = JSON.stringify(dataToSave);
+    if (currentRoutes.length < 6) {
+
     
-    if (currentSaved !== newData) {
-      localStorage.setItem("goodsFormData", newData);
+      const updatedRoutes = [...currentRoutes, ""];
+      const updatedAmounts = [...currentAmounts, ""];
+
+
+      onChange("routes", updatedRoutes);
+      onChange("amounts", updatedAmounts);
     }
-  }
-}, [values]);
+  };
 
+  const saveToLocalStorage = useCallback(() => {
+    if (values.industry_type || values.goods_category) {
+      const dataToSave = {
+        routes: values.routes || [], 
+        amounts: values.amounts || [], 
+        industry_type: values.industry_type,
+        goods_category: values.goods_category,
+        name: values.name,
+      };
 
-  const updateGoodsOptions = useCallback((industryType: string) => {
-    if (industryType && goodsData.length > 0) {
-      const options = getGoodsOptions(goodsData, +industryType);
-      setGoodsOptions(options);
-      
-      // Check if current goods_category is valid for new industry type
-      const currentGoodsCategory = String(values.goods_category);
-      const isValidGoodsCategory = options.some(
-        opt => String(opt.value) === currentGoodsCategory
-      );
-      
-      if (currentGoodsCategory && !isValidGoodsCategory) {
-        console.warn(`Clearing goods_category "${currentGoodsCategory}" as it's not valid for industry type`);
-        onChange("goods_category", "");
-        onChange("routes", []);
+  
+      const currentSaved = localStorage.getItem("goodsFormData");
+      const newData = JSON.stringify(dataToSave);
+
+      if (currentSaved !== newData) {
+        localStorage.setItem("goodsFormData", newData);
       }
-    } else {
-      setGoodsOptions([]);
     }
-  }, [goodsData, values.goods_category, onChange]);
+  }, [values]);
+
+  const updateGoodsOptions = useCallback(
+    (industryType: string) => {
+      if (industryType && goodsData.length > 0) {
+        const options = getGoodsOptions(goodsData, +industryType);
+        setGoodsOptions(options);
+
+      
+        const currentGoodsCategory = String(values.goods_category);
+        const isValidGoodsCategory = options.some(
+          (opt) => String(opt.value) === currentGoodsCategory
+        );
+
+        if (currentGoodsCategory && !isValidGoodsCategory) {
+          console.warn(
+            `Clearing goods_category "${currentGoodsCategory}" as it's not valid for industry type`
+          );
+          onChange("goods_category", "");
+          onChange("routes", []);
+        }
+      } else {
+        setGoodsOptions([]);
+      }
+    },
+    [goodsData, values.goods_category, onChange]
+  );
 
   const updateRoutesOptions = useCallback(() => {
-  if (values.goods_category && values.industry_type) {
-    const options = getRoutesOptions(
-      goodsData,
-      +values.industry_type,
-      +values.goods_category
-    );
-    setRoutesOptions(options);
-    
-    // Check if current routes are still valid
-    const currentRoutes = Array.isArray(values.routes) ? values.routes : [];
-    
-    const hasValidRoutes = currentRoutes.some(route => 
-      route && options.some(opt => String(opt.value) === String(route))
-    );
-    
-    if (!hasValidRoutes && currentRoutes.length > 0) {
-      console.log('Clearing invalid routes');
-      onChange("routes", []);
-      onChange("amounts", []);
+    if (values.goods_category && values.industry_type) {
+      const options = getRoutesOptions(
+        goodsData,
+        +values.industry_type,
+        +values.goods_category
+      );
+      setRoutesOptions(options);
+
+      const currentRoutes = Array.isArray(values.routes) ? values.routes : [];
+
+      const hasValidRoutes = currentRoutes.some(
+        (route) =>
+          route && options.some((opt) => String(opt.value) === String(route))
+      );
+
+      if (!hasValidRoutes && currentRoutes.length > 0) {
+        onChange("routes", []);
+        onChange("amounts", []);
+      }
+
+      if (
+        options.length === 1 &&
+        (!currentRoutes.length || currentRoutes.every((r) => !r))
+      ) {
+        onChange("routes", [String(options[0].value)]);
+      }
+    } else {
+      setRoutesOptions([]);
     }
-    
-    // Auto-select if only one option and no existing routes
-    if (options.length === 1 && (!currentRoutes.length || currentRoutes.every(r => !r))) {
-      console.log('Auto-selecting single route option');
-      onChange("routes", [String(options[0].value)]);
-    }
-  } else {
-    setRoutesOptions([]);
-  }
-}, [values.goods_category, values.industry_type, values.routes, goodsData, onChange]);
+  }, [
+    values.goods_category,
+    values.industry_type,
+    values.routes,
+    goodsData,
+    onChange,
+  ]);
 
-
-
-  // Effects
-  // Initial data loading
   useEffect(() => {
     const loadData = async () => {
       try {
         setIsLoading(true);
         const data = await fetchGoodsData();
         setGoodsData(data);
-        
+
         const industryOpts = getIndustryOptions(data);
         setIndustryOptions(industryOpts);
-        
-        // Set initial options if values exist
+
         if (values.industry_type) {
           const industryTypeStr = String(values.industry_type);
           const goodsOpts = getGoodsOptions(data, +industryTypeStr);
           setGoodsOptions(goodsOpts);
         }
       } catch (error) {
-        console.error('Failed to load goods data:', error);
+        console.error("Failed to load goods data:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    
-    loadData();
-  }, []); // Only run once on mount
 
-  // Update goods options when industry type changes
+    loadData();
+  }, []); 
+
   useEffect(() => {
     if (!isLoading) {
       updateGoodsOptions(values.industry_type);
     }
   }, [values.industry_type, isLoading, updateGoodsOptions]);
 
-  // Update routes options when goods category changes
   useEffect(() => {
     if (!isLoading) {
       updateRoutesOptions();
     }
   }, [values.goods_category, isLoading, updateRoutesOptions]);
 
-  // Save to localStorage when values change
   useEffect(() => {
     saveToLocalStorage();
   }, [saveToLocalStorage]);
 
+  const handleRouteChange = (index: number, value: string) => {
 
-  // Make sure this useEffect has proper dependencies and doesn't cause infinite loops
-// useEffect(() => {
-//   // Only save to localStorage when there's actual data to save
-//   if (values.industry_type || values.goods_category || values.name) {
-//     const dataToSave = {
-//       routes: values.routes || [],
-//       amounts: values.amounts || [],
-//       industry_type: values.industry_type,
-//       goods_category: values.goods_category,
-//       name: values.name,
-//     };
-    
-//     // Only save if data has actually changed
-//     const currentSaved = localStorage.getItem("goodsFormData");
-//     const newData = JSON.stringify(dataToSave);
-    
-//     if (currentSaved !== newData) {
-//       localStorage.setItem("goodsFormData", newData);
-//     }
-//   }
-// }, [values.industry_type, values.goods_category, values.name, values.routes, values.amounts]);
+    const updatedRoutes = [...(values.routes || [])];
 
-  // Event handlers
-//   const handleAddRoute = () => {
-//   if (routeCount < 6) {
-//     // Add an empty route slot
-//     const updatedRoutes = [...(values.routes || [])];
-//     updatedRoutes.push('');
-//     onChange("routes", updatedRoutes);
-    
-//     // Also add corresponding empty amount
-//     const updatedAmounts = [...(values.amounts || [])];
-//     updatedAmounts.push('');
-//     onChange("amounts", updatedAmounts);
-//   }
-// };
+    while (updatedRoutes.length <= index) {
+      updatedRoutes.push("");
+    }
 
+    updatedRoutes[index] = value;
 
-const handleRouteChange = (index: number, value: string) => {
-  console.log(`Route ${index} changing from "${values.routes?.[index] || ''}" to "${value}"`);
-  
-  const updatedRoutes = [...(values.routes || [])];
-  
-  // Ensure array is long enough
-  while (updatedRoutes.length <= index) {
-    updatedRoutes.push('');
-  }
-  
-  updatedRoutes[index] = value;
-  
-  // Keep all routes, don't filter out empty ones in the middle
-  // Only remove trailing empty routes
-  while (updatedRoutes.length > 0 && updatedRoutes[updatedRoutes.length - 1] === '') {
-    updatedRoutes.pop();
-  }
-  
-  console.log('Updated routes:', updatedRoutes);
-  onChange("routes", updatedRoutes);
-};
+    while (
+      updatedRoutes.length > 0 &&
+      updatedRoutes[updatedRoutes.length - 1] === ""
+    ) {
+      updatedRoutes.pop();
+    }
 
-const handleAmountChange = (index: number, value: string) => {
-  console.log(`Amount ${index} changing to "${value}"`);
-  
-  const updatedAmounts = [...(values.amounts || [])];
-  
-  // Ensure array is long enough
-  while (updatedAmounts.length <= index) {
-    updatedAmounts.push('');
-  }
-  
-  updatedAmounts[index] = value;
-  
-  // Keep all amounts, don't filter out empty ones in the middle
-  // Only remove trailing empty amounts
-  while (updatedAmounts.length > 0 && updatedAmounts[updatedAmounts.length - 1] === '') {
-    updatedAmounts.pop();
-  }
-  
-  console.log('Updated amounts:', updatedAmounts);
-  onChange("amounts", updatedAmounts);
-};
+    onChange("routes", updatedRoutes);
+  };
 
-  // Render helpers
+  const handleAmountChange = (index: number, value: string) => {
+
+    const updatedAmounts = [...(values.amounts || [])];
+
+    while (updatedAmounts.length <= index) {
+      updatedAmounts.push("");
+    }
+
+    updatedAmounts[index] = value;
+
+    while (
+      updatedAmounts.length > 0 &&
+      updatedAmounts[updatedAmounts.length - 1] === ""
+    ) {
+      updatedAmounts.pop();
+    }
+
+    onChange("amounts", updatedAmounts);
+  };
+
   const renderRouteInputs = () => {
     if (routesOptions.length === 0) {
       return (
-        <p style={{
-          color: "#e74c3c",
-          padding: "10px",
-          backgroundColor: "#fceae9",
-          borderRadius: "4px",
-        }}>
+        <p
+          style={{
+            color: "#e74c3c",
+            padding: "10px",
+            backgroundColor: "#fceae9",
+            borderRadius: "4px",
+          }}
+        >
           ไม่มีตัวเลือกวัตถุดิบที่เกี่ยวข้อง
         </p>
       );
@@ -298,20 +255,24 @@ const handleAmountChange = (index: number, value: string) => {
     return (
       <>
         <h4>Production Routes</h4>
-        <p style={{
-          color: "#666",
-          fontSize: "0.9rem",
-          marginBottom: "10px",
-        }}>
+        <p
+          style={{
+            color: "#666",
+            fontSize: "0.9rem",
+            marginBottom: "10px",
+          }}
+        >
           Please select up to 6 routes that apply
         </p>
-                {[...Array(routeCount)].map((_, index) => (
+        {[...Array(routeCount)].map((_, index) => (
           <div key={index} style={{ marginBottom: "12px" }}>
-            <div style={{
-              display: "flex",
-              gap: "15px",
-              alignItems: "flex-start",
-            }}>
+            <div
+              style={{
+                display: "flex",
+                gap: "15px",
+                alignItems: "flex-start",
+              }}
+            >
               <div style={{ flex: 3 }}>
                 <LabeledAutocompleteMap
                   caption={`Route ${index + 1}`}
@@ -382,11 +343,13 @@ const handleAmountChange = (index: number, value: string) => {
         )}
 
         {routesOptions.length > 6 && (
-          <p style={{
-            color: "#e67e22",
-            fontSize: "0.9rem",
-            marginTop: "5px",
-          }}>
+          <p
+            style={{
+              color: "#e67e22",
+              fontSize: "0.9rem",
+              marginTop: "5px",
+            }}
+          >
             Note: มีวัตถุดิบมากกว่า 6 รายการ แต่จำกัดให้เลือกได้ไม่เกิน 6
           </p>
         )}
@@ -399,7 +362,7 @@ const handleAmountChange = (index: number, value: string) => {
     return (
       <Section
         defaultExpanded={true}
-        title="(a) List of aggregated goods categories and corresponding production routes"
+        title="List of aggregated goods categories and corresponding production routes"
         subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
         hasError={false}
       >
@@ -413,10 +376,15 @@ const handleAmountChange = (index: number, value: string) => {
   return (
     <Section
       defaultExpanded={true}
-      title="(a) List of aggregated goods categories and corresponding production routes"
+      title="List of aggregated goods categories and corresponding production routes"
       subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
       hasError={
-        !!(errors.industry_type || errors.goods_category || errors.routes || errors.name)
+        !!(
+          errors.industry_type ||
+          errors.goods_category ||
+          errors.routes ||
+          errors.name
+        )
       }
     >
       <div style={{ marginBottom: "1rem" }}>
@@ -472,9 +440,7 @@ const handleAmountChange = (index: number, value: string) => {
         </div>
 
         {/* Production Routes Input */}
-        <div style={{ marginBottom: "1rem" }}>
-          {renderRouteInputs()}
-        </div>
+        <div style={{ marginBottom: "1rem" }}>{renderRouteInputs()}</div>
       </div>
     </Section>
   );

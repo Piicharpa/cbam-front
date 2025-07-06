@@ -75,9 +75,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   // ✅ ฟังก์ชันสำหรับดึงข้อมูล authorized representative
   const fetchAuthorizedRepresentative = async (authorizedRepId: number) => {
     try {
-      console.log(
-        `🔍 Fetching authorized representative data for ID: ${authorizedRepId}`
-      );
       const response = await fetch(
         `${apiUrl}/api/cbam/authorised/${authorizedRepId}`
       );
@@ -89,7 +86,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       }
 
       const authorizedData = await response.json();
-      console.log("✅ Found authorized representative data:", authorizedData);
 
       // Return the authorized data (could be array or object)
       return Array.isArray(authorizedData) ? authorizedData[0] : authorizedData;
@@ -102,7 +98,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   // 🔍 Fetch specific verifier data (for EDIT mode)
   const fetchVerifierData = async (verifierId: number) => {
     try {
-      console.log(`🔍 Fetching verifier data for ID: ${verifierId}`);
       const response = await fetch(
         `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
@@ -115,7 +110,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
       if (verifierDataArray && verifierDataArray.length > 0) {
         const verifierData = verifierDataArray[0];
-        console.log("✅ Found verifier data for EDIT mode:", verifierData);
 
         // ✅ ดึงข้อมูล authorized representative ถ้ามี authorized_rep_id
         let authorizedRepData = null;
@@ -163,80 +157,90 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   };
 
   // 🏢 Fetch latest verifier from company (for CREATE mode)
-const fetchLatestCompanyVerifier = async (companyId: number) => {
-  try {
-    console.log(`🔍 Fetching latest verifier for company: ${companyId}`);
-    // Get all company reports first
-    const response = await fetch(`${apiUrl}/api/cbam/report/company/${companyId}`);
-    
-    if (!response.ok) {
-      throw new Error(`Error fetching company reports: ${response.statusText}`);
-    }
-    
-    const reports = await response.json();
-    
-    if (reports && reports.length > 0) {
-      // Take the last item as requested
-      const latestreport = reports[reports.length - 1];
-      console.log("✅ Found latest report for CREATE mode:", latestreport);
-      
-      // ✅ เช็คว่ามี verifier_id หรือไม่
-      const latestVerifierId = latestreport.verifier_id; // แก้ชื่อตัวแปร
-      
-      if (!latestVerifierId) {
-        console.log("⚠️ Latest report has no verifier_id, showing empty form");
+  const fetchLatestCompanyVerifier = async (companyId: number) => {
+    try {
+      // Get all company reports first
+      const response = await fetch(
+        `${apiUrl}/api/cbam/report/company/${companyId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching company reports: ${response.statusText}`
+        );
+      }
+
+      const reports = await response.json();
+
+      if (reports && reports.length > 0) {
+        // Take the last item as requested
+        const latestreport = reports[reports.length - 1];
+
+        // ✅ เช็คว่ามี verifier_id หรือไม่
+        const latestVerifierId = latestreport.verifier_id; // แก้ชื่อตัวแปร
+
+        if (!latestVerifierId) {
+          setFormMode("empty");
+          return;
+        }
+
+        // ✅ ดึงข้อมูล verifier
+        const latestdata_response = await fetch(
+          `${apiUrl}/api/cbam/verifier/${latestVerifierId}`
+        );
+
+        if (!latestdata_response.ok) {
+          throw new Error(
+            `Error fetching latest verifier: ${latestdata_response.statusText}`
+          );
+        }
+
+        const latestdata = await latestdata_response.json();
+
+        // ✅ ดึงข้อมูล authorized representative สำหรับ CREATE mode
+        let authorizedRepData = null;
+        if (latestdata.authorized_rep_id) {
+          authorizedRepData = await fetchAuthorizedRepresentative(
+            latestdata.authorized_rep_id
+          );
+        }
+
+        // Update form with basic info but set dates to today
+        const updatedFormValues = {
+          installation_name: latestdata.name || "",
+          address: latestdata.address || "",
+          city: latestdata.city || "",
+          country_id: latestdata.country_id
+            ? String(latestdata.country_id)
+            : "",
+          post_code: latestdata.post_code || "",
+          authorized_rep_id: latestdata.authorized_rep_id
+            ? String(latestdata.authorized_rep_id)
+            : "",
+          accreditation_state: latestdata.accreditation_state || "",
+          accreditation_national_body:
+            latestdata.accreditation_national_body || "",
+          registration_no: latestdata.registration_no || "",
+          // ✅ ใช้ข้อมูลจาก authorized representative ที่ดึงมา
+          name: authorizedRepData?.name || latestdata.authorizedRep?.name || "",
+          email:
+            authorizedRepData?.email || latestdata.authorizedRep?.email || "",
+          phone:
+            authorizedRepData?.phone || latestdata.authorizedRep?.phone || "",
+          fax: authorizedRepData?.fax || latestdata.authorizedRep?.fax || "",
+        };
+
+        setFormValues(updatedFormValues);
+        onChange(updatedFormValues);
+        setFormMode("create");
+      } else {
         setFormMode("empty");
-        return;
       }
-      
-      // ✅ ดึงข้อมูล verifier
-      console.log(`🔍 Fetching verifier data for ID: ${latestVerifierId}`);
-      const latestdata_response = await fetch(`${apiUrl}/api/cbam/verifier/${latestVerifierId}`);
-      
-      if (!latestdata_response.ok) {
-        throw new Error(`Error fetching latest verifier: ${latestdata_response.statusText}`);
-      }
-      
-      const latestdata = await latestdata_response.json();
-      console.log("✅ Found latest verifier data:", latestdata);
-      
-      // ✅ ดึงข้อมูล authorized representative สำหรับ CREATE mode
-      let authorizedRepData = null;
-      if (latestdata.authorized_rep_id) {
-        authorizedRepData = await fetchAuthorizedRepresentative(latestdata.authorized_rep_id);
-      }
-      
-      // Update form with basic info but set dates to today
-      const updatedFormValues = {
-        installation_name: latestdata.name || "",
-        address: latestdata.address || "",
-        city: latestdata.city || "",
-        country_id: latestdata.country_id ? String(latestdata.country_id) : "",
-        post_code: latestdata.post_code || "",
-        authorized_rep_id: latestdata.authorized_rep_id ? String(latestdata.authorized_rep_id) : "",
-        accreditation_state: latestdata.accreditation_state || "",
-        accreditation_national_body: latestdata.accreditation_national_body || "",
-        registration_no: latestdata.registration_no || "",
-        // ✅ ใช้ข้อมูลจาก authorized representative ที่ดึงมา
-        name: authorizedRepData?.name || latestdata.authorizedRep?.name || "",
-        email: authorizedRepData?.email || latestdata.authorizedRep?.email || "",
-        phone: authorizedRepData?.phone || latestdata.authorizedRep?.phone || "",
-        fax: authorizedRepData?.fax || latestdata.authorizedRep?.fax || "",
-      };
-      
-      setFormValues(updatedFormValues);
-      onChange(updatedFormValues);
-      setFormMode("create");
-    } else {
-      console.log("ℹ️ No previous reports found, showing empty form");
+    } catch (error) {
+      console.error("❌ Error fetching latest verifier:", error);
       setFormMode("empty");
     }
-  } catch (error) {
-    console.error("❌ Error fetching latest verifier:", error);
-    console.log("ℹ️ Fallback to empty form");
-    setFormMode("empty");
-  }
-};
+  };
 
   // 🔍 Main data loading logic (same pattern as InstallationForm)
   useEffect(() => {
@@ -245,14 +249,12 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
       try {
         // Case 1: No reportId - show empty form
         if (!reportId) {
-          console.log("⚠️ No reportId found - showing empty form");
           setFormMode("empty");
           setIsLoading(false);
           return;
         }
 
         // Case 2: Fetch report data to check if it has verifier_id
-        console.log(`🔍 Checking report ${reportId} for existing verifier`);
         const reportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`
         );
@@ -264,7 +266,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
         }
 
         const reportData = await reportResponse.json();
-        console.log("📋 Report data:", reportData);
 
         if (reportData && reportData.length > 0) {
           const report = reportData[0];
@@ -272,24 +273,18 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
 
           if (report.verifier_id) {
             // ✅ SCENARIO 1: EDIT MODE - Report has verifier_id
-            console.log(
-              "🔄 EDIT MODE: Report has verifier_id, fetching verifier data"
-            );
+
             await fetchVerifierData(report.verifier_id);
           } else {
             // ✅ SCENARIO 2: CREATE MODE - Report has no verifier_id
-            console.log(
-              "🆕 CREATE MODE: Report has no verifier_id, fetching latest company verifier"
-            );
+
             await fetchLatestCompanyVerifier(companyId);
           }
         } else {
-          console.log("⚠️ No report data found - showing empty form");
           setFormMode("empty");
         }
       } catch (error) {
         console.error("❌ Error in main data loading:", error);
-        console.log("🔄 Fallback: trying to get latest company verifier");
         await fetchLatestCompanyVerifier(companyId);
       } finally {
         setIsLoading(false);
@@ -308,7 +303,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
           defaultCountry: CountryOption | null;
         };
         setCountries(result.countries);
-        console.log(`✅ Loaded ${result.countries.length} countries`);
 
         // Auto-select Thailand as default if none selected
         const defaultThailand = result.countries.find(
@@ -403,11 +397,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
         ? `${apiUrl}/api/cbam/authorised/${authorizedId}`
         : `${apiUrl}/api/cbam/authorised`;
 
-      console.log(
-        `📤 ${authorizedMethod} Authorized Representative:`,
-        authorizedPayload
-      );
-
       const authorizedResponse = await fetch(authorizedUrl, {
         method: authorizedMethod,
         headers: { "Content-Type": "application/json" },
@@ -425,13 +414,11 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
       }
 
       const authorizedResult = await authorizedResponse.json();
-      console.log("✅ Authorized representative saved:", authorizedResult);
 
       // Get authorized ID
       authorizedId = authorizedResult.id || authorizedId;
 
       // 2. Create/Update Verifier
-      console.log(`📤 ${formMode.toUpperCase()} MODE: Saving verifier data`);
       const verifierPayload = {
         name: formValues.installation_name || null,
         address: formValues.address || null,
@@ -450,7 +437,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
 
       if (formMode === "edit" && existingData?.verifier_id) {
         // UPDATE existing verifier
-        console.log(`🔄 Updating verifier ID: ${existingData.verifier_id}`);
         verifierResponse = await fetch(
           `${apiUrl}/api/cbam/verifier/${existingData.verifier_id}`,
           {
@@ -462,7 +448,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
         newVerifierId = existingData.verifier_id;
       } else {
         // CREATE new verifier
-        console.log("🆕 Creating new verifier");
         verifierResponse = await fetch(`${apiUrl}/api/cbam/verifier/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -482,7 +467,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
       }
 
       const verifierResult = await verifierResponse.json();
-      console.log("✅ Verifier saved successfully:", verifierResult);
 
       // Get verifier ID (for new verifiers)
       if (formMode !== "edit") {
@@ -491,9 +475,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
 
       // 3. Update Report with verifier_id
       if (reportId) {
-        console.log(
-          `🔗 Updating report ${reportId} with verifier_id: ${newVerifierId}`
-        );
         const reportUpdatePayload = {
           verifier_id: newVerifierId,
         };
@@ -518,10 +499,6 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
           );
         } else {
           const reportResult = await reportUpdateResponse.json();
-          console.log(
-            "✅ Report updated successfully with verifier_id:",
-            reportResult
-          );
 
           // Ensure localStorage has the correct reportId
           localStorage.setItem("reportId", String(reportId));
@@ -577,18 +554,24 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
           <Grid size={12}>
             <Typography
               variant="h5"
+              fontSize="32px"
               fontWeight="bold"
               gutterBottom
               color="#1976d2"
             >
               Verifier of the report
             </Typography>
-            <Typography variant="subtitle1" color="text.secondary" gutterBottom>
+            <Typography
+              variant="subtitle1"
+              fontSize="22px"
+              color="text.secondary"
+              gutterBottom
+            >
               Only if available and not required during transitional period
             </Typography>
 
             {/* Mode Indicator */}
-            <Box
+            {/* <Box
               mt={2}
               p={2}
               sx={{
@@ -677,7 +660,7 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
                   </Typography>
                 </Box>
               )}
-            </Box>
+            </Box> */}
           </Grid>
 
           {/* Verifier Information Section */}
@@ -874,13 +857,7 @@ const fetchLatestCompanyVerifier = async (companyId: number) => {
           <Grid size={12}>
             <Box display="flex" justifyContent="center" mt={2}>
               <PGButton
-                text={
-                  isSubmitting
-                    ? "Saving..."
-                    : formMode === "edit"
-                    ? "Update Verifier"
-                    : "Save Verifier"
-                }
+                text={formMode === "edit" ? "Update" : "Create"}
                 loading={isSubmitting}
                 type="submit"
               />

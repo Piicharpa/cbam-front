@@ -10,8 +10,8 @@ import { efunits } from "../../../components/dropdown/efunits";
 
 // In Source_sec1.tsx
 export interface ProcessEmissionSection {
-  id: number;       // Client-side ID for React rendering
-  db_id?: number;   // Database ID for records that exist in the database
+  id: number; // Client-side ID for React rendering
+  db_id?: number; // Database ID for records that exist in the database
   p_method: string;
   p_source_stream_name: string;
   p_activity_data: string;
@@ -115,7 +115,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                 error={formErrors[`p_${section.id}_p_activity_data`]}
                 required
               />
-           
+
               <LabeledTextField
                 type="number"
                 caption="Net calorific value (NCV)"
@@ -130,9 +130,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                     e.target.value
                   )
                 }
-                error={
-                  formErrors[`p_${section.id}_p_net_calorific_value`]
-                }
+                error={formErrors[`p_${section.id}_p_net_calorific_value`]}
               />
               <LabeledTextField
                 type="number"
@@ -338,11 +336,13 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
           onClick={addNewProcessSection}
           onMouseOver={(e) => {
             e.currentTarget.style.backgroundColor = "#07b8dd";
-            e.currentTarget.style.boxShadow = "0 4px 8px rgba(1, 144, 195, 0.4)";
+            e.currentTarget.style.boxShadow =
+              "0 4px 8px rgba(1, 144, 195, 0.4)";
           }}
           onMouseOut={(e) => {
             e.currentTarget.style.backgroundColor = "#0190c3";
-            e.currentTarget.style.boxShadow = "0 2px 6px rgba(1, 144, 195, 0.3)";
+            e.currentTarget.style.boxShadow =
+              "0 2px 6px rgba(1, 144, 195, 0.3)";
           }}
         >
           <span style={{ marginRight: "8px", fontSize: "20px" }}>+</span>

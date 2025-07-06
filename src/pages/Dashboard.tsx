@@ -183,51 +183,52 @@ function ColorlibStepIcon(props: StepIconProps) {
 const Form: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [reportToDelete, setReportToDelete] = useState<string | number | null>(null);
+  const [reportToDelete, setReportToDelete] = useState<string | number | null>(
+    null
+  );
   const [isDeleting, setIsDeleting] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success");
-  
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
+    "success"
+  );
+
   const navigate = useNavigate();
   const apiUrl = process.env.REACT_APP_API_URL;
 
   // Function to handle editing a specific report
   const handleEditReport = (reportId: string | number) => {
-    console.log("✏️ Navigating to edit report:", reportId);
     navigate(`/cbam/formdev?reportId=${reportId}`);
   };
 
   // Function to handle creating a new report
   const handleCreateNewReport = () => {
-    console.log("🆕 Navigating to create new report");
     navigate("/cbam/formdev");
   };
 
   // Function to initiate delete process
   const handleDeleteReport = (reportId: string | number) => {
-    console.log("🗑️ Initiating delete for report:", reportId);
     setReportToDelete(reportId);
     setDeleteDialogOpen(true);
   };
 
-    // ✅ Updated delete function with correct API endpoint
+  // ✅ Updated delete function with correct API endpoint
   const handleConfirmDelete = async () => {
     if (!reportToDelete) return;
-    
+
     setIsDeleting(true);
-    
+
     try {
-      console.log(`🗑️ Attempting to delete report ID: ${reportToDelete}`);
-      console.log(`🔗 Using API endpoint: ${apiUrl}/api/cbam/report/del/${reportToDelete}`);
-      
       // ✅ Updated API endpoint as requested
-      const response = await fetch(`${apiUrl}/api/cbam/report/del/${reportToDelete}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
+      const response = await fetch(
+        `${apiUrl}/api/cbam/report/del/${reportToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -241,36 +242,31 @@ const Form: React.FC = () => {
         const responseText = await response.text();
         if (responseText) {
           responseData = JSON.parse(responseText);
-          console.log("✅ Delete response:", responseData);
         } else {
-          console.log("✅ Delete successful (empty response)");
         }
       } catch (parseError) {
-        console.log("✅ Delete successful (non-JSON response)");
       }
-
-      console.log(`✅ Report ${reportToDelete} deleted successfully`);
-      
       // Show success message
-      setSnackbarMessage(`Report #${reportToDelete} has been deleted successfully`);
+      setSnackbarMessage(
+        `Report #${reportToDelete} has been deleted successfully`
+      );
       setSnackbarSeverity("success");
       setSnackbarOpen(true);
-      
+
       // Close dialog immediately
       setDeleteDialogOpen(false);
       setReportToDelete(null);
-      
+
       // Refresh the table after a short delay to show the success message
       setTimeout(() => {
         window.location.reload();
       }, 1000);
-      
     } catch (error: any) {
       console.error("❌ Delete error:", error);
       setSnackbarMessage(`Failed to delete report: ${error.message}`);
       setSnackbarSeverity("error");
       setSnackbarOpen(true);
-      
+
       // Keep dialog open on error so user can try again
     } finally {
       setIsDeleting(false);
@@ -279,7 +275,6 @@ const Form: React.FC = () => {
 
   // Function to cancel delete
   const handleCancelDelete = () => {
-    console.log("❌ Delete cancelled by user");
     setDeleteDialogOpen(false);
     setReportToDelete(null);
   };
@@ -306,7 +301,7 @@ const Form: React.FC = () => {
     switch (step) {
       case 0:
         return (
-          <TableDashboard 
+          <TableDashboard
             onEditReport={handleEditReport}
             onDeleteReport={handleDeleteReport}
           />
@@ -319,79 +314,6 @@ const Form: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ py: 5 }}>
-        {/* <Paper
-          elevation={0}
-          sx={{
-            p: 4,
-            mb: 4,
-            background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
-            borderLeft: "6px solid #74aa15",
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Box>
-            <Typography variant="h4" color="primary.main" gutterBottom>
-              CBAM Declaration
-            </Typography>
-            <Typography variant="body1" color="text.secondary">
-              Complete the steps below to submit your carbon border adjustment
-              mechanism declaration
-            </Typography>
-          </Box>
-          
-         
-          <Button
-            variant="contained"
-            color="secondary"
-            startIcon={<AddCircleOutlineIcon />}
-            onClick={handleCreateNewReport}
-            sx={{
-              background: "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
-              fontWeight: 600,
-              letterSpacing: "0.5px",
-            }}
-          >
-            Create New Report
-          </Button>
-        </Paper> */}
-        
-        {/* Enhanced Stepper
-        <Paper elevation={1} sx={{ p: 4, mb: 4, position: "relative" }}>
-          <Stepper
-            alternativeLabel
-            activeStep={activeStep}
-            connector={<ColorlibConnector />}
-          >
-            {steps.map((step, index) => (
-              <Step key={step.label}>
-                <StepLabel StepIconComponent={ColorlibStepIcon}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: activeStep === index ? 600 : 400,
-                      color:
-                        activeStep === index ? "primary.main" : "text.primary",
-                    }}
-                  >
-                    {step.label}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "block",
-                      color: "text.secondary",
-                    }}
-                  >
-                    {step.description}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </Paper> */}
-        
         {/* Form content with animation */}
         <Box
           sx={{
@@ -412,137 +334,11 @@ const Form: React.FC = () => {
             },
           }}
         >
-          {/* Content paper with subtle pattern */}
-          {/* <Paper
-            elevation={1}
-            sx={{
-              p: 4,
-              position: "relative",
-              overflow: "hidden",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "6px",
-                background: "linear-gradient(90deg, #0190c3, #07b8dd)",
-              },
-              "&::after": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                backgroundImage:
-                  "radial-gradient(#f3f7e7 1px, transparent 1px)",
-                backgroundSize: "20px 20px",
-                opacity: 0.3,
-                pointerEvents: "none",
-              },
-            }}
-          > */}
-            {renderStepContent(activeStep)}
+          {renderStepContent(activeStep)}
           {/* </Paper> */}
         </Box>
-        
-        {/* Navigation buttons with enhanced styling */}
-        {/* <Box
-          mt={4}
-          display="flex"
-          justifyContent="space-between"
-          sx={{
-            position: "relative",
-            "::before": {
-              content: '""',
-              position: "absolute",
-              top: "-20px",
-              left: "20%",
-              right: "20%",
-              height: "1px",
-              background:
-                "linear-gradient(90deg, transparent, #d5d5d5, transparent)",
-            },
-          }}
-        > */}
-          {/* <Button
-            disabled={activeStep === 0}
-                        onClick={handleBack}
-            variant="outlined"
-            startIcon={<span>←</span>}
-            sx={{
-              borderWidth: "2px",
-              "&:not(:disabled)": {
-                borderColor: "primary.main",
-                color: "primary.main",
-              },
-            }}
-          >
-            Back
-          </Button>
-          <Box sx={{ position: "relative" }}>
-            {activeStep === steps.length - 1 ? (
-              <Button
-                onClick={handleSubmit}
-                variant="contained"
-                color="secondary"
-                endIcon={<CheckCircleIcon />}
-                sx={{
-                  px: 4,
-                  background:
-                    "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
-                  fontWeight: 600,
-                  letterSpacing: "0.5px",
-                }}
-              >
-                Submit Declaration
-              </Button>
-            ) : (
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                color="primary"
-                endIcon={<span>→</span>}
-                sx={{
-                  background:
-                    "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
-                  fontWeight: 600,
-                }}
-              >
-                Continue to Next Step
-              </Button>
-            )} */}
-            {/* Decorative dots around the main button */}
-            {/* <Box
-              sx={{
-                position: "absolute",
-                width: "140%",
-                height: "140%",
-                top: "-20%",
-                left: "-20%",
-                pointerEvents: "none",
-                opacity: 0.5,
-                zIndex: -1,
-                "&::before, &::after": {
-                  content: '""',
-                  position: "absolute",
-                  width: "10px",
-                  height: "10px",
-                  borderRadius: "50%",
-                  background:
-                    activeStep === steps.length - 1 ? "#74aa15" : "#0190c3",
-                  opacity: 0.3,
-                },
-                "&::before": { top: "10%", right: "5%" },
-                "&::after": { bottom: "10%", left: "5%" },
-              }}
-            />
-          </Box> */}
-        {/* </Box> */}
-        
         {/* Progress indicator */}
-        {/* <Box mt={4} sx={{ textAlign: "center" }}>
+        <Box mt={4} sx={{ textAlign: "center" }}>
           <Typography
             variant="body2"
             color="text.secondary"
@@ -552,36 +348,8 @@ const Form: React.FC = () => {
               justifyContent: "center",
               gap: 1,
             }}
-          > */}
-            {/* <span>
-              Step {activeStep + 1} of {steps.length}
-            </span> */}
-            {/* <Box
-              component="span"
-              sx={{
-                display: "inline-block",
-                width: "50px",
-                height: "4px",
-                borderRadius: "2px",
-                backgroundColor: "#d5d5d5",
-                position: "relative",
-                overflow: "hidden",
-                "&::after": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  height: "100%",
-                  width: `${((activeStep + 1) / steps.length) * 100}%`,
-                  backgroundColor:
-                    activeStep === steps.length - 1 ? "#74aa15" : "#0190c3",
-                  borderRadius: "2px",
-                  transition: "width 0.3s ease",
-                },
-              }}
-            /> */}
-          {/* </Typography>
-        </Box> */}
+          ></Typography>
+        </Box>
 
         {/* Delete Confirmation Dialog */}
         <Dialog
@@ -610,7 +378,8 @@ const Form: React.FC = () => {
           </DialogTitle>
           <DialogContent>
             <DialogContentText sx={{ fontSize: "1.1rem", lineHeight: 1.6 }}>
-              Are you sure you want to delete <strong>Report #{reportToDelete}</strong>?
+              Are you sure you want to delete{" "}
+              <strong>Report #{reportToDelete}</strong>?
             </DialogContentText>
             <Box
               mt={2}
@@ -633,10 +402,11 @@ const Form: React.FC = () => {
                 }}
               >
                 <DeleteForeverIcon fontSize="small" />
-                This action cannot be undone. All data associated with this report will be permanently deleted.
+                This action cannot be undone. All data associated with this
+                report will be permanently deleted.
               </Typography>
             </Box>
-            
+
             {/* Show API endpoint being used (for debugging) */}
             {process.env.NODE_ENV === "development" && (
               <Box
@@ -651,7 +421,11 @@ const Form: React.FC = () => {
                 <Typography variant="caption" component="div" fontWeight="bold">
                   🔗 API Endpoint (Development):
                 </Typography>
-                <Typography variant="caption" component="div" fontFamily="monospace">
+                <Typography
+                  variant="caption"
+                  component="div"
+                  fontFamily="monospace"
+                >
                   DELETE {apiUrl}/api/cbam/report/del/{reportToDelete}
                 </Typography>
               </Box>
@@ -687,7 +461,8 @@ const Form: React.FC = () => {
                 minWidth: 140,
                 background: "linear-gradient(45deg, #c72121 30%, #d32f2f 90%)",
                 "&:hover": {
-                  background: "linear-gradient(45deg, #b71c1c 30%, #c72121 90%)",
+                  background:
+                    "linear-gradient(45deg, #b71c1c 30%, #c72121 90%)",
                 },
                 "&:disabled": {
                   background: "#d5d5d5",
@@ -696,7 +471,9 @@ const Form: React.FC = () => {
               }}
             >
               {isDeleting ? (
-                <span style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span
+                  style={{ display: "flex", alignItems: "center", gap: "8px" }}
+                >
                   <span>🔄</span> Deleting...
                 </span>
               ) : (
@@ -721,7 +498,7 @@ const Form: React.FC = () => {
               width: "100%",
               fontWeight: 500,
               borderRadius: 2,
-                            boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
+              boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
               "& .MuiAlert-icon": {
                 fontSize: "1.5rem",
               },
@@ -729,152 +506,7 @@ const Form: React.FC = () => {
           >
             {snackbarMessage}
           </Alert>
-        </Snackbar>
-
-        {/* Development Debug Panel */}
-        {/* {process.env.NODE_ENV === "development" && (
-          <Box
-            mt={4}
-            p={2}
-            sx={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: 2,
-              border: "1px solid #ddd",
-            }}
-          >
-            <details>
-              <summary style={{ cursor: "pointer", fontWeight: "bold" }}>
-                🐛 Debug Information (Development Mode)
-              </summary>
-              <Box mt={2}>
-                <Typography variant="caption" component="div" fontWeight="bold">
-                  API Configuration:
-                </Typography>
-                <Typography variant="caption" component="div">
-                  <strong>Base URL:</strong> {apiUrl}
-                </Typography>
-                <Typography variant="caption" component="div">
-                  <strong>Delete Endpoint:</strong> {apiUrl}/api/cbam/report/del/[reportId]
-                </Typography>
-                <Typography variant="caption" component="div">
-                  <strong>Company Reports:</strong> {apiUrl}/api/cbam/report/company/1
-                </Typography> */}
-                
-                {/* <Box mt={1}>
-                  <Typography variant="caption" component="div" fontWeight="bold">
-                    Current State:
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Active Step:</strong> {activeStep + 1} of {steps.length}
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Delete Dialog Open:</strong> {deleteDialogOpen ? "Yes" : "No"}
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Report to Delete:</strong> {reportToDelete || "None"}
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Is Deleting:</strong> {isDeleting ? "Yes" : "No"}
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Snackbar Open:</strong> {snackbarOpen ? "Yes" : "No"}
-                  </Typography>
-                  <Typography variant="caption" component="div">
-                    <strong>Last Message:</strong> {snackbarMessage || "None"}
-                  </Typography>
-                </Box> */}
-
-                {/* Test Buttons */}
-                {/* <Box mt={2} display="flex" gap={1}>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      console.log("=== Form Debug Info ===");
-                      console.log("API URL:", apiUrl);
-                      console.log("Active Step:", activeStep);
-                      console.log("Delete Dialog Open:", deleteDialogOpen);
-                      console.log("Report to Delete:", reportToDelete);
-                      console.log("Is Deleting:", isDeleting);
-                      console.log("Snackbar State:", { snackbarOpen, snackbarMessage, snackbarSeverity });
-                    }}
-                    style={{
-                      fontSize: "12px",
-                      padding: "6px 12px",
-                      backgroundColor: "#2196f3",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Log State
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const testId = 999;
-                      console.log(`Testing delete dialog with ID: ${testId}`);
-                      setReportToDelete(testId);
-                      setDeleteDialogOpen(true);
-                    }}
-                    style={{
-                      fontSize: "12px",
-                      padding: "6px 12px",
-                      backgroundColor: "#ff9800",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Test Delete Dialog
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSnackbarMessage("Test success message");
-                      setSnackbarSeverity("success");
-                      setSnackbarOpen(true);
-                    }}
-                    style={{
-                      fontSize: "12px",
-                      padding: "6px 12px",
-                      backgroundColor: "#4caf50",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Test Success Message
-                  </button>
-                  
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setSnackbarMessage("Test error message");
-                      setSnackbarSeverity("error");
-                      setSnackbarOpen(true);
-                    }}
-                    style={{
-                      fontSize: "12px",
-                      padding: "6px 12px",
-                      backgroundColor: "#f44336",
-                      color: "white",
-                      border: "none",
-                      borderRadius: "4px",
-                      cursor: "pointer"
-                    }}
-                  >
-                    Test Error Message
-                  </button>
-                </Box> */}
-              {/* </Box>
-            </details>
-          </Box>
-        )} */}
+        </Snackbar>   
       </Container>
     </ThemeProvider>
   );

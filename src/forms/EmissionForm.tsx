@@ -55,8 +55,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
   const [dataFetched, setDataFetched] = useState(false);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  console.log(reportId);
-
   // State สำหรับค่าในฟอร์มที่จะแสดงผล
   const [formValues, setFormValues] = useState({
     reportId: reportId || "", // Convert null to empty string to satisfy type requirements
@@ -75,14 +73,12 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
     if (!reportId) return;
     setIsLoading(true);
     try {
-      console.log(`🔍 Fetching emission data for reportId: ${reportId}`);
       const response = await fetch(
         `${apiUrl}/api/cbam/c_emission/report/${reportId}`
       );
 
       if (!response.ok) {
         if (response.status === 404) {
-          console.log("📝 No emission data found for this report.");
           setApiData(null);
           return;
         }
@@ -92,7 +88,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
       }
 
       const data = await response.json();
-      console.log("📊 API Response:", data);
 
       // Handle the array response - use the most recent entry (last in the array)
       if (Array.isArray(data) && data.length > 0) {
@@ -103,20 +98,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
         // Update form values with the most recent data
         setFormValues({
           reportId: reportId?.toString() || "", // Ensure string type
-          manual_fuel_balance:
-            mostRecentEntry.manual_fuel_balance?.toString() || "",
-          manual_GHG_emissions_balance:
-            mostRecentEntry.manual_GHG_emissions_balance?.toString() || "",
-          generatl_info_on_data_quality:
-            mostRecentEntry.generatl_info_on_data_quality || "",
-          justification_for_use_default_values:
-            mostRecentEntry.justification_for_use_default_values || "",
-          information_quality_ssurance:
-            mostRecentEntry.info_qty_assurance || "",
-        });
-
-        console.log("✅ Form values updated from API data:", {
-          reportId: reportId.toString(),
           manual_fuel_balance:
             mostRecentEntry.manual_fuel_balance?.toString() || "",
           manual_GHG_emissions_balance:
@@ -143,7 +124,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
           information_quality_ssurance: data.info_qty_assurance || "",
         });
       } else {
-        console.log("No data returned from API or unexpected format");
         setApiData(null);
       }
     } catch (error) {
@@ -248,8 +228,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
       payload.id = apiData.id;
     }
 
-    console.log(`🔄 ${method} request to: ${url}`, payload);
-
     // Send data to API
     fetch(url, {
       method,
@@ -265,7 +243,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
         return response.json();
       })
       .then((responseData) => {
-        console.log("✅ API Response:", responseData);
         setApiData(responseData);
         alert(`✅ Data ${isUpdate ? "updated" : "submitted"} successfully`);
 
@@ -298,6 +275,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
           >
             <Box>
               <Typography
+                fontSize="32px"
                 variant="h5"
                 fontWeight="bold"
                 gutterBottom
@@ -307,6 +285,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
                 level
               </Typography>
               <Typography
+                fontSize="22px"
                 variant="subtitle1"
                 color="text.secondary"
                 gutterBottom
@@ -338,7 +317,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
             </Box>
 
             {/* Refresh button */}
-            <button
+            {/* <button
               type="button"
               onClick={handleRefreshData}
               style={{
@@ -352,12 +331,12 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
               disabled={isLoading}
             >
               {isLoading ? "Loading..." : "Refresh Data"}
-            </button>
+            </button> */}
           </Box>
 
           {/* SECTION: Installation-level GHG emissions and energy consumption */}
           <Section
-            title="(d) Installation-level GHG emissions and energy consumption"
+            title="Installation-level GHG emissions and energy consumption"
             subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
             defaultExpanded
           >
@@ -380,69 +359,8 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
             }}
           >
             <PGButton />
-            {/* <button
-              type="submit"
-              disabled={isSubmitting}
-              style={{
-                backgroundColor: isSubmitting ? "#888" : "#1976d2",
-                color: "white",
-                padding: "10px 20px",
-                border: "none",
-                // backgroundColor: isSubmitting ? "#888" : "#1976d2",
-                // color: "white",
-                // padding: "10px 20px",
-                // border: "none",
-                borderRadius: "4px",
-                cursor: isSubmitting ? "not-allowed" : "pointer",
-                fontWeight: "bold",
-                fontSize: "14px",
-              }}
-            >
-              {isSubmitting
-                ? "Saving..."
-                : apiData &&
-                  (Array.isArray(apiData) ? apiData[0]?.id : apiData.id)
-                ? "Update Data"
-                : "Save Data"}
-            </button> */}
           </Box>
         </Grid>
-
-        {/* Debug Information - only visible in development mode */}
-        {/* {process.env.NODE_ENV === "development" && (
-          <Box mt={4} p={2} bgcolor="#f5f5f5" borderRadius={1}>
-            <Typography variant="subtitle2" gutterBottom>
-              Debug Info:
-            </Typography>
-            <Typography variant="body2">Report ID: {reportId}</Typography>
-            <Typography variant="body2">
-              Form Status: {isLoading ? "Loading" : apiData ? "Loaded" : "New"}
-            </Typography>
-            <Typography variant="body2">
-              Data Fetched: {dataFetched ? "Yes" : "No"}
-            </Typography>
-
-            <Box mt={1}>
-              <details>
-                <summary>Current Form Values</summary>
-                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
-                  {JSON.stringify(formValues, null, 2)}
-                </pre>
-              </details>
-            </Box>
-
-            {apiData && (
-              <Box mt={1}>
-                <details>
-                  <summary>API Data</summary>
-                  <pre style={{ overflow: "auto", maxHeight: "200px" }}>
-                    {JSON.stringify(apiData, null, 2)}
-                  </pre>
-                </details>
-              </Box>
-            )}
-          </Box>
-        )} */}
       </form>
     </Container>
   );

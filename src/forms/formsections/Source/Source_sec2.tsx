@@ -33,7 +33,6 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
   setFormErrors,
 }) => {
   // แสดงข้อมูลเพื่อการดีบัก
-  console.log("Source_sec2 received formValues:", formValues);
 
   // สร้าง dropdown options
   const generalInfoOptions = generalinfo?.map((item) => item?.name || "") || [];
@@ -41,12 +40,6 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
     justification?.map((item) => item?.name || "") || [];
   const qualityAssuranceOptions =
     qualityassurance?.map((item) => item?.name || "") || [];
-
-  console.log("Options available:", {
-    generalInfoOptions,
-    justificationOptions,
-    qualityAssuranceOptions,
-  });
 
   return (
     <>
@@ -105,7 +98,6 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           name="generatl_info_on_data_quality"
           value={formValues.generatl_info_on_data_quality || ""}
           onChange={(value: string) => {
-            console.log("Selected value:", value);
             setFormValues((prev) => ({
               ...prev,
               generatl_info_on_data_quality: value,
@@ -165,26 +157,6 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           required
         />
       </Box>
-
-      {/* Debug info - จะแสดงเฉพาะเมื่ออยู่ใน development mode */}
-      {process.env.NODE_ENV === "development" && (
-        <Box
-          mt={1}
-          p={2}
-          sx={{
-            backgroundColor: "#f8f9fa",
-            borderRadius: 1,
-            fontSize: "0.75rem",
-          }}
-        >
-          <details>
-            <summary style={{ cursor: "pointer" }}>Form Values Debug</summary>
-            <pre style={{ whiteSpace: "pre-wrap" }}>
-              {JSON.stringify(formValues, null, 2)}
-            </pre>
-          </details>
-        </Box>
-      )}
     </>
   );
 };

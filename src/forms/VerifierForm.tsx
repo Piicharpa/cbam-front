@@ -28,20 +28,20 @@ interface VerifierFormProps {
     fax: string;
   };
   onChange: (data: any) => void;
+  onSave?: () => void; // ✅ เพิ่ม onSave callback
   onNextStep: () => void;
 }
 
 const VerifierForm: React.FC<VerifierFormProps> = ({
   data,
   onChange,
+  onSave, // ✅ รับ onSave prop
   onNextStep,
 }) => {
   const navigate = useNavigate();
-
   // Get reportId from localStorage (same as InstallationForm)
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
-
   const companyId = 1;
   const apiUrl = process.env.REACT_APP_API_URL;
 
@@ -72,14 +72,41 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
+  // ✅ ฟังก์ชันสำหรับดึงข้อมูล authorized representative
+  const fetchAuthorizedRepresentative = async (authorizedRepId: number) => {
+    try {
+      console.log(
+        `🔍 Fetching authorized representative data for ID: ${authorizedRepId}`
+      );
+      const response = await fetch(
+        `${apiUrl}/api/cbam/authorised/${authorizedRepId}`
+      );
+
+      if (!response.ok) {
+        throw new Error(
+          `Error fetching authorized representative: ${response.statusText}`
+        );
+      }
+
+      const authorizedData = await response.json();
+      console.log("✅ Found authorized representative data:", authorizedData);
+
+      // Return the authorized data (could be array or object)
+      return Array.isArray(authorizedData) ? authorizedData[0] : authorizedData;
+    } catch (error) {
+      console.error("❌ Error fetching authorized representative:", error);
+      return null;
+    }
+  };
+
   // 🔍 Fetch specific verifier data (for EDIT mode)
   const fetchVerifierData = async (verifierId: number) => {
     try {
       console.log(`🔍 Fetching verifier data for ID: ${verifierId}`);
-
       const response = await fetch(
         `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
       );
+
       if (!response.ok) {
         throw new Error(`Error fetching verifier: ${response.statusText}`);
       }
@@ -89,6 +116,14 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       if (verifierDataArray && verifierDataArray.length > 0) {
         const verifierData = verifierDataArray[0];
         console.log("✅ Found verifier data for EDIT mode:", verifierData);
+
+        // ✅ ดึงข้อมูล authorized representative ถ้ามี authorized_rep_id
+        let authorizedRepData = null;
+        if (verifierData.authorized_rep_id) {
+          authorizedRepData = await fetchAuthorizedRepresentative(
+            verifierData.authorized_rep_id
+          );
+        }
 
         // Update form values with existing verifier data
         const updatedFormValues = {
@@ -106,99 +141,107 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           accreditation_national_body:
             verifierData.accreditation_national_body || "",
           registration_no: verifierData.registration_no || "",
-          name: verifierData.authorizedRep?.name || "",
-          email: verifierData.authorizedRep?.email || "",
-          phone: verifierData.authorizedRep?.phone || "",
-          fax: verifierData.authorizedRep?.fax || "",
+          // ✅ ใช้ข้อมูลจาก authorized representative ที่ดึงมา
+          name:
+            authorizedRepData?.name || verifierData.authorizedRep?.name || "",
+          email:
+            authorizedRepData?.email || verifierData.authorizedRep?.email || "",
+          phone:
+            authorizedRepData?.phone || verifierData.authorizedRep?.phone || "",
+          fax: authorizedRepData?.fax || verifierData.authorizedRep?.fax || "",
         };
 
         setFormValues(updatedFormValues);
         onChange(updatedFormValues);
         setFormMode("edit");
-
         return verifierData.id;
       }
     } catch (error) {
       console.error("❌ Error fetching verifier data:", error);
     }
-
     return null;
   };
 
   // 🏢 Fetch latest verifier from company (for CREATE mode)
-  const fetchLatestCompanyVerifier = async (companyId: number) => {
-    try {
-      console.log(`🔍 Fetching latest verifier for company: ${companyId}`);
-
-      // Get all company reports first
-      const response = await fetch(
-        `${apiUrl}/api/cbam/report/company/${companyId}`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Error fetching company reports: ${response.statusText}`
-        );
-      }
-
-      const reports = await response.json();
-      if (reports && reports.length > 0) {
-        // Take the last item as requested
-        const latestreport = reports[reports.length - 1];
-        console.log(
-          "✅ Found latest installation for CREATE mode:",
-          latestreport
-        );
-
-        const latestverifierId = latestreport.verifier_id;
-
-        const latestdata_response = await fetch(
-          `${apiUrl}/api/cbam/verifier/${latestverifierId}`
-        );
-
-        const latestdata = await latestdata_response.json();
-
-        // Update form with basic info but set dates to today
-        const updatedFormValues = {
-          installation_name: latestdata.name || "",
-          address: latestdata.address || "",
-          city: latestdata.city || "",
-          country_id: latestdata.country_id
-            ? String(latestdata.country_id)
-            : "",
-          post_code: latestdata.post_code || "",
-          authorized_rep_id: latestdata.authorized_rep_id
-            ? String(latestdata.authorized_rep_id)
-            : "",
-          accreditation_state: latestdata.accreditation_state || "",
-          accreditation_national_body:
-            latestdata.accreditation_national_body || "",
-          registration_no: latestdata.registration_no || "",
-          // ✅ FIXED: Add missing required fields
-          name: latestdata.authorizedRep?.name || "",
-          email: latestdata.authorizedRep?.email || "",
-          phone: latestdata.authorizedRep?.phone || "",
-          fax: latestdata.authorizedRep?.fax || "",
-        };
-
-        setFormValues(updatedFormValues);
-        onChange(updatedFormValues);
-        setFormMode("create");
-      } else {
-        console.log("ℹ️ No previous installations found, showing empty form");
+const fetchLatestCompanyVerifier = async (companyId: number) => {
+  try {
+    console.log(`🔍 Fetching latest verifier for company: ${companyId}`);
+    // Get all company reports first
+    const response = await fetch(`${apiUrl}/api/cbam/report/company/${companyId}`);
+    
+    if (!response.ok) {
+      throw new Error(`Error fetching company reports: ${response.statusText}`);
+    }
+    
+    const reports = await response.json();
+    
+    if (reports && reports.length > 0) {
+      // Take the last item as requested
+      const latestreport = reports[reports.length - 1];
+      console.log("✅ Found latest report for CREATE mode:", latestreport);
+      
+      // ✅ เช็คว่ามี verifier_id หรือไม่
+      const latestVerifierId = latestreport.verifier_id; // แก้ชื่อตัวแปร
+      
+      if (!latestVerifierId) {
+        console.log("⚠️ Latest report has no verifier_id, showing empty form");
         setFormMode("empty");
+        return;
       }
-    } catch (error) {
-      console.error("❌ Error fetching latest verifier:", error);
-      console.log("ℹ️ Fallback to empty form");
+      
+      // ✅ ดึงข้อมูล verifier
+      console.log(`🔍 Fetching verifier data for ID: ${latestVerifierId}`);
+      const latestdata_response = await fetch(`${apiUrl}/api/cbam/verifier/${latestVerifierId}`);
+      
+      if (!latestdata_response.ok) {
+        throw new Error(`Error fetching latest verifier: ${latestdata_response.statusText}`);
+      }
+      
+      const latestdata = await latestdata_response.json();
+      console.log("✅ Found latest verifier data:", latestdata);
+      
+      // ✅ ดึงข้อมูล authorized representative สำหรับ CREATE mode
+      let authorizedRepData = null;
+      if (latestdata.authorized_rep_id) {
+        authorizedRepData = await fetchAuthorizedRepresentative(latestdata.authorized_rep_id);
+      }
+      
+      // Update form with basic info but set dates to today
+      const updatedFormValues = {
+        installation_name: latestdata.name || "",
+        address: latestdata.address || "",
+        city: latestdata.city || "",
+        country_id: latestdata.country_id ? String(latestdata.country_id) : "",
+        post_code: latestdata.post_code || "",
+        authorized_rep_id: latestdata.authorized_rep_id ? String(latestdata.authorized_rep_id) : "",
+        accreditation_state: latestdata.accreditation_state || "",
+        accreditation_national_body: latestdata.accreditation_national_body || "",
+        registration_no: latestdata.registration_no || "",
+        // ✅ ใช้ข้อมูลจาก authorized representative ที่ดึงมา
+        name: authorizedRepData?.name || latestdata.authorizedRep?.name || "",
+        email: authorizedRepData?.email || latestdata.authorizedRep?.email || "",
+        phone: authorizedRepData?.phone || latestdata.authorizedRep?.phone || "",
+        fax: authorizedRepData?.fax || latestdata.authorizedRep?.fax || "",
+      };
+      
+      setFormValues(updatedFormValues);
+      onChange(updatedFormValues);
+      setFormMode("create");
+    } else {
+      console.log("ℹ️ No previous reports found, showing empty form");
       setFormMode("empty");
     }
-  };
+  } catch (error) {
+    console.error("❌ Error fetching latest verifier:", error);
+    console.log("ℹ️ Fallback to empty form");
+    setFormMode("empty");
+  }
+};
 
   // 🔍 Main data loading logic (same pattern as InstallationForm)
   useEffect(() => {
     const loadVerifierData = async () => {
       setIsLoading(true);
-
       try {
         // Case 1: No reportId - show empty form
         if (!reportId) {
@@ -210,10 +253,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
         // Case 2: Fetch report data to check if it has verifier_id
         console.log(`🔍 Checking report ${reportId} for existing verifier`);
-
         const reportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`
         );
+
         if (!reportResponse.ok) {
           throw new Error(
             `Failed to fetch report: ${reportResponse.statusText}`
@@ -264,7 +307,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           countries: CountryOption[];
           defaultCountry: CountryOption | null;
         };
-
         setCountries(result.countries);
         console.log(`✅ Loaded ${result.countries.length} countries`);
 
@@ -277,26 +319,22 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             ...formValues,
             country_id: String(defaultThailand.value),
           };
-
           setFormValues((prev) => ({
             ...prev,
             country_id: String(defaultThailand.value),
           }));
-
           onChange(defaultCountryData);
         }
       } catch (error) {
         console.error("❌ Error loading countries:", error);
       }
     };
-
     loadCountries();
   }, []);
 
   // Handle form field changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setFormValues((prev) => ({ ...prev, [name]: value }));
 
     // Clear error when user starts typing
@@ -309,7 +347,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       ...formValues,
       [name]: value,
     };
-
     onChange(updatedFormValues);
   };
 
@@ -318,12 +355,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
     countryValue: string | number | (string | number)[]
   ) => {
     const value = String(countryValue);
-
     const updatedFormValues = {
       ...formValues,
       country_id: value,
     };
-
     setFormValues(updatedFormValues);
     onChange(updatedFormValues);
 
@@ -336,16 +371,13 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   // Handle other field changes (for autocomplete, etc.)
   const handleFieldChange = (name: string, value: string) => {
     setFormValues((prev) => ({ ...prev, [name]: value }));
-
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
     const updatedFormValues = {
       ...formValues,
       [name]: value,
     };
-
     onChange(updatedFormValues);
   };
 
@@ -359,7 +391,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
     try {
       // 1. Create/Update Authorized Representative
       let authorizedId = formValues.authorized_rep_id;
-
       const authorizedPayload = {
         name: formValues.name || null,
         email: formValues.email || null,
@@ -401,7 +432,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
       // 2. Create/Update Verifier
       console.log(`📤 ${formMode.toUpperCase()} MODE: Saving verifier data`);
-
       const verifierPayload = {
         name: formValues.installation_name || null,
         address: formValues.address || null,
@@ -421,7 +451,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       if (formMode === "edit" && existingData?.verifier_id) {
         // UPDATE existing verifier
         console.log(`🔄 Updating verifier ID: ${existingData.verifier_id}`);
-
         verifierResponse = await fetch(
           `${apiUrl}/api/cbam/verifier/${existingData.verifier_id}`,
           {
@@ -430,12 +459,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             body: JSON.stringify(verifierPayload),
           }
         );
-
         newVerifierId = existingData.verifier_id;
       } else {
         // CREATE new verifier
         console.log("🆕 Creating new verifier");
-
         verifierResponse = await fetch(`${apiUrl}/api/cbam/verifier/`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -467,7 +494,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         console.log(
           `🔗 Updating report ${reportId} with verifier_id: ${newVerifierId}`
         );
-
         const reportUpdatePayload = {
           verifier_id: newVerifierId,
         };
@@ -484,7 +510,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         if (!reportUpdateResponse.ok) {
           const errorText = await reportUpdateResponse.text();
           console.error("❌ Report update error:", errorText);
-
           // Show partial success message
           alert(
             `✅ Verifier data saved successfully!\n` +
@@ -500,7 +525,11 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
           // Ensure localStorage has the correct reportId
           localStorage.setItem("reportId", String(reportId));
-          localStorage.setItem("cbam_report_id", String(reportId));
+
+          // ✅ เรียก onSave callback เมื่อ save สำเร็จ
+          if (onSave) {
+            onSave();
+          }
 
           // Success message
           const modeText = formMode === "edit" ? "updated" : "created";
@@ -513,8 +542,8 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         }
       }
 
-      // Move to next step
-      onNextStep();
+      // ✅ ไม่เรียก onNextStep() อัตโนมัติ ให้ user กดปุ่ม Continue เอง
+      // onNextStep();
     } catch (err: any) {
       console.error("❌ Form submission error:", err);
       alert(`❌ Error: ${err.message}`);
@@ -593,7 +622,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   </Typography>
                 </>
               )}
-
               {formMode === "create" && (
                 <>
                   <Typography
@@ -608,7 +636,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   </Typography>
                 </>
               )}
-
               {formMode === "empty" && (
                 <>
                   <Typography
@@ -623,12 +650,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   </Typography>
                 </>
               )}
-
               <Typography variant="body2" sx={{ mt: 1 }}>
                 <strong>Report ID:</strong> {reportId} |{" "}
                 <strong>Company ID:</strong> {companyId}
               </Typography>
-
               {existingData && (
                 <Box mt={1}>
                   <Typography variant="body2">
@@ -676,7 +701,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.installation_name || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Street, Number"
@@ -689,7 +713,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.address || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="City"
@@ -702,7 +725,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.city || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Post Code"
@@ -715,7 +737,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.post_code || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledAutocompleteMap
                     caption="Country"
@@ -756,7 +777,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.name || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     type="email"
@@ -770,7 +790,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.email || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     type="tel"
@@ -784,7 +803,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.phone || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Fax"
@@ -824,7 +842,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     error={formErrors.accreditation_state}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="National Accreditation Body"
@@ -837,7 +854,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                     helperText={formErrors.accreditation_national_body || ""}
                   />
                 </Grid>
-
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Registration Number"
@@ -859,7 +875,11 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             <Box display="flex" justifyContent="center" mt={2}>
               <PGButton
                 text={
-                  formMode === "edit" ? "Update Verifier" : "Create Verifier"
+                  isSubmitting
+                    ? "Saving..."
+                    : formMode === "edit"
+                    ? "Update Verifier"
+                    : "Save Verifier"
                 }
                 loading={isSubmitting}
                 type="submit"
@@ -867,227 +887,17 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             </Box>
           </Grid>
 
-          {/* Debug Information - Development Only */}
-          {/* {process.env.NODE_ENV === "development" && (
+          {/* ✅ Show success message after save */}
+          {onSave && (
             <Grid size={12}>
-              <Box
-                mt={4}
-                p={2}
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  fontSize: "0.8rem",
-                  border: "1px solid #ddd",
-                }}
-              >
-                <details>
-                  <summary
-                    style={{
-                      cursor: "pointer",
-                      fontWeight: "bold",
-                      marginBottom: "1rem",
-                    }}
-                  >
-                    🐛 Debug Information (Development Mode)
-                  </summary>
-
-                  <Grid container spacing={2}>
-                    <Grid size={12}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                      >
-                        Mode & IDs:
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Form Mode:</strong> {formMode}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Report ID (localStorage):</strong>{" "}
-                        {reportId || "not set"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Company ID:</strong> {companyId}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Verifier ID:</strong>{" "}
-                        {existingData?.verifier_id || "not set"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Authorized Rep ID:</strong>{" "}
-                        {formValues.authorized_rep_id || "not set"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Loading:</strong> {isLoading ? "Yes" : "No"}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Submitting:</strong>{" "}
-                        {isSubmitting ? "Yes" : "No"}
-                      </Typography>
-                    </Grid>
-
-                    <Grid size={12}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                      >
-                        Form Status:
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Countries Loaded:</strong> {countries.length}
-                      </Typography>
-                      <Typography variant="caption" component="div">
-                        <strong>Form Errors:</strong>{" "}
-                        {Object.keys(formErrors).length}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        sx={{
-                          color:
-                            formMode === "edit"
-                              ? "orange"
-                              : formMode === "create"
-                              ? "green"
-                              : "blue",
-                        }}
-                      >
-                        <strong>Action:</strong>{" "}
-                        {formMode === "edit"
-                          ? "Will UPDATE existing verifier"
-                          : formMode === "create"
-                          ? "Will CREATE new verifier"
-                          : "Will CREATE new verifier (empty form)"}
-                      </Typography>
-                    </Grid>
-                  </Grid>
-
-                  <Box mt={2}>
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Existing Data:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: "10px",
-                        overflow: "auto",
-                        maxHeight: "150px",
-                        backgroundColor: "#fff",
-                        p: 1,
-                        border: "1px solid #ddd",
-                        borderRadius: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {JSON.stringify(existingData, null, 2)}
-                    </Box>
-                  </Box>
-
-                  <Box mt={2}>
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Current Form Values:
-                    </Typography>
-                    <Box
-                      component="pre"
-                      sx={{
-                        fontSize: "10px",
-                        overflow: "auto",
-                        maxHeight: "200px",
-                        backgroundColor: "#fff",
-                        p: 1,
-                        border: "1px solid #ddd",
-                        borderRadius: 1,
-                        mt: 1,
-                      }}
-                    >
-                      {JSON.stringify(formValues, null, 2)}
-                    </Box>
-                  </Box>
-
-                  {Object.keys(formErrors).length > 0 && (
-                    <Box mt={2}>
-                      <Typography
-                        variant="caption"
-                        component="div"
-                        fontWeight="bold"
-                        color="red"
-                      >
-                        Form Errors ({Object.keys(formErrors).length}):
-                      </Typography>
-                      <Box
-                        component="pre"
-                        sx={{
-                          fontSize: "10px",
-                          overflow: "auto",
-                          maxHeight: "100px",
-                          backgroundColor: "#fff",
-                          p: 1,
-                          border: "1px solid #ff9999",
-                          borderRadius: 1,
-                          mt: 1,
-                          color: "red",
-                        }}
-                      >
-                        {JSON.stringify(formErrors, null, 2)}
-                      </Box>
-                    </Box>
-                  )}
-
-                  <Box
-                    mt={2}
-                    p={1}
-                    sx={{ backgroundColor: "#e3f2fd", borderRadius: 1 }}
-                  >
-                    <Typography
-                      variant="caption"
-                      component="div"
-                      fontWeight="bold"
-                    >
-                      Logic Summary:
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      1. Get reportId from localStorage:{" "}
-                      <strong>{reportId}</strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      2. Check if report has verifier_id:{" "}
-                      <strong>
-                        {existingData?.verifier_id ? "YES" : "NO"}
-                      </strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      3. Mode determined:{" "}
-                      <strong>{formMode.toUpperCase()}</strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      4. Data source:{" "}
-                      <strong>
-                        {formMode === "edit"
-                          ? "Specific verifier data"
-                          : formMode === "create"
-                          ? "Latest company verifier"
-                          : "Empty form"}
-                      </strong>
-                    </Typography>
-                    <Typography variant="caption" component="div">
-                      5. Will update report #{reportId} with verifier_id after
-                      saving
-                    </Typography>
-                  </Box>
-                </details>
+              <Box mt={2} textAlign="center">
+                <Typography variant="caption" color="text.secondary">
+                  Click "Save Verifier" to save your changes, then use "Continue
+                  to Next Step" to proceed
+                </Typography>
               </Box>
             </Grid>
-          )} */}
+          )}
         </Grid>
       </form>
     </Container>

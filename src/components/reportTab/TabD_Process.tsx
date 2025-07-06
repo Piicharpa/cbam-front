@@ -36,6 +36,7 @@ const TabD_Process = ({ formValues, setFormValues, reportId }: TabAProps) => {
     useEffect(() => {
         if (reportId) {
             // เรียก API หรือโหลดข้อมูลตาม reportId
+            console.log("Report ID:", reportId);
         }
     }, [reportId]);
     const InstDataTable = () => {
@@ -66,6 +67,7 @@ const TabD_Process = ({ formValues, setFormValues, reportId }: TabAProps) => {
 
         const handleCopy = (value: string) => {
             navigator.clipboard.writeText(value || "").then(() => {
+                // console.log("Copied:", value);
             });
         };
 

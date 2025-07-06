@@ -63,15 +63,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const [installationName, setInstallationName] = useState<string>("");
   const apiUrl = process.env.REACT_APP_API_URL;
   
-  // Log mode for debugging
-  // useEffect(() => {
-  //   if (isEditMode && reportIdFromUrl) {
-  //     console.log(`🔄 SumupForm in EDIT mode - Report ID: ${reportIdFromUrl}`);
-  //   } else {
-  //     console.log("🆕 SumupForm in CREATE mode - New report will be created");
-  //   }
-  // }, [isEditMode, reportIdFromUrl]);
-
   // Keep formValues in sync with parent (ไม่ส่ง reportId)
   useEffect(() => {
     onChange(formValues);
@@ -480,80 +471,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
               />
             </div>
           </Grid>
-          
-          {/* Debug Section - Development Only */}
-          {/* {process.env.NODE_ENV === "development" && (
-            <Grid size={12}>
-              <div style={{ 
-                marginTop: "2rem", 
-                padding: "1rem", 
-                backgroundColor: "#f5f5f5", 
-                borderRadius: "8px",
-                fontSize: "0.8rem",
-                border: "1px solid #ddd"
-              }}>
-                <details>
-                  <summary style={{ cursor: "pointer", fontWeight: "bold", marginBottom: "1rem" }}>
-                    🐛 Debug Information (Development Mode)
-                  </summary>
-                  
-                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
-                    <div>
-                      <h4>Report ID Management:</h4>
-                      <div><strong>URL reportId:</strong> {urlReportId || "not present"}</div>
-                      <div><strong>Current reportId:</strong> {currentReportId || "not set"}</div>
-                      <div><strong>localStorage reportId:</strong> {localStorage.getItem("reportId") || "not stored"}</div>
-                      <div><strong>Is Edit Mode:</strong> {isEditMode ? "Yes" : "No"}</div>
-                    </div>
-                    
-                    <div>
-                      <h4>Form State:</h4>
-                      <div><strong>Industry ID:</strong> {formValues.industry_id || "not selected"}</div>
-                      <div><strong>Goods ID:</strong> {formValues.goods_id || "not selected"}</div>
-                      <div><strong>CN Code ID:</strong> {formValues.cn_id || "not selected"}</div>
-                      <div><strong>Installation:</strong> {installationName || "not loaded"}</div>
-                    </div>
-                  </div>
-                  
-                  <div style={{ marginTop: "1rem" }}>
-                    <h4>Available Options:</h4>
-                    <div><strong>Industries:</strong> {industryTypes.length} loaded</div>
-                    <div><strong>Goods:</strong> {goodsList.length} loaded</div>
-                    <div><strong>CN Codes:</strong> {cncodeList.length} loaded</div>
-                  </div>
-                  
-                  {Object.keys(formErrors).length > 0 && (
-                    <div style={{ marginTop: "1rem" }}>
-                      <h4 style={{ color: "red" }}>Form Errors:</h4>
-                      <pre style={{ 
-                        backgroundColor: "#ffebee", 
-                        padding: "0.5rem", 
-                        borderRadius: "4px",
-                        color: "red",
-                        fontSize: "0.75rem"
-                      }}>
-                        {JSON.stringify(formErrors, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                  
-                  {selectedCncode && (
-                    <div style={{ marginTop: "1rem" }}>
-                      <h4>Selected CN Code Details:</h4>
-                      <pre style={{ 
-                        backgroundColor: "#e3f2fd", 
-                        padding: "0.5rem", 
-                        borderRadius: "4px",
-                        fontSize: "0.75rem"
-                      }}>
-                                                {JSON.stringify(selectedCncode, null, 2)}
-                      </pre>
-                    </div>
-                  )}
-                </details>
-              </div>
-            </Grid>
-          )} */}
         </Grid>
       </form>
     </Container>

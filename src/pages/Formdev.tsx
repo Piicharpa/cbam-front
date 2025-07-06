@@ -365,15 +365,12 @@ const Formdev: React.FC = () => {
         return (
           <SumupForm
             data={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               industry_id: sumupData.industry_id,
               goods_id: sumupData.goods_id,
               cn_id: sumupData.cn_id,
             }}
             onChange={setSumupData}
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={sumupFormRef}
           />
         );
       case 1:
@@ -382,41 +379,32 @@ const Formdev: React.FC = () => {
             data={installationData} // Just pass the entire object as is
             onChange={setInstallationData}
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={installationFormRef}
           />
         );
       case 2:
         return (
           <VerifierForm
             data={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               ...verifierData,
             }}
             onChange={setVerifierData}
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={verifierFormRef}
           />
         );
       case 3:
         return (
           <GoodsForm
             formValues={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               ...goodsData,
             }}
             onChange={setGoodsData}
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={goodsFormRef}
           />
         );
       case 4:
         return (
           <PrecursorsForm
             formValues={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               ...precursorsData,
             }}
             onChange={(formValues) =>
@@ -434,15 +422,12 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={precursorsFormRef}
           />
         );
       case 5:
         return (
           <SourceForm
             formValues={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               ...sourceData,
             }}
             onChange={(formValues) =>
@@ -454,15 +439,12 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={sourceFormRef}
           />
         );
       case 6:
         return (
           <EmissionForm
             formValues={{
-              // reportId: 0, // Note: Will actually use reportId from localStorage
               ...emissionData,
             }}
             onChange={(formValues) =>
@@ -474,8 +456,6 @@ const Formdev: React.FC = () => {
               }))
             }
             onNextStep={handleNext}
-            // Not passing reportId - component will get from localStorage
-            // ref={emissionFormRef}
           />
         );
       default:
@@ -489,37 +469,6 @@ const Formdev: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      {/* <Container maxWidth="lg" sx={{ py: 5 }}> */}
-      {/* <HeaderBanner elevation={0}>
-          <HeaderPatternBox />
-          <Typography
-            variant="h4"
-            color="primary.main"
-            gutterBottom
-            sx={{ position: "relative", zIndex: 1 }}
-          >
-            {isEditMode ? "Edit CBAM Report" : "CBAM Declaration Form"}
-          </Typography>
-          <Typography
-            variant="body1"
-            color="text.secondary"
-            sx={{ position: "relative", zIndex: 1 }}
-          >
-            {isEditMode
-              ? "Make changes to your Carbon Border Adjustment Mechanism declaration"
-              : "Complete all steps to submit your declaration for the Carbon Border Adjustment Mechanism"}
-          </Typography>
-
-          {reportId && (
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{ position: "relative", zIndex: 1, display: "block", mt: 1 }}
-            >
-              Report ID: {reportId} {isEditMode ? "(Edit Mode)" : ""}
-            </Typography>
-          )}
-        </HeaderBanner> */}
 
       <StepperContainer elevation={1} progress={progress}>
         <Stepper
@@ -610,18 +559,6 @@ const Formdev: React.FC = () => {
               Continue to Next Step
             </Button>
           ) : (
-            // <Button
-            //   onClick={handleSubmit}
-            //   variant="contained"
-            //   color="secondary"
-            //   endIcon={<span>✓</span>}
-            //   sx={{
-            //     background: "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
-            //     fontWeight: 600,
-            //   }}
-            // >
-            //   {isEditMode ? "Update Report" : "Submit Report"}
-            // </Button>
             null
           )}
           <ButtonDecoration isLastStep={isLastStep} />
@@ -629,17 +566,6 @@ const Formdev: React.FC = () => {
       </NavigationContainer>
 
       <Box mt={4} sx={{ textAlign: "center" }}>
-        {/* <Typography
-            component="div"
-            variant="body2"
-            color="text.secondary"
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 1,
-            }}
-          > */}
         <span>
           Step {activeStep + 1} of {safeSteps.length}
         </span>
@@ -660,33 +586,6 @@ const Formdev: React.FC = () => {
               } stage - ${safeSteps[activeStep]?.description || ""}`}
         </Typography>
       </Box>
-      {/* <Box mt={3} sx={{ textAlign: "center" }}>
-          <Typography
-            variant="caption"
-            sx={{
-              color: theme.palette.grey[500],
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 0.5,
-            }}
-          >
-            <span>Need help?</span>
-            <Box
-              component="a"
-              href="#"
-              sx={{
-                color: theme.palette.primary.main,
-                textDecoration: "none",
-                "&:hover": {
-                  textDecoration: "underline",
-                },
-              }}
-            >
-              Contact support
-            </Box>
-          </Typography> */}
-      {/* </Box> */}
 
       {/* Cancel editing button - only show in edit mode */}
       {isEditMode && (
@@ -705,71 +604,6 @@ const Formdev: React.FC = () => {
           </Button>
         </Box>
       )}
-
-      {/* Debug information - only in development */}
-      {/* {process.env.NODE_ENV === "development" && (
-          <Box
-            mt={4}
-            p={2}
-            sx={{
-              backgroundColor: "#f5f5f5",
-              borderRadius: 2,
-              fontSize: "0.75rem",
-            }}
-          >
-            <Typography variant="subtitle2" gutterBottom>
-              Debug Information
-            </Typography>
-            <Box>
-              <Typography variant="body2">Active Step: {activeStep}</Typography>
-              <Typography variant="body2">Report ID: {reportId}</Typography>
-              <Typography variant="body2">
-                Is Edit Mode: {isEditMode ? "Yes" : "No"}
-              </Typography>
-              <Typography variant="body2">
-                LocalStorage Report ID:{" "}
-                {localStorage.getItem("reportId") || "not set"}
-              </Typography>
-              <Typography variant="body2">
-                Steps Count: {safeSteps.length}
-              </Typography>
-              <Typography variant="body2">
-                Progress: {progress.toFixed(1)}%
-              </Typography>
-            </Box> */}
-
-      {/* <Box mt={1}>
-              <details>
-                <summary>Steps Structure</summary>
-                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
-                  {JSON.stringify(safeSteps, null, 2)}
-                </pre>
-              </details>
-            </Box>
-
-            <Box mt={1}>
-              <details>
-                <summary>Form Data</summary>
-                <pre style={{ overflow: "auto", maxHeight: "200px" }}>
-                  {JSON.stringify(
-                    {
-                      sumupData,
-                      installationData,
-                      verifierData,
-                      goodsData,
-                      precursorsData,
-                      sourceData,
-                      emissionData,
-                    },
-                    null,
-                    2
-                  )}
-                </pre>
-              </details>
-            </Box> */}
-      {/* </Box> */}
-      {/* )} */}
-      {/* </Container> */}
     </ThemeProvider>
   );
 };

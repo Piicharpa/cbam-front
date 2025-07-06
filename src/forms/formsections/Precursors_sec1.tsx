@@ -647,6 +647,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           formErrors[`purchased_precursors_${index}`]
         }
         disabled={loadingPrecursors}
+        readOnly
       />
        ))
     ) : (

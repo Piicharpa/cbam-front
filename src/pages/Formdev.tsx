@@ -78,7 +78,7 @@ const Formdev: React.FC = () => {
     if (queryReportId) {
       // If reportId is in URL, store it in localStorage
       const parsedId = parseInt(queryReportId, 10);
-      localStorage.setItem("cbam_report_id", queryReportId);
+      localStorage.setItem("reportId", queryReportId);
       setReportId(parsedId);
       setIsEditMode(true);
       console.log(
@@ -86,14 +86,14 @@ const Formdev: React.FC = () => {
       );
     } else {
       // If not in URL, check localStorage
-      const storedReportId = localStorage.getItem("cbam_report_id");
+      const storedReportId = localStorage.getItem("reportId");
       if (storedReportId) {
         setReportId(parseInt(storedReportId, 10));
         setIsEditMode(true);
         console.log(`📋 Using report ID from localStorage: ${storedReportId}`);
       } else {
         // No reportId available - we're in create mode
-        localStorage.removeItem("cbam_report_id"); // Clear any previous value
+        localStorage.removeItem("reportId"); // Clear any previous value
         setReportId(null);
         setIsEditMode(false);
         console.log("✨ Create mode - no report ID available");
@@ -308,7 +308,7 @@ const Formdev: React.FC = () => {
 
             // If this is the last step and submission is successful, navigate to report
             if (canProceed) {
-              const currentReportId = localStorage.getItem("cbam_report_id");
+              const currentReportId = localStorage.getItem("reportId");
               if (currentReportId) {
                 navigate(`/cbam/report?reportId=${currentReportId}`);
                 return;
@@ -351,7 +351,7 @@ const Formdev: React.FC = () => {
       setFadeIn(true);
 
       // After successful form submission, navigate to report page
-      const currentReportId = localStorage.getItem("cbam_report_id");
+      const currentReportId = localStorage.getItem("reportId");
       if (currentReportId) {
         navigate(`/cbam/report?reportId=${currentReportId}`);
       }
@@ -489,8 +489,8 @@ const Formdev: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Container maxWidth="lg" sx={{ py: 5 }}>
-        <HeaderBanner elevation={0}>
+      {/* <Container maxWidth="lg" sx={{ py: 5 }}> */}
+      {/* <HeaderBanner elevation={0}>
           <HeaderPatternBox />
           <Typography
             variant="h4"
@@ -519,102 +519,117 @@ const Formdev: React.FC = () => {
               Report ID: {reportId} {isEditMode ? "(Edit Mode)" : ""}
             </Typography>
           )}
-        </HeaderBanner>
+        </HeaderBanner> */}
 
-        <StepperContainer elevation={1} progress={progress}>
-          <Stepper
-            alternativeLabel
-            activeStep={activeStep}
-            connector={<ColorlibConnector />}
-          >
-            {safeSteps.map((step, index) => (
-              <Step key={step?.label ? step.label : `step-${index}`}>
-                <StepLabel StepIconComponent={ColorlibStepIcon}>
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      fontWeight: activeStep === index ? 600 : 400,
-                      fontSize: 15,
-                      color:
-                        activeStep === index
-                          ? "primary.main"
-                          : index < activeStep
-                          ? "secondary.main"
-                          : "text.primary",
-                    }}
-                  >
-                    {step?.label || `Step ${index + 1}`}
-                  </Typography>
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      display: "block",
-                      color: "text.secondary",
-                      fontSize: 12,
-                    }}
-                  >
-                    {step?.description || ""}
-                  </Typography>
-                </StepLabel>
-              </Step>
-            ))}
-          </Stepper>
-        </StepperContainer>
-
-        <Fade in={fadeIn} timeout={500}>
-          <Box sx={{ minHeight: "450px", position: "relative" }}>
-            <TopRightCircle />
-            <BottomLeftCircle />
-            <ContentPaper elevation={1}>
-              {renderStepContent(activeStep)}
-            </ContentPaper>
-          </Box>
-        </Fade>
-
-        <NavigationContainer>
-          <Button
-            disabled={activeStep === 0}
-            onClick={handleBack}
-            variant="outlined"
-          >
-            Back
-          </Button>
+      <StepperContainer elevation={1} progress={progress}>
+        <Stepper
+          alternativeLabel
+          activeStep={activeStep}
+          connector={<ColorlibConnector />}
+        >
+          {safeSteps.map((step, index) => (
+            <Step key={step?.label ? step.label : `step-${index}`}>
+              <StepLabel StepIconComponent={ColorlibStepIcon}>
+                <Typography
+                  variant="subtitle1"
+                  sx={{
+                    fontWeight: activeStep === index ? 600 : 400,
+                    fontSize: 15,
+                    color:
+                      activeStep === index
+                        ? "primary.main"
+                        : index < activeStep
+                        ? "secondary.main"
+                        : "text.primary",
+                  }}
+                >
+                  {step?.label || `Step ${index + 1}`}
+                </Typography>
+                <Typography
+                  variant="caption"
+                  sx={{
+                    display: "block",
+                    color: "text.secondary",
+                    fontSize: 12,
+                  }}
+                >
+                  {step?.description || ""}
+                </Typography>
+              </StepLabel>
+            </Step>
+          ))}
+        </Stepper>
+        {/* ---- Content Area ---- */}
+        <Box
+          sx={{
+            width: "100%",
+            minHeight: 450,
+            position: "relative",
+            mt: 4,
+            mb: 2,
+            px: { xs: 1, sm: 2, md: 8 }, // Responsive horizontal padding
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "stretch",
+            background: "#fff",
+            borderRadius: 3,
+            boxShadow: 1,
+          }}
+        >
+          {/* decorative elements */}
+          <TopRightCircle />
+          <BottomLeftCircle />
+          {/* The content */}
           <Box sx={{ position: "relative" }}>
-            {activeStep < safeSteps.length - 1 ? (
-              <Button
-                onClick={handleNext}
-                variant="contained"
-                color="primary"
-                endIcon={<span>→</span>}
-                sx={{
-                  background:
-                    "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
-                  fontWeight: 600,
-                }}
-              >
-                Continue to Next Step
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                variant="contained"
-                color="secondary"
-                endIcon={<span>✓</span>}
-                sx={{
-                  background:
-                    "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
-                  fontWeight: 600,
-                }}
-              >
-                {isEditMode ? "Update Report" : "Submit Report"}
-              </Button>
-            )}
-             <ButtonDecoration isLastStep={isLastStep} />
+            {renderStepContent(activeStep)}
           </Box>
-        </NavigationContainer>
+        </Box>
+      </StepperContainer>
 
-        <Box mt={4} sx={{ textAlign: "center" }}>
-          <Typography
+      <NavigationContainer>
+        <Button
+          disabled={activeStep === 0}
+          onClick={handleBack}
+          variant="outlined"
+        >
+          Back
+        </Button>
+        <Box sx={{ position: "relative" }}>
+          {activeStep < safeSteps.length - 1 ? (
+            <Button
+            disabled={activeStep === 0 && isLastStep}
+              onClick={handleNext}
+              variant="contained"
+              color="primary"
+              endIcon={<span>→</span>}
+              sx={{
+                background: "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
+                fontWeight: 600,
+              }}
+            >
+              Continue to Next Step
+            </Button>
+          ) : (
+            // <Button
+            //   onClick={handleSubmit}
+            //   variant="contained"
+            //   color="secondary"
+            //   endIcon={<span>✓</span>}
+            //   sx={{
+            //     background: "linear-gradient(45deg, #74aa15 30%, #6aaa33 90%)",
+            //     fontWeight: 600,
+            //   }}
+            // >
+            //   {isEditMode ? "Update Report" : "Submit Report"}
+            // </Button>
+            null
+          )}
+          <ButtonDecoration isLastStep={isLastStep} />
+        </Box>
+      </NavigationContainer>
+
+      <Box mt={4} sx={{ textAlign: "center" }}>
+        {/* <Typography
             component="div"
             variant="body2"
             color="text.secondary"
@@ -624,28 +639,28 @@ const Formdev: React.FC = () => {
               justifyContent: "center",
               gap: 1,
             }}
-          >
-            <span>
-              Step {activeStep + 1} of {safeSteps.length}
-            </span>
-          </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{
-              display: "block",
-              mt: 1,
-              fontStyle: "italic",
-            }}
-          >
-            {isLastStep
-              ? "Final step - Review your information before submission"
-              : `Currently in ${
-                  safeSteps[activeStep]?.label || `Step ${activeStep + 1}`
-                } stage - ${safeSteps[activeStep]?.description || ""}`}
-          </Typography>
-        </Box>
-        <Box mt={3} sx={{ textAlign: "center" }}>
+          > */}
+        <span>
+          Step {activeStep + 1} of {safeSteps.length}
+        </span>
+        {/* </Typography> */}
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          sx={{
+            display: "block",
+            mt: 1,
+            fontStyle: "italic",
+          }}
+        >
+          {isLastStep
+            ? "Final step - Review your information before submission"
+            : `Currently in ${
+                safeSteps[activeStep]?.label || `Step ${activeStep + 1}`
+              } stage - ${safeSteps[activeStep]?.description || ""}`}
+        </Typography>
+      </Box>
+      {/* <Box mt={3} sx={{ textAlign: "center" }}>
           <Typography
             variant="caption"
             sx={{
@@ -670,29 +685,29 @@ const Formdev: React.FC = () => {
             >
               Contact support
             </Box>
-          </Typography>
+          </Typography> */}
+      {/* </Box> */}
+
+      {/* Cancel editing button - only show in edit mode */}
+      {isEditMode && (
+        <Box mt={2} sx={{ textAlign: "center" }}>
+          <Button
+            variant="text"
+            color="error"
+            onClick={() => {
+              // Clear localStorage and redirect to form
+              localStorage.removeItem("reportId");
+              navigate("/cbam/formdev");
+            }}
+            sx={{ fontSize: "0.8rem" }}
+          >
+            Cancel editing
+          </Button>
         </Box>
+      )}
 
-        {/* Cancel editing button - only show in edit mode */}
-        {isEditMode && (
-          <Box mt={2} sx={{ textAlign: "center" }}>
-            <Button
-              variant="text"
-              color="error"
-              onClick={() => {
-                // Clear localStorage and redirect to form
-                localStorage.removeItem("cbam_report_id");
-                navigate("/cbam/formdev");
-              }}
-              sx={{ fontSize: "0.8rem" }}
-            >
-              Cancel editing
-            </Button>
-          </Box>
-        )}
-
-        {/* Debug information - only in development */}
-        {process.env.NODE_ENV === "development" && (
+      {/* Debug information - only in development */}
+      {/* {process.env.NODE_ENV === "development" && (
           <Box
             mt={4}
             p={2}
@@ -713,7 +728,7 @@ const Formdev: React.FC = () => {
               </Typography>
               <Typography variant="body2">
                 LocalStorage Report ID:{" "}
-                {localStorage.getItem("cbam_report_id") || "not set"}
+                {localStorage.getItem("reportId") || "not set"}
               </Typography>
               <Typography variant="body2">
                 Steps Count: {safeSteps.length}
@@ -721,9 +736,9 @@ const Formdev: React.FC = () => {
               <Typography variant="body2">
                 Progress: {progress.toFixed(1)}%
               </Typography>
-            </Box>
+            </Box> */}
 
-            <Box mt={1}>
+      {/* <Box mt={1}>
               <details>
                 <summary>Steps Structure</summary>
                 <pre style={{ overflow: "auto", maxHeight: "200px" }}>
@@ -751,10 +766,10 @@ const Formdev: React.FC = () => {
                   )}
                 </pre>
               </details>
-            </Box>
-          </Box>
-        )}
-      </Container>
+            </Box> */}
+      {/* </Box> */}
+      {/* )} */}
+      {/* </Container> */}
     </ThemeProvider>
   );
 };

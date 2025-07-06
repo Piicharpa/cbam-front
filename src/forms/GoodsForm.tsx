@@ -673,7 +673,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           </Grid>
 
           {/* Debug Information - Development Only */}
-          {process.env.NODE_ENV === "development" && (
+          {/* {process.env.NODE_ENV === "development" && (
             <Grid size={12}>
               <Box
                 mt={4}
@@ -835,10 +835,10 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                     <Typography variant="caption" component="div">
                       5. Will update report #{reportId} with goods_id after saving
                     </Typography>
-                  </Box>
+                  </Box> */}
 
                   {/* Debug Buttons */}
-                  <Box mt={2} display="flex" gap={1}>
+                  {/* <Box mt={2} display="flex" gap={1}>
                     <button
                       type="button"
                       onClick={async () => {
@@ -929,9 +929,9 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                     </button>
                   </Box>
                 </details>
-              </Box>
-            </Grid>
-          )}
+              </Box> */}
+            {/* </Grid> */}
+          {/* )} */}
         </Grid>
       </form>
     </Container>

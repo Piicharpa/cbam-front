@@ -11,11 +11,12 @@ import {
   OptionType,
 } from "../../components/dropdown/goods";
 import { justification } from "../../components/dropdown/justification";
+import { data } from "react-router-dom";
 
 // Updated PrecursorSubmitData interface that matches the database structure
 export interface PrecursorSubmitData {
   id?: number;
-  report_id?: string | number;
+  report_id?: number;
   precursors?: string | null;
   name?: string;
   route_1?: string;
@@ -63,6 +64,7 @@ interface PrecursorFieldsProps {
   isSaved?: boolean;
   precursorId?: number;
   reportId?: number; // Prop for report ID
+  onNextStep?: () => void;
 }
 
 interface PrecursorApiData {
@@ -93,6 +95,7 @@ interface PrecursorApiData {
   created_at?: string;
   updated_at?: string;
   [key: string]: any; // Allow any other fields
+  onNextStep?: () => void;
 }
 
 const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
@@ -106,10 +109,10 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
   industryTypeId,
   goodsId,
   onSave,
-  onDelete,
+  onNextStep,
   isSaved = false,
   precursorId,
-  reportId: propsReportId,
+  // reportId,
 }) => {
   const [routeOptions, setRouteOptions] = useState<OptionType[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
@@ -131,7 +134,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
   // Use report ID from props if available, otherwise use default
-  const reportId = propsReportId;
+  const reportIdRaw = localStorage.getItem("reportId");
+  const reportId = reportIdRaw ? parseInt(reportIdRaw, 10) : undefined;
   // const reportId = 23;
 
   // Fetch existing data for this precursor based on report ID and index
@@ -149,72 +153,40 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         );
       }
       const data = await response.json();
-      console.log(`📊 Fetched precursor data for report #${reportId}:`, data);
-
-      // Store the raw API response
-      setApiResponse(data);
-
-      // Handle both array and single object responses
-      const precursorsArray = Array.isArray(data) ? data : data ? [data] : [];
-
-      // If no precursors were found, we will later allow saving new data
-      if (precursorsArray.length === 0) {
-        console.log("ℹ️ No existing precursors found.");
-        return; // Early return, no need to process further
-      }
-
-      // Find the precursor that matches our index based on route_1 matching precursorValue
-      // or by checking for previously saved precursor with same ID
-      const matchingPrecursor = precursorsArray.find(
-        (p) =>
-          (precursorValue && p.route_1 === precursorValue) ||
-          (precursorId && p.id === precursorId)
-      );
-
-      if (matchingPrecursor) {
-        console.log(
-          `✅ Found matching precursor for index ${index}:`,
-          matchingPrecursor
-        );
-        setExistingData(matchingPrecursor);
-
-        // เก็บข้อมูลเดิมไว้ในสถานะที่แยกออกมา เพื่อใช้เป็น fallback
-        setPreviousData(matchingPrecursor);
-
-        updateFieldsFromApiData(matchingPrecursor);
-
-        // If the precursor has an ID but our component doesn't know about it yet
-        if (matchingPrecursor.id && !precursorId && onSave) {
-          // Notify parent component about this existing record
-          const precursorData: PrecursorSubmitData =
-            mapApiDataToPrecursorData(matchingPrecursor);
-          onSave(precursorData);
-        }
+      // === Step 1: ตรวจว่ามี precursor data ไหม ===
+      const precursorItem = (
+        Array.isArray(data) ? data : data ? [data] : []
+      )[0];
+      if (precursorItem && precursorItem.id) {
+        // === Step 2: ถ้ามีก้อนข้อมูล ให้ setFieldValues ใช้ค่าจาก backend ===
+        setExistingData(precursorItem);
+        setPreviousData(precursorItem);
+        updateFieldsFromApiData(precursorItem);
       } else {
-        console.log(
-          `ℹ️ No matching precursor found for index ${index} with value ${precursorValue}`
-        );
+        // === Step 2: ถ้าไม่มีอะไร ไม่ต้อง set ค่าช่องฟอร์ม (ใช้ default) ===
+        setExistingData(null);
       }
     } catch (error) {
-      console.error(
-        `❌ Error fetching precursor data for report #${reportId}:`,
-        error
-      );
+      console.error("❌ Error fetching precursor data for report:", error);
     } finally {
       setIsLoadingData(false);
     }
   };
-
   // Map API data to field values
   const updateFieldsFromApiData = (data: PrecursorApiData) => {
     const updatedValues: { [key: string]: string | number } = {
       ...fieldValues,
     };
 
-    // Map the API fields to our form fields
+    // Map dynamic route fields (route_1 ... route_5)
+    for (let ridx = 0; ridx < 5; ridx++) {
+      updatedValues[`route_${ridx}_${index}`] = data[`route_${ridx + 1}`] || "";
+      updatedValues[`amount_${ridx}_${index}`] =
+        data[`route_${ridx + 1}_amounts`] || 0;
+    }
+
     updatedValues[`purchased_precursors_${index}`] =
-      data.route_1 || precursorValue || "";
-    updatedValues[`amount_${index}`] = data.route_1_amounts || 0;
+      data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
     updatedValues[`embedded_direct_emissions_value_${index}`] =
       data.embedded_direct_emissions_value || 0;
@@ -227,22 +199,28 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     updatedValues[`justification_for_use_default_values_${index}`] =
       data.justification_for_use_default_values || "";
 
-    // Set local state
     setFieldValues(updatedValues);
 
-    // Update parent component
     Object.entries(updatedValues).forEach(([key, value]) => {
       onChange(key, value);
     });
+
+    // *** update routeCount ให้เท่าจำนวน route ที่มีค่าจริง ***
+    let maxFilledRoute = 1;
+    for (let i = 0; i < 5; i++) {
+      if (data[`route_${i + 1}`]) maxFilledRoute = i + 1;
+    }
+    setRouteCount(maxFilledRoute);
   };
 
+  console.log("localStorage : ", localStorage);
   // Map API data to PrecursorSubmitData - fixed to match database structure
   const mapApiDataToPrecursorData = (
     data: PrecursorApiData
   ): PrecursorSubmitData => {
     return {
       id: data.id,
-      report_id: formValues.report_id || reportId,
+      report_id: reportId || 0,
       precursors:
         data.precursors ||
         (fieldValues[`purchased_precursors_${index}`] as string) ||
@@ -318,6 +296,83 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
   }, [reportId, index, precursorValue, routeValue]); // Dependencies for initial data loading
 
   // Load route options based on industryTypeId and goodsId
+  const [precursorOptions, setPrecursorOptions] = useState<string[]>([]);
+  const [loadingPrecursors, setLoadingPrecursors] = useState(false);
+  const [noPrecursors, setNoPrecursors] = useState(false);
+
+  const selectedIndustry = localStorage.getItem("selectedIndustry")
+    ? parseInt(localStorage.getItem("selectedIndustry") as string, 10)
+    : undefined;
+  const selectedGoods = localStorage.getItem("selectedGoods")
+    ? parseInt(localStorage.getItem("selectedGoods") as string, 10)
+    : undefined;
+
+  const precursorFieldValue =
+    fieldValues[`purchased_precursors_${index}`] || "";
+
+  const searchRelevantPrecursors = async (
+    industryTypeId?: number,
+    goodsId?: number
+  ) => {
+    if (!industryTypeId || !goodsId) {
+      setPrecursorOptions([]);
+      setNoPrecursors(false);
+      return;
+    }
+    setLoadingPrecursors(true);
+    setNoPrecursors(false);
+    try {
+      const goodsList = await fetchGoodsData();
+      const industry = goodsList.find(
+        (ind: any) => ind.industry_type_id === industryTypeId
+      );
+      if (!industry) {
+        setPrecursorOptions([]);
+        setNoPrecursors(true);
+        return;
+      }
+      const goods = industry.goods.find((g: any) => g.goods_id === goodsId);
+      if (!goods) {
+        setPrecursorOptions([]);
+        setNoPrecursors(true);
+        return;
+      }
+      const relevant = goods.relevant_precursors || [];
+      if (relevant.length > 0) {
+        setPrecursorOptions(relevant);
+        setNoPrecursors(false);
+      } else {
+        setPrecursorOptions([]);
+        setNoPrecursors(true);
+      }
+    } finally {
+      setLoadingPrecursors(false);
+    }
+  };
+
+  useEffect(() => {
+    // เช็ค EDIT CASE: ถ้า selectedGoods/selectedIndustry เปลี่ยนจากค่าที่ save ไว้ => clear precursor เดิม
+    const savedGoods = existingData?.goods_id;
+    const savedIndustry = existingData?.industry_type_id;
+
+    if (
+      existingData &&
+      (savedGoods !== selectedGoods || savedIndustry !== selectedIndustry)
+    ) {
+      setFieldValues((prev) => ({
+        ...prev,
+        [`purchased_precursors_${index}`]: "",
+        // clear ฟิลด์อื่นได้ถ้าต้องการ
+      }));
+      // อาจใส่ onChange ด้วย (สำหรับ parent)
+      onChange(`purchased_precursors_${index}`, "");
+      setExistingData(null);
+    }
+
+    searchRelevantPrecursors(selectedIndustry, selectedGoods);
+    // eslint-disable-next-line
+  }, [selectedGoods, selectedIndustry]);
+
   useEffect(() => {
     const loadRouteOptions = async () => {
       if (industryTypeId && goodsId) {
@@ -335,7 +390,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       }
     };
     loadRouteOptions();
-  }, [industryTypeId, goodsId]);
+  }, [goodsId]);
 
   // Handle input value changes - update both local state and parent
   const handleInputChange = (
@@ -389,11 +444,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
   const prepareDataForApi = (): Record<string, any> => {
     const payload: Record<string, any> = {
       precursors: fieldValues[`purchased_precursors_${index}`] || null,
-      name: "", // Default to an empty string
-      route_1: fieldValues[`purchased_precursors_${index}`] || "",
-      route_1_amounts: parseFloat(
-        fieldValues[`amount_${index}`]?.toString() || "0"
-      ),
+      name: "",
       country_code: fieldValues[`country_code_${index}`] || "",
       embedded_direct_emissions_value: parseFloat(
         fieldValues[`embedded_direct_emissions_value_${index}`]?.toString() ||
@@ -410,160 +461,67 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         fieldValues[`source_embedded_indirect_emissions_${index}`] || "",
       justification_for_use_default_values:
         fieldValues[`justification_for_use_default_values_${index}`] || "",
-      // Empty values for other routes
-      route_2: "",
-      route_2_amounts: 0,
-      route_3: "",
-      route_3_amounts: 0,
-      route_4: "",
-      route_4_amounts: 0,
-      route_5: "",
-      route_5_amounts: 0,
       total_consumed_within_installation: 0,
       consumed_in_production_amounts: 0,
       consumed_non_cbam_goods_amounts: 0,
       total_consumed_within_installation_amounts: 0,
     };
 
-    // Only include report_id if it's necessary for your use case
-    if (reportId) {
-      // Replace isRequiredByApi with logic if there are specific rules about when to include it
-      payload.report_id = reportId;
+    for (let ridx = 0; ridx < 5; ridx++) {
+      // <---- เปลี่ยน 6 เป็น 5
+      payload[`route_${ridx + 1}`] =
+        fieldValues[`route_${ridx}_${index}`] || "";
+      payload[`route_${ridx + 1}_amounts`] = parseFloat(
+        fieldValues[`amount_${ridx}_${index}`]?.toString() || "0"
+      );
     }
 
+    if (reportId) {
+      payload.report_id = reportId;
+    }
     return payload;
   };
 
   const handleSave = async () => {
-    // Validate form
-    if (!validateForm()) {
-      console.error("Validation failed");
-      return;
-    }
-
-    // เก็บข้อมูลปัจจุบันไว้ก่อนการบันทึก
-    const currentFieldValues = { ...fieldValues };
-
+    if (!validateForm()) return;
     setIsSaving(true);
     try {
-      // Prepare data for API
       const payload = prepareDataForApi();
-      // Log what we're about to send
-      console.log("📤 Sending data to API:", payload);
-      // Determine if we're updating or creating a new entry
-      const method = existingData ? "PUT" : "POST";
-      const url = existingData
-        ? `${apiUrl}/api/cbam/e_precursors/${existingData.id}`
-        : `${apiUrl}/api/cbam/e_precursors`;
-      console.log(`🔄 ${method} request to: ${url}`);
-      // Make the API request
+      let method = "POST";
+      let url = `${apiUrl}/api/cbam/e_precursors`;
+      // === Step 3: ถ้ามี existingData (id) => ใช้ PUT, ถ้าไม่มีก็ POST ===
+      if (existingData && existingData.id) {
+        method = "PUT";
+        url = `${apiUrl}/api/cbam/e_precursors/${existingData.id}`;
+      }
       const response = await fetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      // Parse response
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`API Error (${response.status}): ${errorText}`);
       }
-      // Get the response data
       const responseData = await response.json();
-      console.log("✅ API Response:", responseData);
-      // Update local state with the returned data
-      if (responseData) {
-        setExistingData(responseData);
-        setPreviousData(responseData); // เก็บข้อมูลล่าสุดเป็น previousData
-        updateFieldsFromApiData(responseData);
-      }
-      // If your onSave callback is necessary to inform the parent about saved data, call it
-      if (onSave) {
-        await onSave(responseData);
-      }
-      alert(`Precursor ${existingData ? "updated" : "created"} successfully!`);
+      // ตั้งค่ารายละเอียดใหม่หลังบันทึกสำเร็จ
+      setExistingData(responseData);
+      setPreviousData(responseData);
+      updateFieldsFromApiData(responseData);
+      if (onSave) await onSave(responseData);
+      alert(
+        `Precursor ${method === "PUT" ? "updated" : "created"} successfully!`
+      );
     } catch (error) {
-      console.error("❌ Error saving precursor:", error);
       alert(
         `Failed to save precursor: ${
           error instanceof Error ? error.message : "Unknown error"
         }`
       );
-
-      // กู้คืนข้อมูลเดิมหากการบันทึกล้มเหลว
-      if (previousData) {
-        // กู้คืนข้อมูลจาก previousData
-        setExistingData(previousData);
-        updateFieldsFromApiData(previousData);
-      } else {
-        // กู้คืนค่าฟอร์มเดิม
-        setFieldValues(currentFieldValues);
-      }
+      if (onNextStep) onNextStep();
     } finally {
       setIsSaving(false);
     }
-  };
-
-  // Handle delete button click - DELETE from API
-  const handleDelete = async () => {
-    const idToDelete = precursorId || existingData?.id;
-
-    if (!idToDelete) {
-      console.error("No precursor ID provided for deletion");
-      return;
-    }
-
-    // Confirm deletion
-    if (!window.confirm("Are you sure you want to delete this precursor?")) {
-      return;
-    }
-
-    setIsDeleting(true);
-
-    try {
-      console.log(`🗑️ Deleting precursor with ID: ${idToDelete}`);
-
-      const url = `${apiUrl}/api/cbam/e_precursors/${idToDelete}`;
-      const response = await fetch(url, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error (${response.status}): ${errorText}`);
-      }
-
-      console.log("✅ Precursor deleted successfully");
-
-      // Clear existing data
-      setExistingData(null);
-
-      // Call parent onDelete if provided
-      if (onDelete) {
-        await onDelete();
-      }
-
-      // Show success message
-      alert("Precursor deleted successfully!");
-    } catch (error) {
-      console.error("❌ Error deleting precursor:", error);
-      alert(
-        `Failed to delete precursor: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-    } finally {
-      setIsDeleting(false);
-    }
-  };
-
-  // Refresh data from API
-  const handleRefreshData = () => {
-    fetchExistingData();
   };
 
   return (
@@ -623,7 +581,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
         <div style={{ display: "flex", alignItems: "center" }}>
           {/* Refresh button */}
-          {reportId && (
+          {/* {reportId && (
             <button
               type="button"
               onClick={handleRefreshData}
@@ -640,7 +598,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             >
               Refresh
             </button>
-          )}
+          )} */}
 
           {(isSaved || existingData) && (
             <div
@@ -657,7 +615,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           )}
 
           {/* Delete button for saved/existing precursors */}
-          {(isSaved || existingData?.id) && (
+          {/* {(isSaved || existingData?.id) && (
             <IconButton
               size="small"
               color="error"
@@ -667,24 +625,37 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             >
               <DeleteIcon />
             </IconButton>
-          )}
+          )} */}
         </div>
       </div>
 
       {/* Form fields */}
-      <LabeledTextField
+      {precursorOptions.length > 0 ? (
+      precursorOptions.map((precursor, idx) => (
+      <LabeledAutocomplete
         caption="Purchased precursor"
-        defination="รายการวัตถุดิบ"
+        defination="รายการวัตถุดิบ precursor"
         label=""
         name={`purchased_precursors_${index}`}
-        value={fieldValues[`purchased_precursors_${index}`] || ""}
-        onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+        options={precursorOptions}
+        value={String(fieldValues[`purchased_precursors_${index}`] || "")}
+        onChange={(val) =>
+          handleInputChange(`purchased_precursors_${index}`, val)
+        }
         error={
           fieldErrors[`purchased_precursors_${index}`] ||
           formErrors[`purchased_precursors_${index}`]
         }
-        readOnly
+        disabled={loadingPrecursors}
       />
+       ))
+    ) : (
+      // {loadingPrecursors && <span>Loading...</span>}
+      // {noPrecursors && (
+        <span style={{ color: "#ff9800", fontSize: 13 }}>
+          ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
+        </span>
+      )}
 
       <LabeledAutocompleteMap
         caption="Country code"
@@ -943,7 +914,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           marginTop: "20px",
         }}
       >
-        {previousData && (
+        {/* {previousData && (
           <button
             type="button"
             style={{
@@ -966,41 +937,39 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           >
             Restore Previous Data
           </button>
-        )}
+        )} */}
 
-        <button
-          type="button"
+        <div
           style={{
-            backgroundColor:
-              isSaved || existingData?.id ? "#73797C" : "#91BACC",
-            color: "#fff",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-            fontWeight: "bold",
             display: "flex",
-            alignItems: "center",
-            fontSize: "14px",
+            justifyContent: "flex-end",
+            marginTop: "20px",
           }}
-          onClick={handleSave}
-          disabled={isSaving || isLoadingData}
         >
-          {isSaving
-            ? "Saving..."
-            : isSaved || existingData?.id
-            ? `Update Precursor${
-                existingData?.id ? ` #${existingData.id}` : ""
-              }`
-            : "Save Precursor"}
-          {(isSaved || existingData?.id) && (
-            <span style={{ marginLeft: "5px", fontSize: "16px" }}>✓</span>
-          )}
-        </button>
+          <button
+            type="button"
+            style={{
+              backgroundColor: "#91BACC",
+              color: "#fff",
+              padding: "10px 20px",
+              border: "none",
+              borderRadius: "10px",
+              cursor: "pointer",
+              fontWeight: "bold",
+              display: "flex",
+              alignItems: "center",
+              fontSize: "14px",
+            }}
+            onClick={handleSave}
+            disabled={isSaving || isLoadingData}
+          >
+            {isSaving ? "Saving..." : "Save Precursor"}
+          </button>
+        </div>
       </div>
-     
+
       {/* API Response Display (only in development mode) */}
-      {process.env.NODE_ENV === "development" && apiResponse && (
+      {/* {process.env.NODE_ENV === "development" && apiResponse && (
         <div
           style={{
             marginTop: "20px",
@@ -1027,7 +996,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             </pre>
           </details>
         </div>
-      )}
+      )} */}
     </div>
   );
 };

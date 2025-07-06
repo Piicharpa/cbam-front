@@ -41,19 +41,21 @@ const SourceForm: React.FC<SourceFormProps> = ({
   const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL;
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
   // Add missing formValues state
-  const [formValues, setFormValues] = useState<SourceFormProps["formValues"]>({});
-  
+  const [formValues, setFormValues] = useState<SourceFormProps["formValues"]>(
+    {}
+  );
+
   // Define missing formValuesRequiredFields
   const formValuesRequiredFields: string[] = [];
-  
+
   // State to track original records from the server
   const [originalRecords, setOriginalRecords] = useState<number[]>([]);
-  
+
   // State to track records that have been removed from the UI
   const [removedRecordIds, setRemovedRecordIds] = useState<number[]>([]);
-  
+
   // State for section 1b: Process emissions
   const [processEmissionSections, setProcessEmissionSections] = useState<
     ProcessEmissionSection[]
@@ -76,23 +78,23 @@ const SourceForm: React.FC<SourceFormProps> = ({
       p_energy_content_bio: externalFormValues.p_energy_content_bio || "",
     },
   ]);
-  
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  
+
   // Function to delete an emission record
   const deleteEmissionRecord = async (db_id: number) => {
     try {
       const response = await fetch(`${apiUrl}/api/cbam/b_emission/${db_id}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Delete emission API error:', errorText);
+        console.error("Delete emission API error:", errorText);
         throw new Error(`Failed to delete emission record: ${errorText}`);
       }
-      
+
       console.log(`Successfully deleted emission record ${db_id}`);
       return true;
     } catch (error) {
@@ -100,22 +102,24 @@ const SourceForm: React.FC<SourceFormProps> = ({
       return false;
     }
   };
-  
+
   // Function to fetch existing emission data
   const fetchExistingEmissions = async () => {
     if (!reportId) return;
-    
+
     try {
-      const response = await fetch(`${apiUrl}/api/cbam/b_emission/report/${reportId}`);
-      
+      const response = await fetch(
+        `${apiUrl}/api/cbam/b_emission/report/${reportId}`
+      );
+
       if (response.ok) {
         const data = await response.json();
-        
+
         if (data && data.length > 0) {
           // Save the original db_ids
           const dbIds = data.map((item: any) => item.id);
           setOriginalRecords(dbIds);
-          
+
           // Transform server data to our component format
           const sections = data.map((item: any) => ({
             id: Date.now() + Math.random(), // Client-side ID for React
@@ -124,26 +128,37 @@ const SourceForm: React.FC<SourceFormProps> = ({
             p_source_stream_name: item.source_stream_name || "",
             p_activity_data: String(item.activity_data || ""),
             p_ad_unit: item.AD_Unit || "",
-            p_net_calorific_value: item.net_calorific_value !== null ? String(item.net_calorific_value) : "",
+            p_net_calorific_value:
+              item.net_calorific_value !== null
+                ? String(item.net_calorific_value)
+                : "",
             p_ncv_unit: item.NCV_unit || "",
             p_emission_factor: String(item.ef || ""),
             p_ef_unit: item.ef_unit || "",
             p_oxidation_factor: String(item.oxidation_factor_percentage || ""),
-            p_biomass_content: item.biomass_content_percentage !== null ? String(item.biomass_content_percentage) : "",
+            p_biomass_content:
+              item.biomass_content_percentage !== null
+                ? String(item.biomass_content_percentage)
+                : "",
             p_co2e_fossil: String(item.CO2e_fossil || ""),
             p_co2e_bio: String(item.CO2e_bio || ""),
             p_energy_content_fossil: String(item.energy_content_fossil || ""),
             p_energy_content_bio: String(item.energy_content_bio || ""),
           }));
-          
+
           if (sections.length > 0) {
             // If you want to limit to exactly 2 sections
-            const limitedSections = sections.slice(0, 2);  
+            const limitedSections = sections.slice(0, 2);
             setProcessEmissionSections(limitedSections);
-            
+
             // Track any records that were not included (if more than 2 existed)
             if (sections.length > 2) {
-              const extraRecordIds = sections.slice(2).map((s: any) => s.db_id).filter((id: number | undefined): id is number => id !== undefined);
+              const extraRecordIds = sections
+                .slice(2)
+                .map((s: any) => s.db_id)
+                .filter(
+                  (id: number | undefined): id is number => id !== undefined
+                );
               setRemovedRecordIds(extraRecordIds);
             }
           }
@@ -153,29 +168,29 @@ const SourceForm: React.FC<SourceFormProps> = ({
       console.error("Error fetching existing emissions data:", error);
     }
   };
-  
+
   // Fetch existing data when component mounts
   useEffect(() => {
     fetchExistingEmissions();
   }, [reportId, apiUrl]);
-  
-    useEffect(() => {
+
+  useEffect(() => {
     if (externalFormValues) {
       // Update formValues with external values if needed
       setFormValues(externalFormValues);
-      
+
       const hasExternalValuesChanged = Object.keys(externalFormValues).some(
         (key) =>
           externalFormValues[key as keyof typeof externalFormValues] !==
           formValues[key as keyof typeof formValues]
       );
-      
+
       // Update processEmissionSections if there's data and no existing data was loaded
       if (
         (externalFormValues.p_method ||
-        externalFormValues.p_source_stream_name ||
-        externalFormValues.p_activity_data) && 
-        processEmissionSections.length === 1 && 
+          externalFormValues.p_source_stream_name ||
+          externalFormValues.p_activity_data) &&
+        processEmissionSections.length === 1 &&
         !processEmissionSections[0].p_method
       ) {
         setProcessEmissionSections((prevSections) => [
@@ -208,7 +223,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
   // Alert when reportId is missing
   useEffect(() => {
     if (!reportId) {
-      console.error("❌ reportId is not provided - not found in localStorage or state");
+      console.error(
+        "❌ reportId is not provided - not found in localStorage or state"
+      );
       alert("Report ID not found. Please select a report first.");
     }
   }, [reportId]);
@@ -275,15 +292,17 @@ const SourceForm: React.FC<SourceFormProps> = ({
   // Remove process section
   const removeProcessSection = (idToRemove: number) => {
     if (processEmissionSections.length <= 1) return;
-    
+
     // Find the section to be removed
-    const sectionToRemove = processEmissionSections.find(section => section.id === idToRemove);
-    
+    const sectionToRemove = processEmissionSections.find(
+      (section) => section.id === idToRemove
+    );
+
     // If it has a db_id, add it to removedRecordIds
     if (sectionToRemove && sectionToRemove.db_id !== undefined) {
-      setRemovedRecordIds(prev => [...prev, sectionToRemove.db_id as number]);
+      setRemovedRecordIds((prev) => [...prev, sectionToRemove.db_id as number]);
     }
-    
+
     // Remove from UI
     setProcessEmissionSections(
       processEmissionSections.filter((section) => section.id !== idToRemove)
@@ -390,16 +409,16 @@ const SourceForm: React.FC<SourceFormProps> = ({
     // Prevent duplicate submissions
     if (isSubmitting) return;
     setIsSubmitting(true);
-    
+
     if (!reportId) {
       alert("❌ Report ID (reportId) not found. Please create a report first.");
       setIsSubmitting(false);
       return;
     }
-    
+
     // Validate data
     const newErrors: { [key: string]: string } = {};
-    
+
     // Check each section for process
     processEmissionSections.forEach((section) => {
       processRequiredFields.forEach((field) => {
@@ -409,14 +428,14 @@ const SourceForm: React.FC<SourceFormProps> = ({
         }
       });
     });
-    
+
     // Check formValues
     formValuesRequiredFields.forEach((field) => {
       if (!formValues[field as keyof typeof formValues]) {
         newErrors[field] = "Please fill in this field";
       }
     });
-    
+
     // If there are errors, update state and don't send data
     if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
@@ -429,16 +448,16 @@ const SourceForm: React.FC<SourceFormProps> = ({
       setIsSubmitting(false);
       return;
     }
-    
+
     try {
       console.log("Sending API requests...");
-      
+
       // 1. First delete any records that have been removed
       for (const recordId of removedRecordIds) {
         console.log(`Deleting emission record ${recordId}`);
         await deleteEmissionRecord(recordId);
       }
-      
+
       // 2. Process each emission section
       for (const section of processEmissionSections) {
         const payload = {
@@ -447,48 +466,56 @@ const SourceForm: React.FC<SourceFormProps> = ({
           source_stream_name: section.p_source_stream_name,
           activity_data: parseFloat(section.p_activity_data),
           AD_Unit: section.p_ad_unit,
-          net_calorific_value: section.p_net_calorific_value ? parseFloat(section.p_net_calorific_value) : null,
+          net_calorific_value: section.p_net_calorific_value
+            ? parseFloat(section.p_net_calorific_value)
+            : null,
           NCV_unit: section.p_ncv_unit || null,
           ef: parseFloat(section.p_emission_factor),
           ef_unit: section.p_ef_unit,
           oxidation_factor_percentage: parseFloat(section.p_oxidation_factor),
-          biomass_content_percentage: section.p_biomass_content ? parseFloat(section.p_biomass_content) : null,
+          biomass_content_percentage: section.p_biomass_content
+            ? parseFloat(section.p_biomass_content)
+            : null,
           CO2e_fossil: parseFloat(section.p_co2e_fossil || "0"),
           CO2e_bio: parseFloat(section.p_co2e_bio || "0"),
-          energy_content_fossil: parseFloat(section.p_energy_content_fossil || "0"),
+          energy_content_fossil: parseFloat(
+            section.p_energy_content_fossil || "0"
+          ),
           energy_content_bio: parseFloat(section.p_energy_content_bio || "0"),
         };
-        
+
         // Check if this is an edit (has db_id) or new creation
         const isEditing = section.db_id !== undefined;
-        
+
         const method = isEditing ? "PUT" : "POST";
-        const url = isEditing 
+        const url = isEditing
           ? `${apiUrl}/api/cbam/b_emission/${section.db_id}`
           : `${apiUrl}/api/cbam/b_emission`;
-          
+
         console.log(`Using ${method} request to ${url}`, payload);
-        
+
         const response = await fetch(url, {
           method,
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload),
         });
-        
+
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`${method} emission API error:`, errorText);
-          throw new Error(`Failed to ${isEditing ? 'update' : 'submit'} process emissions data: ${errorText}`);
+          throw new Error(
+            `Failed to ${
+              isEditing ? "update" : "submit"
+            } process emissions data: ${errorText}`
+          );
         }
-        
+
         const responseData = await response.json();
         console.log(`${method} response:`, responseData);
       }
-      
+
       // Navigate to report page after successful submission
       alert("Data saved successfully!");
-      navigate(`/report?reportId=${reportId}`);
-      
       // Go to next step
       if (onNextStep) onNextStep();
       localStorage.removeItem("cbam_report_id");
@@ -506,16 +533,25 @@ const SourceForm: React.FC<SourceFormProps> = ({
       <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3} alignItems="stretch">
           <Box>
-            <Typography variant="h5" fontWeight="bold" gutterBottom color="#1976d2">
+            <Typography
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
               Installation's emission at source stream and emission source level
             </Typography>
             <Typography variant="subtitle1" color="text.secondary" gutterBottom>
               การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
             </Typography>
           </Box>
-          
+
           {/* SECTION 1: Source stream and emission source */}
-          <Section title="Source stream and emission source" subtitle="" defaultExpanded={true}>
+          <Section
+            title="Source stream and emission source"
+            subtitle=""
+            defaultExpanded={true}
+          >
             <Source_sec1
               processEmissionSections={processEmissionSections}
               formErrors={formErrors}
@@ -525,16 +561,16 @@ const SourceForm: React.FC<SourceFormProps> = ({
               addNewProcessSection={addNewProcessSection}
             />
           </Section>
-          
+
           {/* Summary of removed records (optional, helpful for debugging) */}
-          {removedRecordIds.length > 0 && (
+          {/* {removedRecordIds.length > 0 && (
             <Box mt={2} p={2} sx={{ backgroundColor: '#fff9e3', borderRadius: 1 }}>
               <Typography variant="body2">
                 {removedRecordIds.length} record(s) will be removed on save.
               </Typography>
             </Box>
-          )}
-          
+          )} */}
+
           {/* Submit button */}
           <PGButton text="Save" />
         </Grid>

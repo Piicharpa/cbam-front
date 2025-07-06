@@ -868,7 +868,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           </Grid>
 
           {/* Debug Information - Development Only */}
-          {process.env.NODE_ENV === "development" && (
+          {/* {process.env.NODE_ENV === "development" && (
             <Grid size={12}>
               <Box
                 mt={4}
@@ -1087,7 +1087,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 </details>
               </Box>
             </Grid>
-          )}
+          )} */}
         </Grid>
       </form>
     </Container>

@@ -29,6 +29,12 @@ interface PrecursorsFormProps {
     route_4_amounts?: number;
     route_5?: string;
     route_5_amounts?: number;
+    route_6?: string;
+    route_6_amounts?: number;
+    route_7?: string;
+    route_7_amounts?: number;
+    route_8?: string;
+    route_8_amounts?: number;
     total_consumed_within_installation?: number;
     consumed_in_production_amounts?: number;
     consumed_non_cbam_goods_amounts?: number;
@@ -109,7 +115,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     const initialValues: { [key: string]: string | number } = {};
     
     // Initialize for up to 5 precursors
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 8; i++) {
       initialValues[`purchased_precursors_${i}`] = formValues[`route_${i}` as keyof typeof formValues] || "";
       initialValues[`amount_${i}`] = formValues[`route_${i}_amounts` as keyof typeof formValues] 
         ? String(formValues[`route_${i}_amounts` as keyof typeof formValues])
@@ -151,7 +157,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         if (precursorsArray.length > 0) {
           precursorsArray.forEach((precursor, index) => {
             const i = index + 1;
-            if (i > 5) return; // Only handle up to 5 precursors
+            if (i > 8) return; // Only handle up to 5 precursors
             
             updatedFormValues[`purchased_precursors_${i}`] = precursor.route_1 || "";
             updatedFormValues[`amount_${i}`] = precursor.route_1_amounts || 0;
@@ -218,7 +224,13 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         route_4: '',
         route_4_amounts: 0,
         route_5: '',
-        route_5_amounts: 0
+        route_5_amounts: 0,
+        route_6: '',
+        route_6_amounts: 0,
+        route_7: '',
+        route_7_amounts: 0,
+        route_8: '',
+        route_8_amounts: 0
       });
     }
     
@@ -424,7 +436,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     
     const precursors =
       getPrecursorsOptions(goodsData, industryTypeId, goodsId) || [];
-    const limitedPrecursors = precursors.slice(0, 5); // Limit to 5 precursors
+    const limitedPrecursors = precursors.slice(0, 8); // Limit to 5 precursors
     
     // Set precursors count
     setPrecursorsCount(limitedPrecursors.length);
@@ -624,7 +636,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         </div>
       )}
       
-      {/* Debug Panel - only in dev mode */}
+      {/* Debug Panel - only in dev mode
       {process.env.NODE_ENV === "development" && (
         <Box sx={{ mb: 3, p: 2, bgcolor: '#f8f9fa', border: '1px solid #dee2e6', borderRadius: 1 }}>
           <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 'bold' }}>Debug Tools</Typography>
@@ -644,7 +656,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
             Refresh Data
           </Button>
         </Box>
-      )}
+      )} */}
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>

@@ -409,7 +409,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
         </Grid>
 
         {/* Debug Information - only visible in development mode */}
-        {process.env.NODE_ENV === "development" && (
+        {/* {process.env.NODE_ENV === "development" && (
           <Box mt={4} p={2} bgcolor="#f5f5f5" borderRadius={1}>
             <Typography variant="subtitle2" gutterBottom>
               Debug Info:
@@ -442,7 +442,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
               </Box>
             )}
           </Box>
-        )}
+        )} */}
       </form>
     </Container>
   );

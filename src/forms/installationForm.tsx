@@ -933,7 +933,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           </Grid>
 
           {/* Debug Information - Development Only */}
-          {process.env.NODE_ENV === "development" && (
+          {/* {process.env.NODE_ENV === "development" && (
             <Grid size={12}>
               <Box
                 mt={4}
@@ -1160,7 +1160,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 </details>
               </Box>
             </Grid>
-          )}
+          )} */}
         </Grid>
       </form>
     </Container>

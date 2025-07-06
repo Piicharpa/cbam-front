@@ -64,13 +64,13 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const apiUrl = process.env.REACT_APP_API_URL;
   
   // Log mode for debugging
-  useEffect(() => {
-    if (isEditMode && reportIdFromUrl) {
-      console.log(`🔄 SumupForm in EDIT mode - Report ID: ${reportIdFromUrl}`);
-    } else {
-      console.log("🆕 SumupForm in CREATE mode - New report will be created");
-    }
-  }, [isEditMode, reportIdFromUrl]);
+  // useEffect(() => {
+  //   if (isEditMode && reportIdFromUrl) {
+  //     console.log(`🔄 SumupForm in EDIT mode - Report ID: ${reportIdFromUrl}`);
+  //   } else {
+  //     console.log("🆕 SumupForm in CREATE mode - New report will be created");
+  //   }
+  // }, [isEditMode, reportIdFromUrl]);
 
   // Keep formValues in sync with parent (ไม่ส่ง reportId)
   useEffect(() => {
@@ -482,7 +482,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
           </Grid>
           
           {/* Debug Section - Development Only */}
-          {process.env.NODE_ENV === "development" && (
+          {/* {process.env.NODE_ENV === "development" && (
             <Grid size={12}>
               <div style={{ 
                 marginTop: "2rem", 
@@ -553,7 +553,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                 </details>
               </div>
             </Grid>
-          )}
+          )} */}
         </Grid>
       </form>
     </Container>

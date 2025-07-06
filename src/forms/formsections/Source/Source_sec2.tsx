@@ -45,7 +45,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
     <>
       {/* Box1: GHG emissions and energy consumption */}
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "20px"}}>
           <strong> GHG emissions and energy consumption </strong>
         </div>
         <LabeledTextField
@@ -85,7 +85,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
       </Box>
       {/* Box2: Information on the data quality and quality assurance  */}
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" }}>
+        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "20px"}}>
           <strong>
             {" "}
             Information on the data quality and quality assurance{" "}

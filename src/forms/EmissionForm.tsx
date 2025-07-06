@@ -316,22 +316,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
               )}
             </Box>
 
-            {/* Refresh button */}
-            {/* <button
-              type="button"
-              onClick={handleRefreshData}
-              style={{
-                background: "none",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "8px 16px",
-                cursor: "pointer",
-                fontSize: "14px",
-              }}
-              disabled={isLoading}
-            >
-              {isLoading ? "Loading..." : "Refresh Data"}
-            </button> */}
+            
           </Box>
 
           {/* SECTION: Installation-level GHG emissions and energy consumption */}

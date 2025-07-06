@@ -399,6 +399,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         address: formValues.address,
         city: formValues.city,
         country_id: Number(formValues.country_id),
+        unlocode: formValues.unlocode || null,
         post_code: formValues.post_code,
         latitude: formValues.latitude,
         longitude: formValues.longitude,
@@ -544,80 +545,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             <Typography fontSize="20px" variant="subtitle1" color="text.secondary" gutterBottom>
               รายละเอียดสถานประกอบการ
             </Typography>
-
-            {/* Mode Indicator */}
-            {/* <Box
-              mt={2}
-              p={2}
-              sx={{
-                backgroundColor:
-                  formMode === "edit"
-                    ? "#fff3e0"
-                    : formMode === "create"
-                    ? "#e8f5e8"
-                    : "#f0f8ff",
-                borderRadius: 1,
-                border: `1px solid ${
-                  formMode === "edit"
-                    ? "#ffcc02"
-                    : formMode === "create"
-                    ? "#4caf50"
-                    : "#2196f3"
-                }`,
-              }}
-            >
-              {formMode === "edit" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#f57c00"
-                  >
-                    🔄 EDIT MODE
-                  </Typography>
-                  <Typography variant="body2">
-                    Editing existing installation (ID:{" "}
-                    {existingData?.installation_id})
-                  </Typography>
-                </>
-              )}
-
-              {formMode === "create" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#2e7d32"
-                  >
-                    🆕 CREATE MODE
-                  </Typography>
-                  <Typography variant="body2">
-                    Creating new installation (pre-filled with latest company
-                    data)
-                  </Typography>
-                </>
-              )}
-
-              {formMode === "empty" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#1976d2"
-                  >
-                    📝 NEW FORM
-                  </Typography>
-                  <Typography variant="body2">
-                    Creating new installation (empty form)
-                  </Typography>
-                </>
-              )}
-
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                <strong>Report ID:</strong> {reportId} |{" "}
-                <strong>Company ID:</strong> {companyId}
-              </Typography>
-            </Box> */}
           </Grid>
 
           {/* Reporting Period Section */}

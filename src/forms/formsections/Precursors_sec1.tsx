@@ -699,7 +699,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           <LabeledAutocomplete
             key={`precursor-${index}-${idx}-${precursor}`} // ✅ เพิ่ม unique key รวม precursor name
             caption="Purchased precursor"
-            defination="รายการวัตถุดิบ precursor"
+            defination="เลือกรายการวัตถุดิบ precursor"
             label=""
             name={`purchased_precursors_${index}`}
             options={precursorOptions}
@@ -775,7 +775,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             <Box flex={1}>
               <LabeledTextField
                 caption={`Amount for Route ${routeIndex + 1}`}
-                defination="จำนวน"
+                defination="ระบุจำนวน"
                 label=""
                 type="number"
                 name={`amount_${routeIndex}_${index}`}
@@ -858,7 +858,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             <LabeledTextField
               type="number"
               caption=""
-              defination="กรอกเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
+              defination="ระบุเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
               label=""
               name={`embedded_direct_emissions_value_${index}`}
               value={
@@ -919,7 +919,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             <LabeledTextField
               type="number"
               caption=""
-              defination="กรอกเป็นค่าตัวเลขของ SEE indirect ของวัตถุดิบตั้งต้น"
+              defination="ระบุเป็นค่าตัวเลขของ SEE indirect ของวัตถุดิบตั้งต้น"
               label=""
               name={`embedded_indirection_emissions_value_${index}`}
               value={
@@ -968,7 +968,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           <div style={{ flex: 1 }}>
             <LabeledAutocomplete
               caption="Justification for use of default values (if relevant)"
-              defination="กรอกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
+              defination="ระบุเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
               label=""
               name={`justification_for_use_default_values_${index}`}
               options={justification.map((j) => j.name)}

@@ -101,7 +101,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Activity Data(AD)"
-                defination="กรอกข้อมูลปริมาณเชื้อเพลิง"
+                defination="ระบุข้อมูลปริมาณเชื้อเพลิง"
                 label=""
                 name={`p_activity_data_${section.id}`}
                 value={section.p_activity_data}
@@ -119,7 +119,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Net calorific value (NCV)"
-                defination="กรอกค่าความร้อนของเชื้อเพลิง"
+                defination="ระบุค่าความร้อนของเชื้อเพลิง"
                 label=""
                 name={`p_net_calorific_value_${section.id}`}
                 value={section.p_net_calorific_value}
@@ -135,7 +135,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Emission factor (EF)"
-                defination="กรอกค่า Emission factor"
+                defination="ระบุค่า Emission factor"
                 label=""
                 name={`p_emission_factor_${section.id}`}
                 value={section.p_emission_factor}
@@ -152,7 +152,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Oxidation factor"
-                defination="กรอกค่า Oxidation factor"
+                defination="ระบุค่า Oxidation factor"
                 label=""
                 name={`p_oxidation_factor_${section.id}`}
                 value={section.p_oxidation_factor}
@@ -171,7 +171,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="text"
                 caption="Source stream name"
-                defination="กรอกข้อมูลชนิดเชื้อเพลิง"
+                defination="ระบุข้อมูลชนิดเชื้อเพลิง"
                 label=""
                 name={`p_source_stream_name_${section.id}`}
                 value={section.p_source_stream_name}
@@ -211,7 +211,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="text"
                 caption="Net Calorific Value Unit (NCV Unit)"
-                defination="กรอกหน่วยของค่าความร้อนของเชื้อเพลิง"
+                defination="หน่วยของค่าความร้อนของเชื้อเพลิง"
                 label=""
                 name={`p_ncv_unit_${section.id}`}
                 value={section.p_ncv_unit}
@@ -227,7 +227,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               />
               <LabeledAutocomplete
                 caption="EF Unit"
-                defination="เลือก หน่วยของค่า Emission factor"
+                defination="เลือกหน่วยของค่า Emission factor"
                 label=""
                 name={`p_ef_unit_${section.id}`}
                 options={efunits.map((unit) => unit.name)}
@@ -241,7 +241,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Biomass content"
-                defination="กรอกปริมาณของ Biomass"
+                defination="ระบุปริมาณของ Biomass"
                 label=""
                 name={`p_biomass_content_${section.id}`}
                 value={section.p_biomass_content}

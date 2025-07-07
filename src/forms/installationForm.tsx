@@ -562,7 +562,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Start Time"
-                    defination="วันที่เริ่มต้นรายงาน"
+                    defination="ระบุวันที่เริ่มต้นรายงาน"
                     label=""
                     name="reporting_period_start"
                     type="date"
@@ -576,7 +576,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="End Time"
-                    defination="วันที่สิ้นสุดรายงาน"
+                    defination="ระบุวันที่สิ้นสุดรายงาน"
                     label=""
                     name="reporting_period_end"
                     type="date"
@@ -604,7 +604,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Name of the installation (ENG)"
-                    defination="ชื่อสถานประกอบการเป็นภาษาอังกฤษ"
+                    defination="ระบุชื่อสถานประกอบการเป็นภาษาอังกฤษ"
                     label=""
                     name="name"
                     value={formValues.name}
@@ -618,7 +618,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Name of the installation (TH)"
-                    defination="ชื่อสถานประกอบการเป็นภาษาไทย (ไม่บังคับ)"
+                    defination="ระบุชื่อสถานประกอบการเป็นภาษาไทย (ไม่บังคับ)"
                     label=""
                     name="name_specific"
                     value={formValues.name_specific}
@@ -631,7 +631,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Economic activity"
-                    defination="กิจกรรมทางเศรษฐกิจหลัก"
+                    defination="ระบุกิจกรรมทางเศรษฐกิจหลัก"
                     label=""
                     name="eco_activity"
                     value={formValues.eco_activity}
@@ -645,8 +645,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Street, Number"
-                    defination="ถนน เลขที่"
-                    label=""
+                    defination="ระบุถนน เลขที่"
+                    label="123 Moo 5, Industrial Zone 2, Ban Klang Subdistrict, Muang District"
                     name="address"
                     value={formValues.address}
                     onChange={handleInputChange}
@@ -659,8 +659,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="City"
-                    defination="เมือง/จังหวัด"
-                    label=""
+                    defination="ระบุเมือง/จังหวัด"
+                    label="Saraburi "
                     name="city"
                     value={formValues.city}
                     onChange={handleInputChange}
@@ -674,8 +674,8 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocompleteMap
                     caption="Country"
-                    defination="เลือกประเทศ"
-                    label=""
+                    defination="ระบุเลือกประเทศ"
+                    label="Thailand"
                     options={countries.map((c) => ({
                       ...c,
                       value: String(c.value),
@@ -692,7 +692,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   <LabeledTextField
                     caption="UNLOCODE"
                     defination="รหัสประเทศ (อัตโนมัติ)"
-                    label=""
+                    label="TH"
                     name="unlocode"
                     value={formValues.unlocode}
                     readOnly
@@ -705,7 +705,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Post code"
-                    defination="รหัสไปรษณีย์"
+                    defination="ระบุรหัสไปรษณีย์"
                     label=""
                     type="text"
                     name="post_code"
@@ -720,7 +720,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="P.O. Box"
-                    defination="ตู้ไปรษณีย์ (ไม่บังคับ)"
+                    defination="ระบุตู้ไปรษณีย์ (ไม่บังคับ)"
                     label=""
                     name="po_box"
                     value={formValues.po_box}
@@ -734,7 +734,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Coordinates (latitude)"
-                    defination="พิกัดละติจูด เช่น 13.7563"
+                    defination="ระบุพิกัดละติจูด เช่น 13.7563"
                     label=""
                     type="number"
                     // step="any"
@@ -750,7 +750,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Coordinates (longitude)"
-                    defination="พิกัดลองจิจูด เช่น 100.5018"
+                    defination="ระบุพิกัดลองจิจูด เช่น 100.5018"
                     label=""
                     type="number"
                     // step="any"
@@ -767,7 +767,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Name of authorized representative"
-                    defination="ชื่อผู้มีอำนาจลงนาม"
+                    defination="ระบุชื่อผู้มีอำนาจลงนาม"
                     label=""
                     name="author_represent"
                     value={formValues.author_represent}
@@ -783,7 +783,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   <LabeledTextField
                     type="email"
                     caption="Email"
-                    defination="อีเมล"
+                    defination="ระบุอีเมล"
                     label=""
                     name="email"
                     value={formValues.email}
@@ -798,7 +798,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   <LabeledTextField
                     type="tel"
                     caption="Telephone"
-                    defination="หมายเลขโทรศัพท์"
+                    defination="ระบุหมายเลขโทรศัพท์"
                     label=""
                     name="tel"
                     value={formValues.tel}

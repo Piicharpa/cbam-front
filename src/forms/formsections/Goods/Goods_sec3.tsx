@@ -70,7 +70,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
                 type="number"
                 caption="Emissions factor (Imported)"
                 label=""
-                defination="ค่า Emission factor ของค่าความร้อน (จากการซื้อมาใช้)"
+                defination="ระบุค่า Emission factor ของค่าความร้อน (จากการซื้อมาใช้)"
                 name="ef_imported_heat"
                 value={values.ef_imported_heat}
                 onChange={onChange}
@@ -79,7 +79,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Emissions factor (Exported)"
-                defination="ค่า Emission factor ของค่าความร้อน (จากการขาย)"
+                defination="ระบุค่า Emission factor ของค่าความร้อน (จากการขาย)"
                 label=""
                 name="ef_exported_heat"
                 value={values.ef_exported_heat}
@@ -92,7 +92,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Amount of net measurable heat (Imported)"
-                defination="กรอกปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการซื้อมาใช้)"
+                defination="ระบุปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการซื้อมาใช้)"
                 label=""
                 name="imported_heat_value"
                 value={values.imported_heat_value}
@@ -102,7 +102,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Amount of net measurable heat (Exported)"
-                defination="กรอกปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการขาย)"
+                defination="ระบุปริมาณความร้อนสุทธิ์ที่ได้จากการวัด (จากการขาย)"
                 label=""
                 name="exported_heat_value"
                 value={values.exported_heat_value}
@@ -137,7 +137,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Emissions factor (Imported)"
-                defination="ค่า Emission factor ของค่าความร้อนทิ้ง (จากการซื้อมาใช้)"
+                defination="ระบุค่า Emission factor ของค่าความร้อนทิ้ง (จากการซื้อมาใช้)"
                 label=""
                 name="ef_imported_wgases"
                 value={values.ef_imported_wgases}
@@ -147,7 +147,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Emissions factor (Exported)"
-                defination="ค่า Emission factor ของค่าความร้อนทิ้ง (จากการขาย)"
+                defination="ระบุค่า Emission factor ของค่าความร้อนทิ้ง (จากการขาย)"
                 label=""
                 name="ef_exported_wgases"
                 value={values.ef_exported_wgases}
@@ -160,7 +160,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Amount of waste gas (Imported)"
-                defination="กรอกค่าปริมาณความร้อนทิ้ง (จากการซื้อมาใช้)"
+                defination="ระบุค่าปริมาณความร้อนทิ้ง (จากการซื้อมาใช้)"
                 label=""
                 name="imported_wgases_amount"
                 value={values.imported_wgases_amount}
@@ -170,7 +170,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               <LabeledTextField
                 type="number"
                 caption="Amount of waste gas (Exported)"
-                defination="กรอกค่าปริมาณความร้อนทิ้ง (จากการขาย)"
+                defination="ระบุค่าปริมาณความร้อนทิ้ง (จากการขาย)"
                 label=""
                 name="exported_wgases_amount"
                 value={values.exported_wgases_amount}
@@ -189,7 +189,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
         <LabeledTextField
           type="number"
           caption="Directly attributable emissions (DirEm*)"
-          defination="กรอกตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
+          defination="ระบุตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
           label=""
           name="direct_emissions"
           value={values.direct_emissions}
@@ -210,7 +210,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
         <LabeledTextField
           type="number"
           caption="Electricity consumption"
-          defination="กรอกปริมาณการใช้ไฟฟ้ารวมของกระบวนการผลิต"
+          defination="ระบุปริมาณการใช้ไฟฟ้ารวมของกระบวนการผลิต"
           label=""
           name="electricity_consumption_value"
           value={values.electricity_consumption_value}
@@ -225,7 +225,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <LabeledTextField
               type="number"
               caption="Emission factor of the electricity"
-              defination="กรอกค่า Emission factor ของไฟฟ้า"
+              defination="ระบุค่า Emission factor ของไฟฟ้า"
               label=""
               name="ef_exported_electricity"
               value={values.ef_exported_electricity}
@@ -269,7 +269,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <LabeledTextField
               type="number"
               caption="Emission factor of the electricity"
-              defination="กรอกค่า Emission factor ที่ส่งออกจากกระบวนการผลิต"
+              defination="ระบุค่า Emission factor ที่ส่งออกจากกระบวนการผลิต"
               label=""
               name="ef_electricity"
               value={values.ef_electricity}
@@ -282,7 +282,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <LabeledTextField
               type="number"
               caption="Amounts exported"
-              defination="กรอกค่าไฟฟ้าที่ส่งออกจากกระบวนการผลิต"
+              defination="ระบุค่าไฟฟ้าที่ส่งออกจากกระบวนการผลิต"
               label=""
               name="exported_electricity_value"
               value={values.exported_electricity_value}

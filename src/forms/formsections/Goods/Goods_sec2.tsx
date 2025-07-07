@@ -37,7 +37,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           <LabeledTextField
             type="number"
             caption="Total production levels"
-            defination="กรอกปริมาณการผลิตทั้งหมด"
+            defination="ระบุปริมาณการผลิตทั้งหมด"
             label=""
             name="total_production_amounts"
             value={values.total_production_amounts}
@@ -54,7 +54,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           <LabeledTextField
             type="number"
             caption="Consumed in other production processes"
-            defination="กรอกปริมาณการผลิตเพื่อใช้ในโรงงาน"
+            defination="ระบุปริมาณการผลิตเพื่อใช้ในโรงงาน"
             label=""
             name="consumed_in_others_amounts"
             value={values.consumed_in_others_amounts}
@@ -73,7 +73,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           <LabeledTextField
             type="number"
             caption="Produced for the market"
-            defination="กรอกปริมาณการผลิตเพื่อจำหน่าย"
+            defination="ระบุปริมาณการผลิตเพื่อจำหน่าย"
             label=""
             name="produced_for_market_amount"
             value={values.produced_for_market_amount}
@@ -91,7 +91,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           <LabeledTextField
             type="number"
             caption="Consumed for non-CBAM goods"
-            defination="กรอกปริมาณการผลิตเพื่อใช้ในโรงงานสำหรับสินค้าที่ไม่อยู่ภายใต้ขอบเขตของ CBAM"
+            defination="ระบุปริมาณการผลิตเพื่อใช้ในโรงงานสำหรับสินค้าที่ไม่อยู่ภายใต้ขอบเขตของ CBAM"
             label=""
             name="condumed_non_cbam_goods_amounts"
             value={values.condumed_non_cbam_goods_amounts}

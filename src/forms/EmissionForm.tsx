@@ -293,19 +293,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
                 การปล่อยก๊าซเรือนกระจกของสถานประกอบการ
               </Typography>
 
-              {/* Show data status */}
-              {apiData &&
-                (Array.isArray(apiData) ? apiData[0]?.id : apiData.id) && (
-                  <Typography
-                    variant="body2"
-                    color="success.main"
-                    sx={{ mt: 1 }}
-                  >
-                    ✅ Data loaded from database (ID:{" "}
-                    {Array.isArray(apiData) ? apiData[0]?.id : apiData.id})
-                  </Typography>
-                )}
-
               {isLoading && (
                 <Box display="flex" alignItems="center" mt={1}>
                   <CircularProgress size={20} sx={{ mr: 1 }} />
@@ -315,8 +302,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
                 </Box>
               )}
             </Box>
-
-            
           </Box>
 
           {/* SECTION: Installation-level GHG emissions and energy consumption */}

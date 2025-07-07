@@ -569,98 +569,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
             >
               Only if available and not required during transitional period
             </Typography>
-
-            {/* Mode Indicator */}
-            {/* <Box
-              mt={2}
-              p={2}
-              sx={{
-                backgroundColor:
-                  formMode === "edit"
-                    ? "#fff3e0"
-                    : formMode === "create"
-                    ? "#e8f5e8"
-                    : "#f0f8ff",
-                borderRadius: 1,
-                border: `1px solid ${
-                  formMode === "edit"
-                    ? "#ffcc02"
-                    : formMode === "create"
-                    ? "#4caf50"
-                    : "#2196f3"
-                }`,
-              }}
-            >
-              {formMode === "edit" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#f57c00"
-                  >
-                    🔄 EDIT MODE
-                  </Typography>
-                  <Typography variant="body2">
-                    Editing existing verifier (ID: {existingData?.verifier_id})
-                  </Typography>
-                </>
-              )}
-              {formMode === "create" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#2e7d32"
-                  >
-                    🆕 CREATE MODE
-                  </Typography>
-                  <Typography variant="body2">
-                    Creating new verifier (pre-filled with latest company data)
-                  </Typography>
-                </>
-              )}
-              {formMode === "empty" && (
-                <>
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    color="#1976d2"
-                  >
-                    📝 NEW FORM
-                  </Typography>
-                  <Typography variant="body2">
-                    Creating new verifier (empty form)
-                  </Typography>
-                </>
-              )}
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                <strong>Report ID:</strong> {reportId} |{" "}
-                <strong>Company ID:</strong> {companyId}
-              </Typography>
-              {existingData && (
-                <Box mt={1}>
-                  <Typography variant="body2">
-                    <strong>Industry:</strong>{" "}
-                    {existingData.industry_type_name || "Not specified"}
-                  </Typography>
-                  <Typography variant="body2">
-                    <strong>Goods:</strong>{" "}
-                    {existingData.goods_category_name || "Not specified"}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      color: existingData.verifier_id ? "green" : "orange",
-                    }}
-                  >
-                    <strong>Verifier Status:</strong>{" "}
-                    {existingData.verifier_id
-                      ? `✅ Connected (ID: ${existingData.verifier_id})`
-                      : "🆕 Not connected - Creating new verifier"}
-                  </Typography>
-                </Box>
-              )}
-            </Box> */}
           </Grid>
 
           {/* Verifier Information Section */}
@@ -675,7 +583,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Name of the verifier"
-                    defination="ชื่อองค์กรผู้ทวนสอบ"
+                    defination="ระบุชื่อองค์กรผู้ทวนสอบของผู้ทวนสอบ"
                     label=""
                     name="installation_name"
                     value={formValues.installation_name}
@@ -687,7 +595,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Street, Number"
-                    defination="ถนน เลขที่"
+                    defination="ระบุถนน เลขที่ของผู้ทวนสอบ"
                     label=""
                     name="address"
                     value={formValues.address}
@@ -699,7 +607,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="City"
-                    defination="เมือง/จังหวัด"
+                    defination="เมือง/จังหวัดของผู้ทวนสอบ"
                     label=""
                     name="city"
                     value={formValues.city}
@@ -711,7 +619,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Post Code"
-                    defination="รหัสไปรษณีย์"
+                    defination="รหัสไปรษณีย์ของผู้ทวนสอบ"
                     label=""
                     name="post_code"
                     value={formValues.post_code}
@@ -723,7 +631,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocompleteMap
                     caption="Country"
-                    defination="เลือกประเทศ"
+                    defination="เลือกประเทศของผู้ทวนสอบ"
                     label=""
                     name="country_id"
                     options={countries.map((c) => ({
@@ -751,7 +659,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Name"
-                    defination="ชื่อผู้มีอำนาจลงนาม"
+                    defination="ระบุชื่อผู้มีอำนาจลงนาม"
                     label=""
                     name="name"
                     value={formValues.name}
@@ -764,7 +672,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   <LabeledTextField
                     type="email"
                     caption="Email"
-                    defination="อีเมล"
+                    defination="ระบุอีเมลของผู้ทวนสอบ"
                     label=""
                     name="email"
                     value={formValues.email}
@@ -777,7 +685,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   <LabeledTextField
                     type="tel"
                     caption="Phone"
-                    defination="หมายเลขโทรศัพท์"
+                    defination="ระบุหมายเลขโทรศัพท์ของผู้ทวนสอบ"
                     label=""
                     name="phone"
                     value={formValues.phone}
@@ -789,7 +697,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Fax"
-                    defination="หมายเลขแฟกซ์"
+                    defination="ระบุหมายเลขแฟกซ์ของผู้ทวนสอบ"
                     label=""
                     name="fax"
                     value={formValues.fax}
@@ -814,7 +722,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocomplete
                     caption="Accreditation Member State"
-                    defination="รัฐสมาชิกที่ให้การรับรอง"
+                    defination="ระบุรัฐสมาชิกที่ให้การรับรองผู้ทวนสอบ"
                     label=""
                     name="accreditation_state"
                     value={formValues.accreditation_state}
@@ -828,7 +736,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="National Accreditation Body"
-                    defination="องค์กรรับรองแห่งชาติ"
+                    defination="เลือกองค์กรรับรองแห่งชาติของผู้ทวนสอบ"
                     label=""
                     name="accreditation_national_body"
                     value={formValues.accreditation_national_body}
@@ -840,7 +748,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Registration Number"
-                    defination="หมายเลขทะเบียน"
+                    defination="ระบุหมายเลขทะเบียนของผู้ทวนสอบ"
                     label=""
                     name="registration_no"
                     value={formValues.registration_no}

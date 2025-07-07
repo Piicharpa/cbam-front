@@ -298,7 +298,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
                 <LabeledTextField
                   type="number"
                   caption="Amount"
-                  defination="ปริมาณวัตถุดิบที่เกี่ยวข้อง"
+                  defination="ระบุปริมาณวัตถุดิบที่เกี่ยวข้อง"
                   label=""
                   name={`amount_${index}`}
                   value={
@@ -377,7 +377,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     <Section
       defaultExpanded={true}
       title="List of aggregated goods categories and corresponding production routes"
-      subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
+      subtitle="ระบุชื่อและที่อยู่ผู้ทวนสอบ"
       hasError={
         !!(
           errors.industry_type ||
@@ -426,7 +426,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
           <div style={{ flex: 1 }}>
             <LabeledTextField
               caption="Name"
-              defination="ชื่อ"
+              defination="ระบุชื่อ"
               label=""
               name="name"
               type="text"

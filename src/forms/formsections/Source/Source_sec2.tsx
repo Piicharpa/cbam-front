@@ -51,7 +51,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         <LabeledTextField
           type="number"
           caption="Fuel balance"
-          defination="กรอกปริมาณรวมของการปล่อย Emission ทางอ้อม"
+          defination="ระบุปริมาณรวมของการปล่อย Emission ทางอ้อม"
           label=""
           name="manual_fuel_balance"
           value={formValues.manual_fuel_balance || ""}
@@ -68,7 +68,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         <LabeledTextField
           type="number"
           caption="Greenhouse gas emissions balance & information on data quality"
-          defination=""
+          defination="ระบุปริมาณ emission ของ greenhouse gas"
           label=""
           name="manual_GHG_emissions_balance"
           value={formValues.manual_GHG_emissions_balance || ""}
@@ -93,7 +93,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         </div>
         <LabeledAutocomplete
           caption="General information on data quality"
-          defination="ข้อมูลทั่วไปเกี่ยวกับคุณภาพของข้อมูล"
+          defination="เลือกข้อมูลทั่วไปเกี่ยวกับคุณภาพของข้อมูล"
           label=""
           name="generatl_info_on_data_quality"
           value={formValues.generatl_info_on_data_quality || ""}
@@ -114,7 +114,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         />
         <LabeledAutocomplete
           caption="Justification for use of default values (if relevant)"
-          defination="เหตุผลในการใช้ค่าปกติ (ถ้าเกี่ยวข้อง)"
+          defination="เลือกเหตุผลในการใช้ค่าปกติ (ถ้าเกี่ยวข้อง)"
           label=""
           name="justification_for_use_default_values"
           value={formValues.justification_for_use_default_values || ""}
@@ -136,7 +136,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         />
         <LabeledAutocomplete
           caption="Information on quality assurance"
-          defination="ข้อมูลการประกันคุณภาพ "
+          defination="เลือกข้อมูลการประกันคุณภาพ "
           label=""
           name="information_quality_ssurance"
           value={formValues.information_quality_ssurance || ""}

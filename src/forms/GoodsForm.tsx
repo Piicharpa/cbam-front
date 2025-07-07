@@ -477,24 +477,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
               alignItems="center"
               mt={3}
             >
-              {Object.keys(formErrors).length > 0 && (
-                <Box>
-                  <Typography color="error" variant="body2" fontWeight="bold">
-                    Please fix the following errors:
-                  </Typography>
-                  <ul style={{ margin: "8px 0", paddingLeft: "20px" }}>
-                    {Object.entries(formErrors)
-                      .filter(([field]) => field !== "submit")
-                      .map(([field, error]) => (
-                        <li key={field}>
-                          <Typography color="error" variant="body2">
-                            {error}
-                          </Typography>
-                        </li>
-                      ))}
-                  </ul>
-                </Box>
-              )}
               <Box ml="auto">
                 <PGButton
                   text={

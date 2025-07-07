@@ -89,11 +89,9 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   useEffect(() => {
     if (reportIdFromUrl) {
       localStorage.setItem("reportId", String(reportIdFromUrl));
-      console.log(`📋 Report ID detected: ${reportIdFromUrl} (${isEditMode ? 'EDIT' : 'CREATE'} mode)`);
     } else {
       // ถ้าไม่มี reportId ให้เคลียร์ localStorage
       localStorage.removeItem("reportId");
-      console.log("🆕 CREATE mode - no report ID");
     }
   }, [reportIdFromUrl, isEditMode]);
 
@@ -110,7 +108,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         if (res.ok) {
           const data = await res.json();
           setIndustryTypes(data);
-          console.log(`✅ Loaded ${data.length} industry types`);
         }
       } catch (err) {
         console.error("❌ Failed to fetch industry types", err);
@@ -128,7 +125,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       }
 
       try {
-        console.log(`🔍 Fetching report data for ID: ${reportIdFromUrl}`);
         const res = await fetch(`${apiUrl}/api/cbam/report/${reportIdFromUrl}`);
         
         if (!res.ok) {
@@ -150,7 +146,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         }
 
         const report = dataArr[0];
-        console.log("✅ Found existing report data:", report);
         
         // ✅ เก็บข้อมูล report สำหรับใช้งาน
         setExistingReportData(report);
@@ -166,7 +161,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         setInstallationName(report.installation_name?.trim() || "");
         setCurrentReportId(reportIdFromUrl);
 
-        console.log("🔄 Form updated with existing data:", existingData);
         
       } catch (err: any) {
         console.error("❌ Error loading existing report:", err);
@@ -189,12 +183,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         return;
       }
       try {
-        console.log(`🔍 Fetching goods for industry: ${formValues.industry_id}`);
         const res = await fetch(`${apiUrl}/api/cbam/goods/${formValues.industry_id}`);
         if (res.ok) {
           const data = await res.json();
           setGoodsList(data);
-          console.log(`✅ Loaded ${data.length} goods items`);
         }
       } catch (err) {
         console.error("❌ Failed to fetch goods list", err);
@@ -212,12 +204,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         return;
       }
       try {
-        console.log(`🔍 Fetching CN codes for goods: ${formValues.goods_id}`);
         const res = await fetch(`${apiUrl}/api/cbam/cncodes/${formValues.goods_id}`);
         if (res.ok) {
           const data = await res.json();
           setCncodeList(data);
-          console.log(`✅ Loaded ${data.length} CN codes`);
         }
       } catch (err) {
         console.error("❌ Failed to fetch CN codes", err);
@@ -304,7 +294,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
       if (isEditMode && currentReportId) {
         // === EDIT MODE: อัปเดตข้อมูลที่มีอยู่ ===
-        console.log(`🔄 Updating report ${currentReportId} with:`, payload);
         
         const res = await fetch(`${apiUrl}/api/cbam/report/${currentReportId}`, {
           method: "PUT",
@@ -320,12 +309,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         result = await res.json();
         finalReportId = currentReportId;
         
-        console.log("✅ Report updated successfully:", result);
         alert(`✅ Report updated successfully! Report ID: ${finalReportId}`);
         
       } else {
         // === CREATE MODE: สร้างรายงานใหม่ ===
-        console.log("🆕 Creating new report with:", payload);
         
         const res = await fetch(`${apiUrl}/api/cbam/report`, {
           method: "POST",
@@ -343,7 +330,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         
         if (finalReportId) {
           setCurrentReportId(finalReportId);
-          console.log("✅ New report created successfully:", result);
           alert(`✅ New report created successfully! Report ID: ${finalReportId}`);
           
           // ✅ อัปเดต URL เป็น edit mode (optional)
@@ -354,20 +340,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         }
       }
 
-      // ✅ เก็บ reportId ลง localStorage
       if (finalReportId) {
         localStorage.setItem("reportId", String(finalReportId));
-        console.log(`💾 Saved reportId to localStorage: ${finalReportId}`);
       }
-
-      // ✅ เรียก onSave callback
-      if (onSave) {
-        onSave();
-        console.log("✅ onSave callback executed");
-      }
-
-            // ✅ ไม่เรียก onNextStep() อัตโนมัติ - ให้ผู้ใช้กดปุ่ม Continue เอง
-      // onNextStep();
+      onNextStep();
 
     } catch (error: any) {
       console.error("❌ Form submission error:", error);

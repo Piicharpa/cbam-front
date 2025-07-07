@@ -519,8 +519,8 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         }
       }
 
-      // ✅ ไม่เรียก onNextStep() อัตโนมัติ ให้ user กดปุ่ม Continue เอง
-      // onNextStep();
+     
+      onNextStep();
     } catch (err: any) {
       console.error("❌ Form submission error:", err);
       alert(`❌ Error: ${err.message}`);

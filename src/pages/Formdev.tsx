@@ -81,7 +81,6 @@ const Formdev: React.FC = () => {
       localStorage.setItem("reportId", queryReportId);
       setReportId(parsedId);
       setIsEditMode(true);
-      
     } else {
       // If not in URL, check localStorage
       const storedReportId = localStorage.getItem("reportId");
@@ -261,9 +260,33 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
+  const isContinueDisabled = () => {
+    // Case 0: Step แรก (Summary) และไม่มี reportId
+    if (activeStep === 0 && !reportId) {
+      return true;
+    }
+
+    // Cases อื่นๆ: ไม่ disable
+    return false;
+  };
+
+  // ✅ เพิ่ม function ใหม่นี้
+  const getContinueButtonText = () => {
+    // Case 0: Step แรกและไม่มี reportId
+    if (activeStep === 0 && !reportId) {
+      return "Please Create Report First";
+    }
+
+    return "Continue to Next Step";
+  };
+
   // Handle form navigation with animations
   const handleNext = async () => {
     let canProceed = true;
+    if (activeStep === 0 && !reportId && localStorage.getItem("reportId")===null) {
+      alert("❌ Please create a report in the Summary step first!");
+      return;
+    }
     try {
       switch (activeStep) {
         case 0:
@@ -463,7 +486,6 @@ const Formdev: React.FC = () => {
 
   return (
     <ThemeProvider theme={theme}>
-
       <StepperContainer elevation={1} progress={progress}>
         <Stepper
           alternativeLabel
@@ -529,6 +551,8 @@ const Formdev: React.FC = () => {
         </Box>
       </StepperContainer>
 
+
+
       <NavigationContainer>
         <Button
           disabled={activeStep === 0}
@@ -540,25 +564,24 @@ const Formdev: React.FC = () => {
         <Box sx={{ position: "relative" }}>
           {activeStep < safeSteps.length - 1 ? (
             <Button
-            disabled={activeStep === 0 && isLastStep}
+              disabled={isContinueDisabled()} // ✅ เปลี่ยนเป็น function
               onClick={handleNext}
               variant="contained"
               color="primary"
               endIcon={<span>→</span>}
               sx={{
-                background: "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
+                background: isContinueDisabled() // ✅ เปลี่ยนการตรวจสอบสี
+                  ? "linear-gradient(45deg, #ccc 30%, #999 90%)"
+                  : "linear-gradient(45deg, #0190c3 30%, #07b8dd 90%)",
                 fontWeight: 600,
               }}
             >
-              Continue to Next Step
+              {getContinueButtonText()} 
             </Button>
-          ) : (
-            null
-          )}
+          ) : null}
           <ButtonDecoration isLastStep={isLastStep} />
         </Box>
       </NavigationContainer>
-
       <Box mt={4} sx={{ textAlign: "center" }}>
         <span>
           Step {activeStep + 1} of {safeSteps.length}
@@ -580,7 +603,6 @@ const Formdev: React.FC = () => {
               } stage - ${safeSteps[activeStep]?.description || ""}`}
         </Typography>
       </Box>
-
       {/* Cancel editing button - only show in edit mode */}
       {isEditMode && (
         <Box mt={2} sx={{ textAlign: "center" }}>

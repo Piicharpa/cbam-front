@@ -478,17 +478,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
             </div>
           </Grid>
 
-          {/* ✅ Instructions for user */}
-          <Grid size={12}>
-            <div style={{ 
-              textAlign: "center", 
-              color: "#666", 
-              fontSize: "0.9rem",
-              marginTop: "1rem"
-            }}>
-              💡 After saving, use "Continue to Next Step" button to proceed to Installation details
-            </div>
-          </Grid>
+         
         </Grid>
       </form>
         </Container>

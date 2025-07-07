@@ -522,6 +522,120 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       setIsSaving(false);
     }
   };
+  const handleSaveWithAlert = async () => {
+    // ✅ ใช้ window.confirm แทน confirm
+    const confirmed = window.confirm(
+      `💾 Save Precursor ${index}\n\n` +
+        `Are you sure you want to save this precursor data?\n\n` +
+        `Precursor: ${
+          fieldValues[`purchased_precursors_${index}`] || "Not specified"
+        }\n` +
+        `Country: ${
+          fieldValues[`country_code_${index}`] || "Not specified"
+        }\n\n` +
+        `Click OK to proceed or Cancel to go back.`
+    );
+
+    if (!confirmed) {
+      alert("❌ Save operation cancelled by user.");
+      return;
+    }
+
+    // if (!validateForm()) {
+    //   alert("⚠️ Please fix the form errors before saving.");
+    //   return;
+    // }
+
+    setIsSaving(true);
+    const startTime = Date.now();
+
+    try {
+      const payload = prepareDataForApi();
+      const isUpdate = existingData && existingData.id;
+      const method = isUpdate ? "PUT" : "POST";
+      const url = isUpdate
+        ? `${apiUrl}/api/cbam/e_precursors/${existingData.id}`
+        : `${apiUrl}/api/cbam/e_precursors`;
+
+     
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API Error (${response.status}): ${errorText}`);
+      }
+
+      const responseData = await response.json();
+
+      // ตั้งค่ารายละเอียดใหม่หลังบันทึกสำเร็จ
+      // setExistingData(responseData);
+      // setPreviousData(responseData);
+      // updateFieldsFromApiData(responseData);
+
+      if (onSave) await onSave(responseData);
+
+      // ✅ Success alert
+      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
+      const successMessage = isUpdate
+        ? `✅ Precursor Updated Successfully!\n\n` +
+          `📊 Updated Details:\n` +
+          `• Precursor ID: ${responseData.id}\n` +
+          `• Name: ${
+            responseData.precursors || responseData.route_1 || "N/A"
+          }\n` +
+          `• Total Routes: ${routeCount}\n` +
+          `• Country: ${responseData.country_code || "N/A"}\n\n` +
+          `⏱️ Updated in ${duration} seconds\n` +
+          `🎉 Data has been updated in the database.`
+        : `✅ New Precursor Created Successfully!\n\n` +
+          `📊 Created Details:\n` +
+          `• New Precursor ID: ${responseData.id}\n` +
+          `• Name: ${
+            responseData.precursors || responseData.route_1 || "N/A"
+          }\n` +
+          `• Total Routes: ${routeCount}\n` +
+          `• Country: ${responseData.country_code || "N/A"}\n\n` +
+          `⏱️ Created in ${duration} seconds\n` +
+          `🎉 Data has been saved to the database.`;
+
+      alert(successMessage);
+
+      // ✅ ใช้ window.confirm สำหรับ next step
+      if (onNextStep) {
+        const shouldContinue = window.confirm(
+          "🚀 Would you like to continue to the next step?"
+        );
+        if (shouldContinue) {
+          onNextStep();
+        }
+      }
+    } catch (error) {
+      console.error("❌ Save error:", error);
+
+      const errorMessage =
+        `❌ Failed to Save Precursor ${index}!\n\n` +
+        `Error: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }\n\n` +
+        `🔧 Troubleshooting Steps:\n` +
+        `• Check your internet connection\n` +
+        `• Verify all required fields are completed\n` +
+        `• Contact support if the problem persists\n\n` +
+        `📋 Technical Details:\n` +
+        `• Method: ${existingData?.id ? "PUT (Update)" : "POST (Create)"}\n` +
+        `• Report ID: ${reportId || "N/A"}\n` +
+        `• Precursor Index: ${index}`;
+
+      alert(errorMessage);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div
@@ -565,7 +679,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         }}
       >
         <div>
-          <h4 style={{ margin: 0 , fontSize: "18px"}}>
+          <h4 style={{ margin: 0, fontSize: "18px" }}>
             Precursor {index}
             {existingData?.id && ` (ID: ${existingData.id})`}
           </h4>
@@ -577,61 +691,13 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             </div>
           )}
         </div>
-
-        <div style={{ display: "flex", alignItems: "center" }}>
-          {/* Refresh button */}
-          {/* {reportId && (
-            <button
-              type="button"
-              onClick={handleRefreshData}
-              style={{
-                marginRight: "8px",
-                background: "none",
-                border: "1px solid #ccc",
-                borderRadius: "4px",
-                padding: "2px 8px",
-                fontSize: "12px",
-                cursor: "pointer",
-              }}
-              disabled={isLoadingData}
-            >
-              Refresh
-            </button>
-          )} */}
-
-          {(isSaved || existingData) && (
-            <div
-              style={{
-                backgroundColor: "#2ecc71",
-                color: "white",
-                padding: "5px 10px",
-                borderRadius: "4px",
-                fontSize: "20px",
-              }}
-            >
-              {existingData ? "Loaded" : "Saved"}
-            </div>
-          )}
-
-          {/* Delete button for saved/existing precursors */}
-          {/* {(isSaved || existingData?.id) && (
-            <IconButton
-              size="small"
-              color="error"
-              onClick={handleDelete}
-              disabled={isDeleting}
-              style={{ marginLeft: "10px" }}
-            >
-              <DeleteIcon />
-            </IconButton>
-          )} */}
-        </div>
       </div>
 
       {/* Form fields */}
       {precursorOptions.length > 0 ? (
         precursorOptions.map((precursor, idx) => (
           <LabeledAutocomplete
+            key={`precursor-${index}-${idx}-${precursor}`} // ✅ เพิ่ม unique key รวม precursor name
             caption="Purchased precursor"
             defination="รายการวัตถุดิบ precursor"
             label=""
@@ -650,8 +716,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           />
         ))
       ) : (
-        // {loadingPrecursors && <span>Loading...</span>}
-        // {noPrecursors && (
         <span style={{ color: "#ff9800", fontSize: "18px" }}>
           ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
         </span>
@@ -673,10 +737,14 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         }
       />
 
-      {/* Dynamic Routes Section */}
       <Box mb={3}>
         {Array.from({ length: routeCount }).map((_, routeIndex) => (
-          <Box key={routeIndex} display="flex" gap={3} mb={3}>
+          <Box
+            key={`route-${index}-${routeIndex}`} // ✅ เพิ่ม unique key
+            display="flex"
+            gap={3}
+            mb={3}
+          >
             <Box flex={1}>
               <LabeledAutocomplete
                 caption={`Production Route ${routeIndex + 1}`}
@@ -744,8 +812,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                   borderRadius: "10px",
                   cursor: "pointer",
                   marginRight: "10px",
-                  fontSize: "14px"
-
+                  fontSize: "14px",
                 }}
                 onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
               >
@@ -762,7 +829,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                   border: "none",
                   borderRadius: "10px",
                   cursor: "pointer",
-                  fontSize: "14px"
+                  fontSize: "14px",
                 }}
                 onClick={() => setRouteCount((prev) => prev - 1)}
               >
@@ -774,7 +841,14 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       </Box>
 
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "18px", color: "#0290c4"}}>
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "1.5rem",
+            fontSize: "18px",
+            color: "#0290c4",
+          }}
+        >
           <strong>
             Specific embedded direct emissions (SEE (direct)) Unit: tCO2e/t
           </strong>
@@ -828,7 +902,14 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       </Box>
 
       <Box mb={3}>
-        <div style={{ textAlign: "left", marginBottom: "1.5rem" ,fontSize: "20px" , color: "#0290c4"}}>
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "1.5rem",
+            fontSize: "20px",
+            color: "#0290c4",
+          }}
+        >
           <strong>
             Specific electricity consumption (for SEE (indirect)) Unit: MWh/t
           </strong>
@@ -927,21 +1008,40 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           <button
             type="button"
             style={{
-              backgroundColor: "#91BACC",
-              color: "#fff",
-              padding: "10px 20px",
-              border: "none",
+              backgroundColor: isSaving || isLoadingData ? "#f5f5f5" : "#fff",
+              color: isSaving || isLoadingData ? "#999" : " #0190c3",
+              padding: "12px 24px",
+              border: `2px solid ${
+                isSaving || isLoadingData ? "#e0e0e0" :" #0190c3"
+              }`,
               borderRadius: "10px",
-              cursor: "pointer",
-              fontWeight: "bold",
+              cursor: isSaving || isLoadingData ? "not-allowed" : "pointer",
+              fontWeight: "600",
               display: "flex",
               alignItems: "center",
-              fontSize: "14px",
+              justifyContent: "center",
+              fontSize: "16px",
+              minWidth: "160px",
+              height: "44px",
+              transition: "all 0.2s ease",
+              outline: "none",
             }}
-            onClick={handleSave}
+            onClick={handleSaveWithAlert} 
             disabled={isSaving || isLoadingData}
+            onMouseOver={(e) => {
+              if (!isSaving && !isLoadingData) {
+                e.currentTarget.style.backgroundColor = " #0190c3";
+                e.currentTarget.style.color = "#fff";
+              }
+            }}
+            onMouseOut={(e) => {
+              if (!isSaving && !isLoadingData) {
+                e.currentTarget.style.backgroundColor = "#fff";
+                e.currentTarget.style.color = " #0190c3";
+              }
+            }}
           >
-            {isSaving ? "Saving..." : "Save Precursor"}
+            {isSaving ? " Saving..." : "Save Precursor"}
           </button>
         </div>
       </div>

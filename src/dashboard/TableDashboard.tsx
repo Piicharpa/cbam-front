@@ -190,13 +190,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon fontSize="medium" color="action" />
+                     <SearchIcon fontSize="small" color="action" />
                   </InputAdornment>
                 ),
                 endAdornment: searchTerm ? (
                   <InputAdornment position="end">
-                    <IconButton size="medium" onClick={() => setSearchTerm("")}>
-                      <ClearIcon fontSize="medium" />
+                    <IconButton size="small" onClick={() => setSearchTerm("")}>
+                      <ClearIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
                 ) : null,
@@ -268,7 +268,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
 
             <Grid container spacing={2} alignItems="center">
               <Grid size={6.4}>
-                <FormControl fullWidth variant="outlined" size="medium">
+                                <FormControl fullWidth variant="outlined" size="small">
                   <InputLabel id="category-filter-label">Category</InputLabel>
                   <Select
                     labelId="category-filter-label"
@@ -311,13 +311,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             endAdornment: startDate && (
                               <InputAdornment position="end">
                                 <IconButton
-                                  size="medium"
+                                  size="small"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setStartDate(null);
                                   }}
                                 >
-                                  <ClearIcon fontSize="medium" />
+                                  <ClearIcon fontSize="small" />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -343,13 +343,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             endAdornment: endDate && (
                               <InputAdornment position="end">
                                 <IconButton
-                                  size="medium"
+                                   size="small"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEndDate(null);
                                   }}
                                 >
-                                  <ClearIcon fontSize="medium" />
+                                  <ClearIcon fontSize="small" />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -515,7 +515,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                         {row.product}
                       </Typography>
                     </TableCell>
-                    
+
                     <TableCell>
                       {row.category && (
                         <Chip

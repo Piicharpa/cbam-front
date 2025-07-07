@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Container, Grid } from "@mui/material";
-import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
+import {
+  useNavigate,
+  useParams,
+  useLocation,
+  useSearchParams,
+} from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import LabeledAutocompleteMap from "../components/LabeledAutoCompleteMap";
@@ -43,14 +48,14 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const { reportId: urlReportId } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
-  
+
   // ✅ เช็ค reportId จากหลายแหล่ง
   const getReportIdFromUrl = () => {
     // 1. จาก URL params เช่น /report/:reportId
     if (urlReportId) {
       return parseInt(urlReportId, 10);
     }
-    
+
     // 2. จาก query string เช่น ?reportId=123
     const queryReportId = searchParams.get("reportId");
     if (queryReportId) {
@@ -61,7 +66,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
   const reportIdFromUrl = getReportIdFromUrl();
   const isEditMode = !!reportIdFromUrl;
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true); // ✅ เพิ่ม loading state
   const [industryTypes, setIndustryTypes] = useState<IndustryItem[]>([]);
@@ -71,7 +76,9 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
     name: string;
     cn_code: string;
   } | null>(null);
-  const [currentReportId, setCurrentReportId] = useState<number | null>(reportIdFromUrl);
+  const [currentReportId, setCurrentReportId] = useState<number | null>(
+    reportIdFromUrl
+  );
   const [existingReportData, setExistingReportData] = useState<any>(null); // ✅ เก็บข้อมูล report
 
   // Initialize formValues
@@ -80,7 +87,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
     goods_id: data.goods_id || "",
     cn_id: data.cn_id || "",
   });
-  
+
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [installationName, setInstallationName] = useState<string>("");
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -126,11 +133,13 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
       try {
         const res = await fetch(`${apiUrl}/api/cbam/report/${reportIdFromUrl}`);
-        
+
         if (!res.ok) {
           if (res.status === 404) {
             console.warn(`⚠️ Report ID ${reportIdFromUrl} not found`);
-            alert(`Report ID ${reportIdFromUrl} not found. Creating new report instead.`);
+            alert(
+              `Report ID ${reportIdFromUrl} not found. Creating new report instead.`
+            );
             // ล้าง URL และเปลี่ยนเป็น create mode
             navigate("/cbam/formdev", { replace: true });
             return;
@@ -146,26 +155,24 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         }
 
         const report = dataArr[0];
-        
+
         // ✅ เก็บข้อมูล report สำหรับใช้งาน
         setExistingReportData(report);
-        
+
         // อัปเดต form values ด้วยข้อมูลที่มีอยู่
         const existingData = {
           industry_id: String(report.industry_type_id || ""),
           goods_id: String(report.goods_id || ""),
           cn_id: String(report.cn_id || ""),
         };
-        
+
         setFormValues(existingData);
         setInstallationName(report.installation_name?.trim() || "");
         setCurrentReportId(reportIdFromUrl);
-
-        
       } catch (err: any) {
         console.error("❌ Error loading existing report:", err);
         alert(`Error loading report: ${err.message}`);
-                // ในกรณีเกิดข้อผิดพลาด ให้เปลี่ยนเป็น create mode
+        // ในกรณีเกิดข้อผิดพลาด ให้เปลี่ยนเป็น create mode
         navigate("/cbam/formdev", { replace: true });
       } finally {
         setIsLoading(false);
@@ -183,7 +190,9 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         return;
       }
       try {
-        const res = await fetch(`${apiUrl}/api/cbam/goods/${formValues.industry_id}`);
+        const res = await fetch(
+          `${apiUrl}/api/cbam/goods/${formValues.industry_id}`
+        );
         if (res.ok) {
           const data = await res.json();
           setGoodsList(data);
@@ -204,7 +213,9 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         return;
       }
       try {
-        const res = await fetch(`${apiUrl}/api/cbam/cncodes/${formValues.goods_id}`);
+        const res = await fetch(
+          `${apiUrl}/api/cbam/cncodes/${formValues.goods_id}`
+        );
         if (res.ok) {
           const data = await res.json();
           setCncodeList(data);
@@ -243,10 +254,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       ...(name === "industry_id" && { goods_id: "", cn_id: "" }),
       ...(name === "goods_id" && { cn_id: "" }),
     }));
-    
+
     // ลบ error message
     setFormErrors((prev) => ({ ...prev, [name]: "" }));
-    
+
     // รีเซ็ต dropdown lists
     if (name === "industry_id") {
       setGoodsList([]);
@@ -265,7 +276,8 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
     // Form validation
     const errors: { [key: string]: string } = {};
-    if (!formValues.industry_id) errors.industry_id = "Please select industry type";
+    if (!formValues.industry_id)
+      errors.industry_id = "Please select industry type";
     if (!formValues.goods_id) errors.goods_id = "Please select goods";
     if (!formValues.cn_id) errors.cn_id = "Please select CN code";
 
@@ -278,11 +290,16 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       industry_type_id: Number(formValues.industry_id),
       goods_id: Number(formValues.goods_id),
       cn_id: Number(formValues.cn_id),
-      company_id: 1, // หรือดึงจาก context/localStorage
-      // ✅ เพิ่มข้อมูลอื่นๆ ถ้ามี
+      company_id: 1,
       ...(existingReportData && {
-        reporting_period_start: existingReportData.reporting_period_start,
-        reporting_period_end: existingReportData.reporting_period_end,
+        reporting_period_start: new Date(
+          existingReportData.reporting_period_start
+        )
+          .toISOString()
+          .split("T")[0],
+        reporting_period_end: new Date(existingReportData.reporting_period_end)
+          .toISOString()
+          .split("T")[0],
       }),
     };
 
@@ -294,12 +311,15 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
       if (isEditMode && currentReportId) {
         // === EDIT MODE: อัปเดตข้อมูลที่มีอยู่ ===
-        
-        const res = await fetch(`${apiUrl}/api/cbam/report/${currentReportId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
+
+        const res = await fetch(
+          `${apiUrl}/api/cbam/report/${currentReportId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
+        );
 
         if (!res.ok) {
           const errorText = await res.text();
@@ -308,12 +328,11 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         result = await res.json();
         finalReportId = currentReportId;
-        
+
         alert(`✅ Report updated successfully! Report ID: ${finalReportId}`);
-        
       } else {
         // === CREATE MODE: สร้างรายงานใหม่ ===
-        
+
         const res = await fetch(`${apiUrl}/api/cbam/report`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -327,11 +346,13 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         result = await res.json();
         finalReportId = result.id;
-        
+
         if (finalReportId) {
           setCurrentReportId(finalReportId);
-          alert(`✅ New report created successfully! Report ID: ${finalReportId}`);
-          
+          alert(
+            `✅ New report created successfully! Report ID: ${finalReportId}`
+          );
+
           // ✅ อัปเดต URL เป็น edit mode (optional)
           // navigate(`/cbam/formdev?reportId=${finalReportId}`, { replace: true });
         } else {
@@ -344,7 +365,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         localStorage.setItem("reportId", String(finalReportId));
       }
       onNextStep();
-
     } catch (error: any) {
       console.error("❌ Form submission error:", error);
       alert(`Error: ${error.message}`);
@@ -356,7 +376,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   // ✅ Loading state
   if (isLoading) {
     return (
-      <Container maxWidth="md" style={{ paddingTop: "2rem", textAlign: "center" }}>
+      <Container
+        maxWidth="md"
+        style={{ paddingTop: "2rem", textAlign: "center" }}
+      >
         <div>🔍 Loading report data...</div>
       </Container>
     );
@@ -391,9 +414,8 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                   gap: "1.5rem",
                 }}
               >
-
                 {/* Installation Name (if available) */}
-                {installationName && (
+                {/* {installationName && (
                   <div
                     style={{
                       padding: "0.75rem",
@@ -404,7 +426,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                   >
                     <strong>🏭 Installation:</strong> {installationName}
                   </div>
-                )}
+                )} */}
 
                 {/* Industry Type Selection */}
                 <LabeledAutocompleteMap
@@ -463,25 +485,21 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
           {/* Submit Button */}
           <Grid size={12}>
-            <div style={{ display: "flex", justifyContent: "center", gap: "1rem" }}>
+            <div
+              style={{ display: "flex", justifyContent: "center", gap: "1rem" }}
+            >
               <PGButton
                 text={
-                  isSubmitting
-                    ? "Saving..."
-                    : isEditMode
-                    ? "Update"
-                    : "Save"
+                  isSubmitting ? "Saving..." : isEditMode ? "Update" : "Save"
                 }
                 loading={isSubmitting}
                 type="submit"
               />
             </div>
           </Grid>
-
-         
         </Grid>
       </form>
-        </Container>
+    </Container>
   );
 };
 

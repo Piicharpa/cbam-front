@@ -113,8 +113,13 @@ export const NavigationContainer = styled(Box)(({ theme }) => ({
   }
 }));
 
-// button decoration
-export const ButtonDecoration = styled(Box)<{ isLastStep: boolean }>(({ theme, isLastStep }) => ({
+interface ButtonDecorationProps {
+  isLastStep: boolean;
+}
+// ✅ แก้ไขให้ filter prop ออกก่อนส่งไปยัง DOM
+export const ButtonDecoration = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'isLastStep', // ✅ เพิ่มบรรทัดนี้
+})<ButtonDecorationProps>(({ theme, isLastStep }) => ({
   position: "absolute",
   width: "140%",
   height: "140%",

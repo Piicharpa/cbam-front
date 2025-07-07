@@ -260,6 +260,8 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
+  
+
   const isContinueDisabled = () => {
     // Case 0: Step แรก (Summary) และไม่มี reportId
     if (activeStep === 0 && !reportId) {
@@ -482,7 +484,7 @@ const Formdev: React.FC = () => {
 
   // Calculate progress based on active step
   const progress = ((activeStep + 1) / safeSteps.length) * 100;
-  const isLastStep = activeStep === safeSteps.length - 1;
+  const isLastStep = (activeStep === safeSteps.length - 1);
 
   return (
     <ThemeProvider theme={theme}>
@@ -612,7 +614,7 @@ const Formdev: React.FC = () => {
             onClick={() => {
               // Clear localStorage and redirect to form
               localStorage.removeItem("reportId");
-              navigate("/cbam/formdev");
+              navigate("/Home");
             }}
             sx={{ fontSize: "0.8rem" }}
           >

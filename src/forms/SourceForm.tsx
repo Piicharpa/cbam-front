@@ -251,7 +251,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
         p_energy_content_bio: section.p_energy_content_bio,
       });
     }
-  }, [processEmissionSections, onChange]);
+  }, [processEmissionSections]);
 
   // Form validation
   const processRequiredFields = [

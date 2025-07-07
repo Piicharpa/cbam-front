@@ -1,143 +1,116 @@
-import React, { useState, useEffect } from "react";
-import { Typography, Grid } from "@mui/material";
-import LabeledTextField from "../../components/LabeledTextField";
+import React, { useEffect, useState } from "react";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-  TableHead,
-  TableContainer,
+  Typography,
   Paper,
   TextField,
   IconButton,
   Box,
   Tooltip,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
 } from "@mui/material";
+import Grid from "@mui/material/Grid";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import Section from "../../components/Section"; // สมมติคุณมี Section component
+
+interface MetadataItem {
+  id: string;
+  table_db: string;
+  variable: string;
+  name: string;
+  cell: string;
+  sheet: string;
+  title: string;
+  subtitle: string;
+  value: string;
+}
 
 interface TabAProps {
-  formValues: {
-    id: string;
-    table_db: string;
-    variable: string;
-    name: string;
-    cell: string;
-    sheet: string;
-    title: string;
-    subtitle: string;
-    value: string;
-  };
-  setFormValues: React.Dispatch<React.SetStateAction<any>>;
   reportId: string | null;
+  formValues: any;
+  setFormValues: React.Dispatch<React.SetStateAction<any>>;
 }
 
 const TabA_InstallationData = ({ formValues, setFormValues, reportId }: TabAProps) => {
+  const [metadataGrouped, setMetadataGrouped] = useState<Record<string, MetadataItem[]>>({});
+  const apiUrl = process.env.REACT_APP_API_URL;
+
   useEffect(() => {
-    if (reportId) {
-      // เรียก API หรือโหลดข้อมูลตาม reportId
-      console.log("Report ID:", reportId);
-    }
+    if (!reportId) return;
+    fetch(`${apiUrl}/api/cbam/excelreport/A_InstData/${reportId}`)
+      .then(res => res.json())
+      .then(data => {
+        setMetadataGrouped(data.metadataGrouped); // <== ต้องให้ backend ส่ง metadataGrouped
+      })
+      .catch(err => console.error("Fetch error:", err));
   }, [reportId]);
 
-  const InstDataTable = () => {
-    interface TableRowData {
-      id: string;
-      table_db: string;
-      variable: string;
-      name: string;
-      cell: string;
-      sheet: string;
-      title: string;
-      subtitle: string;
-      value: string;
-    }
-
-    const [tableData, setTableData] = useState<TableRowData[]>([]);
-    const [inputValues, setInputValues] = useState<{ [cell: string]: string }>({});
-
-     const apiUrl = process.env.REACT_APP_API_URL;
-
-    useEffect(() => {
-      fetch(`${apiUrl}/api/cbam/excelreport/A_InstData/${reportId}`)
-        .then((res) => res.json())
-        .then((data) => setTableData(data.metadata))
-        .catch((err) => console.error("Failed to fetch:", err));
-    }, []);
-
-    const handleCopy = (value: string) => {
-      navigator.clipboard.writeText(value || "").then(() => {
-        // console.log("Copied:", value);
-      });
-    };
-
-
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { name, value } = e.target;
-      setFormValues((prev: any) => ({ ...prev, [name]: value }));
-    };
-
-
-
-    const renderCommonFields = (title: string) => (
-      <>
-        <Typography variant="h6" gutterBottom color="primary">
-          {title}
-        </Typography>
-        <Typography variant="h6" gutterBottom color="success">
-          ข้อมูลสถานประกอบการ
-        </Typography>
-
-        <TableContainer component={Paper}>
-          <Table size="small">
-            <TableHead>
-              <TableRow>
-                <TableCell>#</TableCell>
-                <TableCell>Field Name</TableCell>
-                <TableCell>Excel Cell</TableCell>
-                <TableCell>Value</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tableData.map((row, index) => (
-                <TableRow key={row.id}>
-                  <TableCell>{index + 1}</TableCell>
-                  <TableCell>{row.name}</TableCell>
-                  <TableCell>{row.cell}</TableCell>
-                  <TableCell>
-                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                      <TextField
-                        fullWidth
-                        size="small"
-                        value={row.value || ""}
-                        InputProps={{
-                          readOnly: true,
-                        }}
-                      />
-                      <Tooltip title="Copy">
-                        <IconButton
-                          onClick={() => handleCopy(row.value)}
-                          size="small"
-                          sx={{ ml: 1 }}
-                        >
-                          <ContentCopyIcon fontSize="small" />
-                        </IconButton>
-                      </Tooltip>
-                    </Box>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      </>
-    );
-
-    return <>{renderCommonFields("A. Installation Data (Sheet: A_InstData) ")}</>;
+  const handleCopy = (value: string) => {
+    navigator.clipboard.writeText(value || "");
   };
 
-  return <InstDataTable />;
+  return (
+    <>
+      <Typography variant="h6" gutterBottom color="primary">
+        A. Installation Data (Sheet: A_InstData)
+      </Typography>
+      <Typography variant="h6" gutterBottom color="success">
+        ข้อมูลสถานประกอบการ
+      </Typography>
+
+      <Grid container spacing={4} sx={{ mt: 2 }}>
+        {Object.entries(metadataGrouped).map(([title, items]) => (
+          <Grid>
+            <Section title={title} defaultExpanded subtitle={items[0]?.subtitle}>
+              <Paper elevation={2} sx={{ p: 2 }}>
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>#</TableCell>
+                      <TableCell>Field Name</TableCell>
+                      <TableCell>Excel Cell</TableCell>
+                      <TableCell>Value</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {items.map((row, index) => (
+                      <TableRow key={row.id}>
+                        <TableCell>{index + 1}</TableCell>
+                        <TableCell>{row.name}</TableCell>
+                        <TableCell>{row.cell}</TableCell>
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              value={row.value || ""}
+                              InputProps={{ readOnly: true }}
+                            />
+                            <Tooltip title="Copy">
+                              <IconButton
+                                onClick={() => handleCopy(row.value)}
+                                size="small"
+                                sx={{ ml: 1 }}
+                              >
+                                <ContentCopyIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Paper>
+            </Section>
+          </Grid>
+        ))}
+      </Grid>
+    </>
+  );
 };
 
 export default TabA_InstallationData;

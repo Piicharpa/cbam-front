@@ -12,6 +12,8 @@ import {
   styled,
   alpha,
   Fade,
+  Card, // Add this import
+  CardContent, // Add this if you want to use CardContent too
 } from "@mui/material";
 import Section from "../components/Section";
 import LabeledTextField from "../components/LabeledTextField";
@@ -595,67 +597,172 @@ const Report = () => {
             <Box
               sx={{
                 width: { xs: "100%", md: "280px" },
-                borderRight: {
-                  xs: "none",
-                  md: `1px solid ${theme.palette.grey[300]}`,
-                },
-                borderBottom: {
-                  xs: `1px solid ${theme.palette.grey[300]}`,
-                  md: "none",
-                },
-                backgroundColor: alpha(theme.palette.grey[200], 0.4),
+                background:
+                  "linear-gradient(145deg,rgba(7,184,221,0.1) 0%, rgba(1,144,195,0) 70%)",
                 position: "relative",
                 zIndex: 1,
+                p: 2,
+                borderRadius: { xs: 0, md: "0 20px 20px 0" },
               }}
             >
-              <Tabs
-                orientation={isDesktop ? "vertical" : "horizontal"}
-                variant="scrollable"
-                value={tabValue}
-                onChange={handleTabChange}
-                aria-label="report tabs"
+              <Typography
+                variant="h6"
                 sx={{
-                  minHeight: "100%",
-                  borderRight: 0,
-                  "& .MuiTabs-indicator": {
-                    ...(isDesktop
-                      ? {
-                          right: "auto",
-                          left: 0,
-                          width: "4px",
-                          borderRadius: "0 4px 4px 0",
-                        }
-                      : {}),
-                  },
+                  mb: 3,
+                  color: "primary.main",
+                  fontWeight: 700,
+                  fontSize: "20px",
+                  textAlign: "center",
+                  textShadow: "0 2px 4px rgba(0,0,0,0.3)",
                 }}
               >
-                <StyledTab
-                  icon={<FactoryIcon />}
-                  label="A. Installation Data"
-                  {...a11yProps(0)}
-                />
-                <StyledTab
-                  icon={<LocalFireDepartmentIcon />}
-                  label="B. Emission Installation"
-                  {...a11yProps(1)}
-                />
-                <StyledTab
-                  icon={<BoltIcon />}
-                  label="C. Emission of Energy"
-                  {...a11yProps(2)}
-                />
-                <StyledTab
-                  icon={<SettingsIcon />}
-                  label="D. Process"
-                  {...a11yProps(3)}
-                />
-                <StyledTab
-                  icon={<ShoppingCartIcon />}
-                  label="E. Purchased Precursors"
-                  {...a11yProps(4)}
-                />
-              </Tabs>
+                📊 CBAM Reports
+              </Typography>
+
+              <Box
+                sx={{
+                  display: "flex",
+                  flexDirection: { xs: "row", md: "column" },
+                  gap: 2,
+                }}
+              >
+                {[
+                  {
+                    icon: <FactoryIcon />,
+                    label: "Installation",
+                    color: "#ff6b6b",
+                    index: 0,
+                  },
+                  {
+                    icon: <LocalFireDepartmentIcon />,
+                    label: "Emission",
+                    color: "#ffa726",
+                    index: 1,
+                  },
+                  {
+                    icon: <BoltIcon />,
+                    label: "Energy",
+                    color: "#ffee58",
+                    index: 2,
+                  },
+                  {
+                    icon: <SettingsIcon />,
+                    label: "Process",
+                    color: "#66bb6a",
+                    index: 3,
+                  },
+                  {
+                    icon: <ShoppingCartIcon />,
+                    label: "Materials",
+                    color: "#ab47bc",
+                    index: 4,
+                  },
+                ].map((tab) => (
+                  <Box
+                    key={tab.index}
+                    onClick={() => setTabValue(tab.index)}
+                    sx={{
+                      p: 2,
+                      borderRadius: "15px",
+                      cursor: "pointer",
+                      transition:
+                        "all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)",
+                      background:
+                        tabValue === tab.index
+                          ? `linear-gradient(135deg, ${tab.color} 0%, ${alpha(
+                              tab.color,
+                              0.8
+                            )} 100%)`
+                          : alpha("#ffffff", 0.1),
+                      border: `2px solid ${
+                        tabValue === tab.index ? tab.color : "transparent"
+                      }`,
+                      backdropFilter: "blur(10px)",
+                      transform:
+                        tabValue === tab.index
+                          ? "scale(1.05) translateX(10px)"
+                          : "scale(1)",
+                      boxShadow:
+                        tabValue === tab.index
+                          ? `0 10px 30px ${alpha(
+                              tab.color,
+                              0.4
+                            )}, 0 0 0 1px ${alpha("#ffffff", 0.1)}`
+                          : `0 4px 15px ${alpha("#000000", 0.1)}`,
+                      "&:hover": {
+                        transform: "scale(1.03) translateX(5px)",
+                        background:
+                          tabValue === tab.index
+                            ? `linear-gradient(135deg, ${tab.color} 0%, ${alpha(
+                                tab.color,
+                                0.9
+                              )} 100%)`
+                            : alpha("#ffffff", 0.15),
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", gap: 1.5 }}
+                    >
+                      <Box
+                        sx={{
+                          p: 1,
+                          borderRadius: "10px",
+                          background:
+                            tabValue === tab.index
+                              ? alpha("#ffffff", 0.2)
+                              : alpha(tab.color, 0.2),
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        {React.cloneElement(tab.icon, {
+                          sx: {
+                            color:
+                              tabValue === tab.index ? "#ffffff" : tab.color,
+                            fontSize: 18,
+                          },
+                        })}
+                      </Box>
+                      <Typography
+                        variant="body2"
+                        fontWeight={tabValue === tab.index ? 700 : 600}
+                        sx={{
+                          color:
+                            tabValue === tab.index
+                              ? "#ffffff"
+                              : alpha("#000000", 0.5),
+                          fontSize: "14px",
+                          textShadow:
+                            tabValue === tab.index
+                              ? "0 1px 2px rgba(0,0,0,0.2)"
+                              : "none",
+                        }}
+                      >
+                        {tab.label}
+                      </Typography>
+                    </Box>
+                  </Box>
+                ))}
+              </Box>
+
+              {/* Decorative elements */}
+              <Box
+                sx={{
+                  position: "absolute",
+                  bottom: 20,
+                  right: 20,
+                  width: 60,
+                  height: 60,
+                  borderRadius: "50%",
+                  background:
+                    "radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%)",
+                  pointerEvents: "none",
+                }}
+              />
             </Box>
+
             {/* Right content area */}
             <Box
               sx={{
@@ -787,7 +894,7 @@ const Report = () => {
           }}
         >
           {/* ปุ่มบันทึกข้อมูล */}
-          <Box>
+          {/* <Box>
             <button
               onClick={() => {
                 // รวบรวมข้อมูลทั้งหมดเพื่อบันทึก
@@ -836,7 +943,7 @@ const Report = () => {
             >
               <span style={{ fontSize: "1.2rem" }}>💾</span> บันทึกข้อมูลรายงาน
             </button>
-          </Box>
+          </Box> */}
 
           {/* Helpful options section */}
           <Box

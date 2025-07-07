@@ -377,7 +377,7 @@ const Form: React.FC = () => {
             Confirm Delete Report
           </DialogTitle>
           <DialogContent>
-            <DialogContentText sx={{ fontSize: "1.1rem", lineHeight: 1.6 }}>
+            <DialogContentText sx={{ fontSize: "14px", lineHeight: 1.6 }}>
               Are you sure you want to delete{" "}
               <strong>Report #{reportToDelete}</strong>?
             </DialogContentText>
@@ -401,7 +401,7 @@ const Form: React.FC = () => {
                   fontWeight: 500,
                 }}
               >
-                <DeleteForeverIcon fontSize="small" />
+                <DeleteForeverIcon fontSize="large" />
                 This action cannot be undone. All data associated with this
                 report will be permanently deleted.
               </Typography>
@@ -500,7 +500,7 @@ const Form: React.FC = () => {
               borderRadius: 2,
               boxShadow: "0 8px 16px rgba(0,0,0,0.15)",
               "& .MuiAlert-icon": {
-                fontSize: "1.5rem",
+                fontSize: "14px",
               },
             }}
           >

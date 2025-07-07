@@ -190,13 +190,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                    <SearchIcon fontSize="small" color="action" />
+                    <SearchIcon fontSize="medium" color="action" />
                   </InputAdornment>
                 ),
                 endAdornment: searchTerm ? (
                   <InputAdornment position="end">
-                    <IconButton size="small" onClick={() => setSearchTerm("")}>
-                      <ClearIcon fontSize="small" />
+                    <IconButton size="medium" onClick={() => setSearchTerm("")}>
+                      <ClearIcon fontSize="medium" />
                     </IconButton>
                   </InputAdornment>
                 ) : null,
@@ -268,7 +268,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
 
             <Grid container spacing={2} alignItems="center">
               <Grid size={6.4}>
-                <FormControl fullWidth variant="outlined" size="small">
+                <FormControl fullWidth variant="outlined" size="medium">
                   <InputLabel id="category-filter-label">Category</InputLabel>
                   <Select
                     labelId="category-filter-label"
@@ -311,13 +311,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             endAdornment: startDate && (
                               <InputAdornment position="end">
                                 <IconButton
-                                  size="small"
+                                  size="medium"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setStartDate(null);
                                   }}
                                 >
-                                  <ClearIcon fontSize="small" />
+                                  <ClearIcon fontSize="medium" />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -343,13 +343,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             endAdornment: endDate && (
                               <InputAdornment position="end">
                                 <IconButton
-                                  size="small"
+                                  size="medium"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEndDate(null);
                                   }}
                                 >
-                                  <ClearIcon fontSize="small" />
+                                  <ClearIcon fontSize="medium" />
                                 </IconButton>
                               </InputAdornment>
                             ),
@@ -379,28 +379,28 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               {searchTerm && (
                 <Chip
                   label={`Search: ${searchTerm}`}
-                  size="small"
+                  size="medium"
                   onDelete={() => setSearchTerm("")}
                 />
               )}
               {categoryFilter && (
                 <Chip
                   label={`Category: ${categoryFilter}`}
-                  size="small"
+                  size="medium"
                   onDelete={() => setCategoryFilter("")}
                 />
               )}
               {startDate && (
                 <Chip
                   label={`From: ${startDate.format("DD/MM/YYYY")}`}
-                  size="small"
+                  size="medium"
                   onDelete={() => setStartDate(null)}
                 />
               )}
               {endDate && (
                 <Chip
                   label={`To: ${endDate.format("DD/MM/YYYY")}`}
-                  size="small"
+                  size="medium"
                   onDelete={() => setEndDate(null)}
                 />
               )}
@@ -463,13 +463,13 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
             <TableHead sx={{ backgroundColor: "#f9f9f9" }}>
               <TableRow>
                 <TableCell>
-                  <strong>ชื่อผลิตภัณฑ์</strong>
+                  <strong style={{ fontSize: "14px" }} >ชื่อผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
-                  <strong>หมวดหมู่สินค้า</strong>
+                  <strong style={{ fontSize: "14px" }}>หมวดหมู่สินค้า</strong>
                 </TableCell>
                 <TableCell>
-                  <strong>CN Code</strong>
+                  <strong style={{ fontSize: "14px" }}>CN Code</strong>
                 </TableCell>
                 <TableCell
                   onClick={() => {
@@ -479,7 +479,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   }}
                   style={{ cursor: "pointer", userSelect: "none" }}
                 >
-                  <strong>
+                  <strong style={{ fontSize: "14px" }}>
                     วันลงทะเบียน
                     {sortDirection === "asc" ? (
                       <span style={{ marginLeft: 6 }}>▲</span>
@@ -488,8 +488,8 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                     )}
                   </strong>
                 </TableCell>
-                <TableCell align="center">
-                  <strong>รายงาน</strong>
+                <TableCell align="center" >
+                  <strong style={{ fontSize: "14px" }}>รายงาน</strong>
                 </TableCell>
                 <TableCell align="center">
                   {/* <strong>แก้ไข</strong> */}
@@ -511,22 +511,23 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                     sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
                   >
                     <TableCell>
-                      <Typography variant="body2" fontWeight="medium">
+                      <Typography variant="body2" fontWeight="medium" fontSize= "14px">
                         {row.product}
                       </Typography>
                     </TableCell>
+                    
                     <TableCell>
                       {row.category && (
                         <Chip
                           label={row.category}
-                          size="small"
+                          size="medium"
                           variant="outlined"
                           color="secondary"
                         />
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontFamily="monospace">
+                      <Typography variant="body2" fontFamily="monospace" fontSize= "14px">
                         {row.cncode}
                       </Typography>
                     </TableCell>
@@ -535,7 +536,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                         label={row.date}
                         color="primary"
                         variant="outlined"
-                        sx={{ fontWeight: 500 }}
+                        sx={{ fontWeight: 500 , fontSize: "14px" }}
                       />
                     </TableCell>
                     <TableCell align="center">
@@ -544,7 +545,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                           component={Link}
                           to={`/report?reportId=${row.id}`}
                           color="primary"
-                          size="small"
+                          size="medium"
                         >
                           <DescriptionIcon />
                         </IconButton>
@@ -558,15 +559,16 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             <IconButton
                               onClick={() => handleEdit(row.id)}
                               color="primary"
-                              size="small"
+                              size="medium"
                               sx={{
                                 "&:hover": {
                                   backgroundColor: "primary.light",
                                   color: "white",
+                                  fontSize: "14px" 
                                 },
                               }}
                             >
-                              <EditIcon fontSize="small" />
+                              <EditIcon fontSize="medium" />
                             </IconButton>
                           </Tooltip>
                         )}
@@ -580,7 +582,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             <IconButton
                               onClick={() => handleDelete(row.id)}
                               color="error"
-                              size="small"
+                              size="medium"
                               sx={{
                                 "&:hover": {
                                   backgroundColor: "error.light",
@@ -588,7 +590,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                                 },
                               }}
                             >
-                              <DeleteIcon fontSize="small" />
+                              <DeleteIcon fontSize="medium" />
                             </IconButton>
                           </Tooltip>
                         )}

@@ -214,18 +214,6 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
             <Typography variant="caption" color="text.secondary">
               © {new Date().getFullYear()} CBAM Portal. All rights reserved.
             </Typography>
-            
-            <Box display="flex" gap={3}>
-              <Typography variant="caption" color="text.secondary" sx={{ cursor: 'pointer' }}>
-                Privacy Policy
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ cursor: 'pointer' }}>
-                Terms of Service
-              </Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ cursor: 'pointer' }}>
-                Help Center
-              </Typography>
-            </Box>
           </Box>
         </Box>
       </Fade>

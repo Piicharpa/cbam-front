@@ -193,6 +193,31 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                     <Divider sx={{ mt: 2 }} />
                   </Box>
                   <Collapse in={expandedSections[title]}>
+                    {/* Table Header */}
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        fontWeight: "bold",
+                        px: 1,
+                        pb: 1,
+                        borderBottom: 1,
+                        borderColor: "divider",
+                        color: "text.secondary",
+                        fontSize: "0.875rem",
+                      }}
+                    >
+                      <Box sx={{ minWidth: 10 }}/>
+                      <Box sx={{ minWidth: 130 }}># </Box>
+
+                      <Box sx={{ minWidth: 130, maxWidth: 180, flexShrink: 0 }}>
+                        Field Name
+                      </Box>
+                      <Box sx={{ minWidth: 180 }}>Excel Cell</Box>
+                      <Box sx={{ flexGrow: 1 }}>Value</Box>
+                    </Box>
+
                     {/* Data Fields */}
                     <Box
                       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
@@ -228,7 +253,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   display: "flex",
                                   alignItems: "center",
                                   gap: 1,
-                                  minWidth: 200,
+                                  minWidth: 100,
                                 }}
                               >
                                 <Chip
@@ -240,16 +265,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                     height: 24,
                                     backgroundColor: "primary.main",
                                     color: "white",
-                                    fontWeight: "bold",
-                                  }}
-                                />
-                                <Chip
-                                  label={row.cell}
-                                  size="small"
-                                  variant="outlined"
-                                  sx={{
-                                    borderRadius: 1,
-                                    fontFamily: "monospace",
                                     fontWeight: "bold",
                                   }}
                                 />
@@ -279,6 +294,27 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                 </Typography>
                               </Box>
 
+
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 1,
+                                  minWidth: 50,
+                                }}
+                              >
+                                <Chip
+                                  label={row.cell}
+                                  size="small"
+                                  variant="outlined"
+                                  sx={{
+                                    borderRadius: 1,
+                                    fontFamily: "monospace",
+                                    fontWeight: "bold",
+                                  }}
+                                />
+                              </Box>
+
                               {/* Right side - Value and actions */}
                               <Box
                                 sx={{
@@ -305,7 +341,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   }}
                                   variant="outlined"
                                 />
-                                <Chip
+                                {/* <Chip
                                   label={row.value ? "Has Value" : "Empty"}
                                   size="small"
                                   variant="outlined"
@@ -319,7 +355,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                       px: 1,
                                     },
                                   }}
-                                />
+                                /> */}
                                 <Tooltip
                                   title={
                                     copiedCell === row.cell
@@ -409,35 +445,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
             </Grid>
           ))}
         </Grid>
-      )}
-
-      {/* Footer Info */}
-      {Object.keys(metadataGrouped).length > 0 && (
-        <Box sx={{ mt: 4, p: 2, backgroundColor: "grey.50", borderRadius: 2 }}>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ display: "block", mb: 1 }}
-          >
-            <strong>Summary:</strong>
-          </Typography>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Typography variant="body2" color="text.secondary">
-              Total Sections: {Object.keys(metadataGrouped).length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Total Fields: {Object.values(metadataGrouped).flat().length}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Filled Fields:{" "}
-              {
-                Object.values(metadataGrouped)
-                  .flat()
-                  .filter((item) => item.value).length
-              }
-            </Typography>
-          </Box>
-        </Box>
       )}
     </Box>
   );

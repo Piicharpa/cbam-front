@@ -3,21 +3,14 @@ import {
   Container,
   Typography,
   Box,
-  Tabs,
   Tab,
   Paper,
-  Grid,
   ThemeProvider,
   createTheme,
   styled,
   alpha,
   Fade,
-  Card, // Add this import
-  CardContent, // Add this if you want to use CardContent too
 } from "@mui/material";
-import Section from "../components/Section";
-import LabeledTextField from "../components/LabeledTextField";
-// Icons for tabs
 import FactoryIcon from "@mui/icons-material/Factory";
 import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import BoltIcon from "@mui/icons-material/Bolt";
@@ -150,74 +143,6 @@ const TabPanel = (props: TabPanelProps) => {
   );
 };
 
-const a11yProps = (index: number) => {
-  return {
-    id: `report-tab-${index}`,
-    "aria-controls": `report-tabpanel-${index}`,
-  };
-};
-
-// // เครื่องมือช่วยสร้าง Component สำหรับแสดง Summary Box
-// const SummaryBox = ({ data, title }: { data: any; title: string }) => {
-//   return (
-//     <Box
-//       sx={{
-//         mt: 4,
-//         p: 3,
-//         borderRadius: 2,
-//         backgroundColor: alpha(theme.palette.secondary.light, 0.5),
-//         border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
-//         position: "relative",
-//         overflow: "hidden",
-//       }}
-//     >
-//       <Typography
-//         variant="subtitle1"
-//         color="secondary.dark"
-//         fontWeight={600}
-//         gutterBottom
-//       >
-//         {title}
-//       </Typography>
-
-//       <Grid container spacing={2}>
-//         <Grid size={12}>
-//           <Typography variant="body2" color="text.secondary">
-//             <strong>Name of Installation:</strong> {data.installationName || "-"}
-//           </Typography>
-//           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//             <strong>Product:</strong> {data.product || "-"}
-//           </Typography>
-//         </Grid>
-//         <Grid size={12}>
-//           <Typography variant="body2" color="text.secondary">
-//             <strong>Carbon Footprint:</strong> {data.carbonFootprint || "-"}
-//           </Typography>
-//           <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//             <strong>Date:</strong> {data.date || "-"}
-//           </Typography>
-//         </Grid>
-//       </Grid>
-
-//       {/* Decorative elements */}
-//       <Box
-//         sx={{
-//           position: "absolute",
-//           bottom: -15,
-//           right: -15,
-//           width: 80,
-//           height: 80,
-//           borderRadius: "50%",
-//           background: `radial-gradient(circle, ${alpha(
-//             "#74aa15",
-//             0.1
-//           )} 0%, transparent 70%)`,
-//           zIndex: 0,
-//         }}
-//       />
-//     </Box>
-//   );
-// };
 
 // Interface สำหรับ Form Fields Pattern
 interface FormFieldsData {
@@ -376,143 +301,6 @@ const Report = () => {
     const { name, value } = e.target;
     setTabEData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // เปลี่ยนจาก renderCommonFields เป็น renderFieldsForTab ที่สามารถรองรับฟิลด์เพิ่มเติมได้
-  // const renderFieldsForTab = (
-  //   title: string,
-  //   data: FormFieldsData,
-  //   handleChange: (e: React.ChangeEvent<HTMLInputElement>) => void,
-  //   additionalFields?: Array<{
-  //     name: string;
-  //     caption: string;
-  //     defination: string;
-  //   }>
-  // ) => (
-  //   <Box
-  //     sx={{
-  //       position: "relative",
-  //       "&::before": {
-  //         content: '""',
-  //         position: "absolute",
-  //         right: -20,
-  //         top: 20,
-  //         width: 150,
-  //         height: 150,
-  //         borderRadius: "50%",
-  //         background: `radial-gradient(circle, ${alpha(
-  //           "#f3f7e7",
-  //           0.7
-  //         )} 0%, ${alpha("#e7f9cd", 0.3)} 50%, transparent 70%)`,
-  //         zIndex: 0,
-  //         pointerEvents: "none",
-  //       },
-  //     }}
-  //   >
-  //     <Typography
-  //       variant="h5"
-  //       gutterBottom
-  //       color="primary.main"
-  //       sx={{
-  //         position: "relative",
-  //         pb: 1,
-  //         "&::after": {
-  //           content: '""',
-  //           position: "absolute",
-  //           bottom: 0,
-  //           left: 0,
-  //           width: "60px",
-  //           height: "3px",
-  //           borderRadius: "2px",
-  //           background: theme.palette.primary.main,
-  //         },
-  //       }}
-  //     >
-  //       {title}
-  //     </Typography>
-
-  //     <Grid
-  //       container
-  //       spacing={3}
-  //       sx={{ mt: 2, position: "relative", zIndex: 1 }}
-  //     >
-  //       <Grid size={12}>
-  //         <LabeledTextField
-  //           type="text"
-  //           caption="Name of Installation"
-  //           defination="ชื่อสถานประกอบการ"
-  //           label=""
-  //           name="installationName"
-  //           value={data.installationName}
-  //           onChange={handleChange}
-  //           required
-  //         />
-  //       </Grid>
-
-  //       <Grid size={12}>
-  //         <LabeledTextField
-  //           type="text"
-  //           caption="Product"
-  //           defination="ผลิตภัณฑ์"
-  //           label=""
-  //           name="product"
-  //           value={data.product}
-  //           onChange={handleChange}
-  //           required
-  //         />
-  //       </Grid>
-
-  //       <Grid size={12}>
-  //         <LabeledTextField
-  //           type="text"
-  //           caption="Carbon Footprint"
-  //           defination="คาร์บอนฟุตพริ้นท์"
-  //           label=""
-  //           name="carbonFootprint"
-  //           value={data.carbonFootprint}
-  //           onChange={handleChange}
-  //           required
-  //         />
-  //       </Grid>
-
-  //       <Grid size={12}>
-  //         <LabeledTextField
-  //           type="date"
-  //           caption="Date"
-  //           defination="วันที่"
-  //           label=""
-  //           name="date"
-  //           value={data.date}
-  //           onChange={handleChange}
-  //           required
-  //         />
-  //       </Grid>
-
-  //       {/* แสดงฟิลด์เพิ่มเติมตามที่กำหนด */}
-  //       {additionalFields &&
-  //         additionalFields.map((field) => (
-  //           <Grid size={12} key={field.name}>
-  //             <LabeledTextField
-  //               type="text"
-  //               caption={field.caption}
-  //               defination={field.defination}
-  //               label=""
-  //               name={field.name}
-  //               value={data[field.name] || ""}
-  //               onChange={handleChange}
-  //             />
-  //           </Grid>
-  //         ))}
-  //     </Grid>
-
-  {
-    /* Summary Box */
-  }
-  {
-    /* <SummaryBox data={data} title="Summary Information" /> */
-  }
-  //   </Box>
-  // );
-
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ mt: 5, mb: 5 }}>
@@ -629,31 +417,31 @@ const Report = () => {
                 {[
                   {
                     icon: <FactoryIcon />,
-                    label: "Installation",
+                    label: "A_InstData",
                     color: "#ff6b6b",
                     index: 0,
                   },
                   {
                     icon: <LocalFireDepartmentIcon />,
-                    label: "Emission",
+                    label: "B_EmInst",
                     color: "#ffa726",
                     index: 1,
                   },
                   {
                     icon: <BoltIcon />,
-                    label: "Energy",
+                    label: "C_Emissions&Energy",
                     color: "#ffee58",
                     index: 2,
                   },
                   {
                     icon: <SettingsIcon />,
-                    label: "Process",
+                    label: "D_Processes",
                     color: "#66bb6a",
                     index: 3,
                   },
                   {
                     icon: <ShoppingCartIcon />,
-                    label: "Materials",
+                    label: "E_PurchPrec",
                     color: "#ab47bc",
                     index: 4,
                   },
@@ -893,170 +681,6 @@ const Report = () => {
             gap: 2,
           }}
         >
-          {/* ปุ่มบันทึกข้อมูล */}
-          {/* <Box>
-            <button
-              onClick={() => {
-                // รวบรวมข้อมูลทั้งหมดเพื่อบันทึก
-                const allData = {
-                  installationData: tabAData,
-                  emissionInstallation: tabBData,
-                  energyEmission: tabCData,
-                  process: tabDData,
-                  purchasedPrecursors: tabEData,
-                };
-
-                alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-              }}
-              style={{
-                backgroundColor: theme.palette.primary.main,
-                color: "#fff",
-                padding: "10px 20px",
-                border: "none",
-                borderRadius: "8px",
-                cursor: "pointer",
-                fontWeight: "bold",
-                transition: "all 0.2s ease-in-out",
-                display: "flex",
-                alignItems: "center",
-                gap: "8px",
-                boxShadow: `0 4px 8px ${alpha("#0190c3", 0.25)}`,
-              }}
-              onMouseOver={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  theme.palette.primary.dark;
-                e.currentTarget.style.transform = "translateY(-2px)";
-                e.currentTarget.style.boxShadow = `0 6px 12px ${alpha(
-                  "#0190c3",
-                  0.3
-                )}`;
-              }}
-              onMouseOut={(e) => {
-                e.currentTarget.style.backgroundColor =
-                  theme.palette.primary.main;
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = `0 4px 8px ${alpha(
-                  "#0190c3",
-                  0.25
-                )}`;
-              }}
-            >
-              <span style={{ fontSize: "1.2rem" }}>💾</span> บันทึกข้อมูลรายงาน
-            </button>
-          </Box> */}
-
-          {/* Helpful options section */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "space-between",
-              flexWrap: "wrap",
-              gap: 2,
-            }}
-          >
-            <Box>
-              <Typography variant="body2" color="text.secondary">
-                Need help with your report?{" "}
-                <Box
-                  component="a"
-                  href="#"
-                  sx={{
-                    color: theme.palette.primary.main,
-                    textDecoration: "none",
-                    fontWeight: 500,
-                    "&:hover": {
-                      textDecoration: "underline",
-                    },
-                  }}
-                >
-                  Contact support
-                </Box>
-              </Typography>
-            </Box>
-
-            <Box
-              sx={{
-                display: "flex",
-                gap: 3,
-                flexWrap: "wrap",
-              }}
-            >
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.grey[600],
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: theme.palette.primary.main,
-                  },
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    fontSize: "1.2rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  ↓
-                </Box>
-                Download Report
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.grey[600],
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: theme.palette.primary.main,
-                  },
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    fontSize: "1.2rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  ⟳
-                </Box>
-                Refresh Data
-              </Typography>
-
-              <Typography
-                variant="body2"
-                sx={{
-                  color: theme.palette.grey[600],
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 0.5,
-                  cursor: "pointer",
-                  "&:hover": {
-                    color: theme.palette.primary.main,
-                  },
-                }}
-              >
-                <Box
-                  component="span"
-                  sx={{
-                    fontSize: "1.2rem",
-                    lineHeight: 1,
-                  }}
-                >
-                  ☆
-                </Box>
-                Save as Favorite
-              </Typography>
-            </Box>
-          </Box>
         </Box>
       </Container>
     </ThemeProvider>

@@ -82,12 +82,15 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
       };
 
   
-      const currentSaved = localStorage.getItem("goodsFormData");
+      // const currentSaved = localStorage.getItem("goodsFormData");
       const newData = JSON.stringify(dataToSave);
 
-      if (currentSaved !== newData) {
+      // if (currentSaved !== newData) {
         localStorage.setItem("goodsFormData", newData);
-      }
+        localStorage.setItem("selectedIndustry", values.industry_type);
+        localStorage.setItem("selectedGoods", values.goods_category);
+
+      // }
     }
   }, [values]);
 

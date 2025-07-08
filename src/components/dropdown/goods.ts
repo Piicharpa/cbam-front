@@ -78,6 +78,16 @@ export const getRoutesOptions = (
   return goods?.routes.map((r) => ({ label: r, value: r })) || [];
 };
 
+export const getPrecursorsOptionsAsStrings = (
+  data: IndustryGroup[],
+  industryTypeId: number,
+  goodsId: number
+): string[] => {
+  const industry = data.find((g) => g.industry_type_id === industryTypeId);
+  const goods = industry?.goods.find((item) => item.goods_id === goodsId);
+  return goods?.relevant_precursors || [];
+};
+
 export const getPrecursorsOptions = (
   data: IndustryGroup[],
   industryTypeId: number,

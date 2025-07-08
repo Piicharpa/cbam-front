@@ -7,13 +7,13 @@ import LabeledAutocompleteMap from "../../components/LabeledAutoCompleteMap";
 import { CountryOption } from "../../components/dropdown/contriesmap";
 import {
   fetchGoodsData,
+  getPrecursorsOptionsAsStrings,
   getRoutesOptions,
   OptionType,
 } from "../../components/dropdown/goods";
 import { justification } from "../../components/dropdown/justification";
 import { data } from "react-router-dom";
 
-// Updated PrecursorSubmitData interface that matches the database structure
 export interface PrecursorSubmitData {
   id?: number;
   report_id?: number;
@@ -41,7 +41,6 @@ export interface PrecursorSubmitData {
   justification_for_use_default_values?: string;
   created_at?: string;
   updated_at?: string;
-  // Legacy fields for backward compatibility
   route?: string;
   amount?: number;
 }
@@ -63,7 +62,7 @@ interface PrecursorFieldsProps {
   onDelete?: () => Promise<void>;
   isSaved?: boolean;
   precursorId?: number;
-  reportId?: number; // Prop for report ID
+  reportId?: number;
   onNextStep?: () => void;
 }
 
@@ -94,7 +93,7 @@ interface PrecursorApiData {
   justification_for_use_default_values?: string;
   created_at?: string;
   updated_at?: string;
-  [key: string]: any; // Allow any other fields
+  [key: string]: any;
   onNextStep?: () => void;
 }
 
@@ -112,7 +111,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
   onNextStep,
   isSaved = false,
   precursorId,
-  // reportId,
 }) => {
   const [routeOptions, setRouteOptions] = useState<OptionType[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
@@ -131,15 +129,21 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
   const [existingData, setExistingData] = useState<PrecursorApiData | null>(
     null
   );
+  const [precursorOptions, setPrecursorOptions] = useState<string[]>([]);
+  const [loadingPrecursors, setLoadingPrecursors] = useState(false);
+  const [noPrecursors, setNoPrecursors] = useState(false);
 
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
-  // Use report ID from props if available, otherwise use default
   const reportIdRaw = localStorage.getItem("reportId");
   const reportId = reportIdRaw ? parseInt(reportIdRaw, 10) : undefined;
-  // const reportId = 23;
 
-  // Fetch existing data for this precursor based on report ID and index
-  // Fetch existing data for this precursor based on report ID and index
+  const selectedIndustry = localStorage.getItem("selectedIndustry")
+    ? parseInt(localStorage.getItem("selectedIndustry") as string, 10)
+    : undefined;
+  const selectedGoods = localStorage.getItem("selectedGoods")
+    ? parseInt(localStorage.getItem("selectedGoods") as string, 10)
+    : undefined;
+
   const fetchExistingData = async () => {
     if (!reportId) return;
     setIsLoadingData(true);
@@ -153,32 +157,28 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         );
       }
       const data = await response.json();
-      // === Step 1: ตรวจว่ามี precursor data ไหม ===
       const precursorItem = (
         Array.isArray(data) ? data : data ? [data] : []
       )[0];
       if (precursorItem && precursorItem.id) {
-        // === Step 2: ถ้ามีก้อนข้อมูล ให้ setFieldValues ใช้ค่าจาก backend ===
         setExistingData(precursorItem);
         setPreviousData(precursorItem);
         updateFieldsFromApiData(precursorItem);
       } else {
-        // === Step 2: ถ้าไม่มีอะไร ไม่ต้อง set ค่าช่องฟอร์ม (ใช้ default) ===
         setExistingData(null);
       }
     } catch (error) {
-      console.error("❌ Error fetching precursor data for report:", error);
+      //
     } finally {
       setIsLoadingData(false);
     }
   };
-  // Map API data to field values
+
   const updateFieldsFromApiData = (data: PrecursorApiData) => {
     const updatedValues: { [key: string]: string | number } = {
       ...fieldValues,
     };
 
-    // Map dynamic route fields (route_1 ... route_5)
     for (let ridx = 0; ridx < 5; ridx++) {
       updatedValues[`route_${ridx}_${index}`] = data[`route_${ridx + 1}`] || "";
       updatedValues[`amount_${ridx}_${index}`] =
@@ -188,7 +188,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     updatedValues[`purchased_precursors_${index}`] =
       data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
-    updatedValues[`embedded_direct_emissions_value_${index}`] =
+        updatedValues[`embedded_direct_emissions_value_${index}`] =
       data.embedded_direct_emissions_value || 0;
     updatedValues[`source_embedded_direct_emissions_${index}`] =
       data.source_embedded_direct_emissions || "";
@@ -200,12 +200,10 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       data.justification_for_use_default_values || "";
 
     setFieldValues(updatedValues);
-
     Object.entries(updatedValues).forEach(([key, value]) => {
       onChange(key, value);
     });
 
-    // *** update routeCount ให้เท่าจำนวน route ที่มีค่าจริง ***
     let maxFilledRoute = 1;
     for (let i = 0; i < 5; i++) {
       if (data[`route_${i + 1}`]) maxFilledRoute = i + 1;
@@ -213,69 +211,209 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     setRouteCount(maxFilledRoute);
   };
 
-  // Map API data to PrecursorSubmitData - fixed to match database structure
-  const mapApiDataToPrecursorData = (
-    data: PrecursorApiData
-  ): PrecursorSubmitData => {
-    return {
-      id: data.id,
-      report_id: reportId || 0,
-      precursors:
-        data.precursors ||
-        (fieldValues[`purchased_precursors_${index}`] as string) ||
-        null,
-      name: data.name || "",
-      route_1: data.route_1 || "",
-      route_1_amounts: data.route_1_amounts || 0,
-      route_2: data.route_2 || "",
-      route_2_amounts: data.route_2_amounts || 0,
-      route_3: data.route_3 || "",
-      route_3_amounts: data.route_3_amounts || 0,
-      route_4: data.route_4 || "",
-      route_4_amounts: data.route_4_amounts || 0,
-      route_5: data.route_5 || "",
-      route_5_amounts: data.route_5_amounts || 0,
-      country_code: data.country_code || "",
-      embedded_direct_emissions_value:
-        data.embedded_direct_emissions_value || 0,
-      source_embedded_direct_emissions:
-        data.source_embedded_direct_emissions || "",
-      embedded_indirection_emissions_value:
-        data.embedded_indirection_emissions_value || 0,
-      source_embedded_indirect_emissions:
-        data.source_embedded_indirect_emissions || "",
-      justification_for_use_default_values:
-        data.justification_for_use_default_values || "",
-      total_consumed_within_installation:
-        data.total_consumed_within_installation || 0,
-      consumed_in_production_amounts: data.consumed_in_production_amounts || 0,
-      consumed_non_cbam_goods_amounts:
-        data.consumed_non_cbam_goods_amounts || 0,
-      total_consumed_within_installation_amounts:
-        data.total_consumed_within_installation_amounts || 0,
-      // For backward compatibility
-      route: data.route_1 || "",
-      amount: data.route_1_amounts || 0,
-    };
+  const searchRelevantPrecursors = async (
+    industryTypeId?: number,
+    goodsId?: number
+  ) => {
+    if (!industryTypeId || !goodsId) {
+      setPrecursorOptions([]);
+      setNoPrecursors(false);
+      return;
+    }
+
+    setLoadingPrecursors(true);
+    setNoPrecursors(false);
+
+    try {
+      const goodsList = await fetchGoodsData();
+      const precursorsList = getPrecursorsOptionsAsStrings(
+        goodsList,
+        industryTypeId,
+        goodsId
+      );
+
+      if (precursorsList && precursorsList.length > 0) {
+        setPrecursorOptions(precursorsList);
+        setNoPrecursors(false);
+      } else {
+        setPrecursorOptions([]);
+        setNoPrecursors(true);
+      }
+    } catch (error) {
+      setPrecursorOptions([]);
+      setNoPrecursors(true);
+    } finally {
+      setLoadingPrecursors(false);
+    }
   };
 
-  // Initialize local state from props and fetch data if needed
+
+
+
+
+
+
+
+
+
+
+  const renderPrecursorField = () => {
+  if (loadingPrecursors) {
+    return (
+      <div style={{ padding: "20px", textAlign: "center" }}>
+        <CircularProgress size={24} />
+        <span style={{ marginLeft: "10px", color: "#666" }}>
+          Loading precursors...
+        </span>
+      </div>
+    );
+  }
+
+  if (noPrecursors || precursorOptions.length === 0) {
+    return (
+      <div
+        style={{
+          padding: "15px",
+          backgroundColor: "#fff3cd",
+          border: "1px solid #ffeaa7",
+          borderRadius: "4px",
+          marginBottom: "20px",
+        }}
+      >
+        <span style={{ color: "#856404", fontSize: "20px" }}>
+          ℹ️ ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
+        </span>
+      </div>
+    );
+  }
+
+  // Get the specific precursor for this index
+  const currentPrecursor = precursorOptions[index-1] || null;
+
+  if (!currentPrecursor) {
+    return (
+      <div
+        style={{
+          padding: "15px",
+          backgroundColor: "#f8f9fa",
+          border: "1px solid #dee2e6",
+          borderRadius: "4px",
+          marginBottom: "20px",
+        }}
+      >
+        <span style={{ color: "#6c757d", fontSize: "20px" }}>
+          ℹ️ No precursor available for position {index }
+        </span>
+      </div>
+    );
+  }
+
+  // Show the specific precursor for this loop/index (read-only)
+  return (
+    <div style={{ marginBottom: "20px" }}>
+      <div style={{ 
+        marginBottom: "15px", 
+        fontSize: "24px", 
+        fontWeight: "600", 
+        color: "#000000" 
+      }}>
+         {currentPrecursor}
+      </div>
+      
+      {/* <div
+        style={{
+          marginBottom: "15px",
+          padding: "12px",
+          border: "2px solid #0290c4",
+          borderRadius: "6px",
+          backgroundColor: "#e3f2fd"
+        }}
+      > */}
+        {/* <div style={{ 
+          fontSize: "16px", 
+          fontWeight: "500",
+          color: "#0d47a1",
+          marginBottom: "8px"
+        }}>
+          {currentPrecursor}
+        </div>
+         */}
+        {/* Amount field for this specific precursor
+        <LabeledTextField
+          caption={`Amount for ${currentPrecursor}`}
+          defination={`ระบุจำนวนของ ${currentPrecursor}`}
+          label=""
+          type="number"
+          name={`precursor_amount_${index}`}
+          value={fieldValues[`precursor_amount_${index}`] || ""}
+          onChange={(e) =>
+            handleInputChange(e.target.name, e.target.value)
+          }
+          error={
+            fieldErrors[`precursor_amount_${index}`] ||
+            formErrors[`precursor_amount_${index}`]
+          }
+        /> */}
+
+        {/* Store the precursor name in hidden field */}
+        {/* <input 
+          type="hidden" 
+          name={`purchased_precursors_${index}`}
+          value={currentPrecursor}
+        />
+      </div> */}
+    </div>
+  );
+};
+
+  useEffect(() => {
+    const savedGoods = existingData?.goods_id;
+    const savedIndustry = existingData?.industry_type_id;
+    if (
+      existingData &&
+      (savedGoods !== selectedGoods || savedIndustry !== selectedIndustry)
+    ) {
+      setFieldValues((prev) => ({
+        ...prev,
+        [`purchased_precursors_${index}`]: "",
+      }));
+      onChange(`purchased_precursors_${index}`, "");
+      setExistingData(null);
+    }
+    searchRelevantPrecursors(selectedIndustry, selectedGoods);
+  }, [selectedGoods, selectedIndustry]);
+
+  useEffect(() => {
+    const loadRouteOptions = async () => {
+      if (selectedIndustry && selectedGoods) {
+        setIsLoadingRoutes(true);
+        try {
+          const data = await fetchGoodsData();
+          const routesOptions = getRoutesOptions(data, selectedIndustry, selectedGoods);
+          setRouteOptions(routesOptions);
+        } catch (error) {
+          setRouteOptions([]);
+        } finally {
+          setIsLoadingRoutes(false);
+        }
+      }
+    };
+    loadRouteOptions();
+  }, [selectedIndustry, selectedGoods]);
+
   useEffect(() => {
     const initialValues: { [key: string]: string | number } = {};
-
-    // Map all relevant field values from props
+    
     Object.keys(formValues).forEach((key) => {
       if (key.endsWith(`_${index}`) || key.includes(`_${index}_`)) {
         initialValues[key] = formValues[key] ?? "";
       }
     });
 
-    // Add specific fields we know we need
     initialValues[`purchased_precursors_${index}`] = precursorValue || "";
     initialValues[`route_${index}`] = routeValue || "";
     initialValues[`amount_${index}`] = formValues[`amount_${index}`] || 0;
 
-    // Add country code with Thailand default if needed
     if (!initialValues[`country_code_${index}`] && countries.length > 0) {
       const thailandOption = countries.find(
         (country) =>
@@ -288,145 +426,40 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
     setFieldValues(initialValues);
 
-    // Fetch data from API if we have a report ID
     if (reportId) {
       fetchExistingData();
     }
-  }, [reportId, index, precursorValue, routeValue]); // Dependencies for initial data loading
+  }, [reportId, index]);
 
-  // Load route options based on industryTypeId and goodsId
-  const [precursorOptions, setPrecursorOptions] = useState<string[]>([]);
-  const [loadingPrecursors, setLoadingPrecursors] = useState(false);
-  const [noPrecursors, setNoPrecursors] = useState(false);
-
-  const selectedIndustry = localStorage.getItem("selectedIndustry")
-    ? parseInt(localStorage.getItem("selectedIndustry") as string, 10)
-    : undefined;
-  const selectedGoods = localStorage.getItem("selectedGoods")
-    ? parseInt(localStorage.getItem("selectedGoods") as string, 10)
-    : undefined;
-
-  const precursorFieldValue =
-    fieldValues[`purchased_precursors_${index}`] || "";
-
-  const searchRelevantPrecursors = async (
-    industryTypeId?: number,
-    goodsId?: number
-  ) => {
-    if (!industryTypeId || !goodsId) {
-      setPrecursorOptions([]);
-      setNoPrecursors(false);
-      return;
-    }
-    setLoadingPrecursors(true);
-    setNoPrecursors(false);
-    try {
-      const goodsList = await fetchGoodsData();
-      const industry = goodsList.find(
-        (ind: any) => ind.industry_type_id === industryTypeId
-      );
-      if (!industry) {
-        setPrecursorOptions([]);
-        setNoPrecursors(true);
-        return;
-      }
-      const goods = industry.goods.find((g: any) => g.goods_id === goodsId);
-      if (!goods) {
-        setPrecursorOptions([]);
-        setNoPrecursors(true);
-        return;
-      }
-      const relevant = goods.relevant_precursors || [];
-      if (relevant.length > 0) {
-        setPrecursorOptions(relevant);
-        setNoPrecursors(false);
-      } else {
-        setPrecursorOptions([]);
-        setNoPrecursors(true);
-      }
-    } finally {
-      setLoadingPrecursors(false);
-    }
-  };
-
-  useEffect(() => {
-    // เช็ค EDIT CASE: ถ้า selectedGoods/selectedIndustry เปลี่ยนจากค่าที่ save ไว้ => clear precursor เดิม
-    const savedGoods = existingData?.goods_id;
-    const savedIndustry = existingData?.industry_type_id;
-
-    if (
-      existingData &&
-      (savedGoods !== selectedGoods || savedIndustry !== selectedIndustry)
-    ) {
-      setFieldValues((prev) => ({
-        ...prev,
-        [`purchased_precursors_${index}`]: "",
-        // clear ฟิลด์อื่นได้ถ้าต้องการ
-      }));
-      // อาจใส่ onChange ด้วย (สำหรับ parent)
-      onChange(`purchased_precursors_${index}`, "");
-      setExistingData(null);
-    }
-
-    searchRelevantPrecursors(selectedIndustry, selectedGoods);
-    // eslint-disable-next-line
-  }, [selectedGoods, selectedIndustry]);
-
-  useEffect(() => {
-    const loadRouteOptions = async () => {
-      if (industryTypeId && goodsId) {
-        setIsLoadingRoutes(true);
-        try {
-          const data = await fetchGoodsData();
-          const routesOptions = getRoutesOptions(data, industryTypeId, goodsId);
-          setRouteOptions(routesOptions);
-        } catch (error) {
-          console.error("Error loading route options:", error);
-          setRouteOptions([]);
-        } finally {
-          setIsLoadingRoutes(false);
-        }
-      }
-    };
-    loadRouteOptions();
-  }, [goodsId]);
-
-  // Handle input value changes - update both local state and parent
   const handleInputChange = (
     name: string,
     value: string | number | (string | number)[]
   ) => {
-    // Update local state
     setFieldValues((prev) => ({
       ...prev,
       [name]: Array.isArray(value) ? value.join(",") : value,
     }));
 
-    // Clear any error for this field
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    // Update parent state
     onChange(name, value);
   };
 
-  // Validate form before save
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
 
-    // Required fields
     if (!fieldValues[`purchased_precursors_${index}`]) {
       errors[`purchased_precursors_${index}`] = "กรุณากรอกข้อมูล";
     }
-
     if (!fieldValues[`country_code_${index}`]) {
       errors[`country_code_${index}`] = "กรุณาเลือกประเทศ";
     }
 
     const amountValue = fieldValues[`amount_${index}`];
     if (!amountValue && amountValue !== 0) {
-      errors[`amount_${index}`] = "กรุณาระบุจำนวน";
+            errors[`amount_${index}`] = "กรุณาระบุจำนวน";
     } else {
       const numValue = parseFloat(String(amountValue));
       if (isNaN(numValue) || numValue < 0) {
@@ -438,8 +471,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  // Format data for API submission - fixed to match database structure
-  // Format data for API submission
   const prepareDataForApi = (): Record<string, any> => {
     const payload: Record<string, any> = {
       precursors: fieldValues[`purchased_precursors_${index}`] || null,
@@ -467,7 +498,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     };
 
     for (let ridx = 0; ridx < 5; ridx++) {
-      // <---- เปลี่ยน 6 เป็น 5
       payload[`route_${ridx + 1}`] =
         fieldValues[`route_${ridx}_${index}`] || "";
       payload[`route_${ridx + 1}_amounts`] = parseFloat(
@@ -478,52 +508,11 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     if (reportId) {
       payload.report_id = reportId;
     }
+
     return payload;
   };
 
-  const handleSave = async () => {
-    if (!validateForm()) return;
-    setIsSaving(true);
-    try {
-      const payload = prepareDataForApi();
-      let method = "POST";
-      let url = `${apiUrl}/api/cbam/e_precursors`;
-      // === Step 3: ถ้ามี existingData (id) => ใช้ PUT, ถ้าไม่มีก็ POST ===
-      if (existingData && existingData.id) {
-        method = "PUT";
-        url = `${apiUrl}/api/cbam/e_precursors/${existingData.id}`;
-      }
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error (${response.status}): ${errorText}`);
-      }
-      const responseData = await response.json();
-      // ตั้งค่ารายละเอียดใหม่หลังบันทึกสำเร็จ
-      setExistingData(responseData);
-      setPreviousData(responseData);
-      updateFieldsFromApiData(responseData);
-      if (onSave) await onSave(responseData);
-      alert(
-        `Precursor ${method === "PUT" ? "updated" : "created"} successfully!`
-      );
-    } catch (error) {
-      alert(
-        `Failed to save precursor: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`
-      );
-      if (onNextStep) onNextStep();
-    } finally {
-      setIsSaving(false);
-    }
-  };
   const handleSaveWithAlert = async () => {
-    // ✅ ใช้ window.confirm แทน confirm
     const confirmed = window.confirm(
       `💾 Save Precursor ${index}\n\n` +
         `Are you sure you want to save this precursor data?\n\n` +
@@ -541,11 +530,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       return;
     }
 
-    // if (!validateForm()) {
-    //   alert("⚠️ Please fix the form errors before saving.");
-    //   return;
-    // }
-
     setIsSaving(true);
     const startTime = Date.now();
 
@@ -556,8 +540,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       const url = isUpdate
         ? `${apiUrl}/api/cbam/e_precursors/${existingData.id}`
         : `${apiUrl}/api/cbam/e_precursors`;
-
-     
 
       const response = await fetch(url, {
         method,
@@ -572,14 +554,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
       const responseData = await response.json();
 
-      // ตั้งค่ารายละเอียดใหม่หลังบันทึกสำเร็จ
-      // setExistingData(responseData);
-      // setPreviousData(responseData);
-      // updateFieldsFromApiData(responseData);
-
       if (onSave) await onSave(responseData);
 
-      // ✅ Success alert
       const duration = ((Date.now() - startTime) / 1000).toFixed(1);
       const successMessage = isUpdate
         ? `✅ Precursor Updated Successfully!\n\n` +
@@ -605,7 +581,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
       alert(successMessage);
 
-      // ✅ ใช้ window.confirm สำหรับ next step
       if (onNextStep) {
         const shouldContinue = window.confirm(
           "🚀 Would you like to continue to the next step?"
@@ -615,8 +590,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         }
       }
     } catch (error) {
-      console.error("❌ Save error:", error);
-
       const errorMessage =
         `❌ Failed to Save Precursor ${index}!\n\n` +
         `Error: ${
@@ -630,7 +603,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         `• Method: ${existingData?.id ? "PUT (Update)" : "POST (Create)"}\n` +
         `• Report ID: ${reportId || "N/A"}\n` +
         `• Precursor Index: ${index}`;
-
       alert(errorMessage);
     } finally {
       setIsSaving(false);
@@ -649,7 +621,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         position: "relative",
       }}
     >
-      {/* Loading indicator */}
       {isLoadingData && (
         <div
           style={{
@@ -669,7 +640,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         </div>
       )}
 
-      {/* Status indicators */}
       <div
         style={{
           display: "flex",
@@ -678,48 +648,20 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           marginBottom: "15px",
         }}
       >
-        <div>
+        {/* <div>
           <h4 style={{ margin: 0, fontSize: "18px" }}>
             Precursor {index}
             {existingData?.id && ` (ID: ${existingData.id})`}
           </h4>
-
-          {/* Data source info */}
           {existingData && (
             <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
               Data loaded from report #{reportId}
             </div>
           )}
-        </div>
+                  </div> */}
       </div>
 
-      {/* Form fields */}
-      {precursorOptions.length > 0 ? (
-        precursorOptions.map((precursor, idx) => (
-          <LabeledAutocomplete
-            key={`precursor-${index}-${idx}-${precursor}`} // ✅ เพิ่ม unique key รวม precursor name
-            caption="Purchased precursor"
-            defination="เลือกรายการวัตถุดิบ precursor"
-            label=""
-            name={`purchased_precursors_${index}`}
-            options={precursorOptions}
-            value={String(fieldValues[`purchased_precursors_${index}`] || "")}
-            onChange={(val) =>
-              handleInputChange(`purchased_precursors_${index}`, val)
-            }
-            error={
-              fieldErrors[`purchased_precursors_${index}`] ||
-              formErrors[`purchased_precursors_${index}`]
-            }
-            disabled={loadingPrecursors}
-            readOnly
-          />
-        ))
-      ) : (
-        <span style={{ color: "#ff9800", fontSize: "18px" }}>
-          ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
-        </span>
-      )}
+      {renderPrecursorField()}
 
       <LabeledAutocompleteMap
         caption="Country code"
@@ -740,7 +682,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
       <Box mb={3}>
         {Array.from({ length: routeCount }).map((_, routeIndex) => (
           <Box
-            key={`route-${index}-${routeIndex}`} // ✅ เพิ่ม unique key
+            key={`route-group-${index}-${routeIndex}`}
             display="flex"
             gap={3}
             mb={3}
@@ -792,7 +734,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           </Box>
         ))}
 
-        {/* Route Buttons Container */}
         <div
           style={{
             display: "flex",
@@ -801,7 +742,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           }}
         >
           <div>
-            {routeCount < 6 && (
+            {routeCount < 5 && (
               <button
                 type="button"
                 style={{
@@ -814,7 +755,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
                   marginRight: "10px",
                   fontSize: "14px",
                 }}
-                onClick={() => setRouteCount((prev) => Math.min(prev + 1, 6))}
+                onClick={() => setRouteCount((prev) => Math.min(prev + 1, 5))}
               >
                 + เพิ่ม Route
               </button>
@@ -933,7 +874,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
               }
             />
           </div>
-          <div style={{ flex: 1 }}>
+                    <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
               caption=""
               defination="ระบุแหล่งที่มาของข้อมูล"
@@ -1009,10 +950,10 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             type="button"
             style={{
               backgroundColor: isSaving || isLoadingData ? "#f5f5f5" : "#fff",
-              color: isSaving || isLoadingData ? "#999" : " #0190c3",
+              color: isSaving || isLoadingData ? "#999" : "#0190c3",
               padding: "12px 24px",
               border: `2px solid ${
-                isSaving || isLoadingData ? "#e0e0e0" :" #0190c3"
+                isSaving || isLoadingData ? "#e0e0e0" : "#0190c3"
               }`,
               borderRadius: "10px",
               cursor: isSaving || isLoadingData ? "not-allowed" : "pointer",
@@ -1026,22 +967,22 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
               transition: "all 0.2s ease",
               outline: "none",
             }}
-            onClick={handleSaveWithAlert} 
+            onClick={handleSaveWithAlert}
             disabled={isSaving || isLoadingData}
             onMouseOver={(e) => {
               if (!isSaving && !isLoadingData) {
-                e.currentTarget.style.backgroundColor = " #0190c3";
+                e.currentTarget.style.backgroundColor = "#0190c3";
                 e.currentTarget.style.color = "#fff";
               }
             }}
             onMouseOut={(e) => {
               if (!isSaving && !isLoadingData) {
                 e.currentTarget.style.backgroundColor = "#fff";
-                e.currentTarget.style.color = " #0190c3";
+                e.currentTarget.style.color = "#0190c3";
               }
             }}
           >
-            {isSaving ? " Saving..." : "Save Precursor"}
+            {isSaving ? "Saving..." : "Save Precursor"}
           </button>
         </div>
       </div>

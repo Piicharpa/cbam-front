@@ -489,7 +489,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       // 3. Keep reportId in localStorage as requested
       localStorage.setItem("reportId", String(reportId));
-      localStorage.setItem("cbam_report_id", String(reportId));
+      // localStorage.setItem("cbam_report_id", String(reportId));
 
       // Success message
       const modeText = formMode === "edit" ? "updated" : "created";

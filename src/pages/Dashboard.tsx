@@ -202,9 +202,29 @@ const Form: React.FC = () => {
   };
 
   // Function to handle creating a new report
-  const handleCreateNewReport = () => {
-    navigate("/cbam/formdev");
-  };
+ const handleCreateNewReport = () => {
+  // ✅ Clear CBAM form data เมื่อสร้าง report ใหม่
+  const cbamKeys = [
+    "reportId",
+    "cbamFormData",
+    "amountFormData", 
+    "goodsFormData",
+    "precursorData",
+    "precursorId",
+    "selectedCnCode",
+    "selectedGoods",
+    "selectedIndustry",
+    "activeTable",
+    "selectedCctvIds",
+    "selectedNodeIds",
+    "searchFilters"
+  ];
+  
+  cbamKeys.forEach((key) => localStorage.removeItem(key));
+  
+  // Navigate to form page
+  navigate("/cbam/formdev");
+};
 
   // Function to initiate delete process
   const handleDeleteReport = (reportId: string | number) => {

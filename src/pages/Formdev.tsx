@@ -260,7 +260,7 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
-  
+  console.log(localStorage);
 
   const isContinueDisabled = () => {
     // Case 0: Step แรก (Summary) และไม่มี reportId
@@ -285,7 +285,11 @@ const Formdev: React.FC = () => {
   // Handle form navigation with animations
   const handleNext = async () => {
     let canProceed = true;
-    if (activeStep === 0 && !reportId && localStorage.getItem("reportId")===null) {
+    if (
+      activeStep === 0 &&
+      !reportId &&
+      localStorage.getItem("reportId") === null
+    ) {
       alert("❌ Please create a report in the Summary step first!");
       return;
     }
@@ -324,11 +328,30 @@ const Formdev: React.FC = () => {
         case 6:
           if (emissionFormRef.current?.submit) {
             canProceed = await emissionFormRef.current.submit();
-
             // If this is the last step and submission is successful, navigate to report
             if (canProceed) {
               const currentReportId = localStorage.getItem("reportId");
               if (currentReportId) {
+                // ✅ Clear CBAM form data after successful submission
+                const cbamKeys = [
+                  "reportId",
+                  "cbamFormData",
+                  "amountFormData",
+                  "goodsFormData",
+                  "precursorData",
+                  "precursorId",
+                  "selectedCnCode",
+                  "selectedGoods",
+                  "selectedIndustry",
+                  "activeTable",
+                  "selectedCctvIds",
+                  "selectedNodeIds",
+                  "searchFilters",
+                ];
+
+                cbamKeys.forEach((key) => localStorage.removeItem(key));
+
+                // Navigate to report page with the reportId
                 navigate(`/cbam/report?reportId=${currentReportId}`);
                 return;
               }
@@ -363,15 +386,32 @@ const Formdev: React.FC = () => {
       const isValid = await sourceFormRef.current.submit();
       if (!isValid) return;
     }
-
     setFadeIn(false);
     setTimeout(() => {
       alert("✅ Form submitted successfully!");
       setFadeIn(true);
-
       // After successful form submission, navigate to report page
       const currentReportId = localStorage.getItem("reportId");
       if (currentReportId) {
+        // ✅ Clear CBAM form data after successful submission
+        const cbamKeys = [
+          "reportId",
+          "cbamFormData",
+          "amountFormData",
+          "goodsFormData",
+          "precursorData",
+          "precursorId",
+          "selectedCnCode",
+          "selectedGoods",
+          "selectedIndustry",
+          "activeTable",
+          "selectedCctvIds",
+          "selectedNodeIds",
+          "searchFilters",
+        ];
+
+        cbamKeys.forEach((key) => localStorage.removeItem(key));
+
         navigate(`/cbam/report?reportId=${currentReportId}`);
       }
     }, 300);
@@ -484,7 +524,7 @@ const Formdev: React.FC = () => {
 
   // Calculate progress based on active step
   const progress = ((activeStep + 1) / safeSteps.length) * 100;
-  const isLastStep = (activeStep === safeSteps.length - 1);
+  const isLastStep = activeStep === safeSteps.length - 1;
 
   return (
     <ThemeProvider theme={theme}>
@@ -553,8 +593,6 @@ const Formdev: React.FC = () => {
         </Box>
       </StepperContainer>
 
-
-
       <NavigationContainer>
         <Button
           disabled={activeStep === 0}
@@ -578,7 +616,7 @@ const Formdev: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              {getContinueButtonText()} 
+              {getContinueButtonText()}
             </Button>
           ) : null}
           <ButtonDecoration isLastStep={isLastStep} />
@@ -612,9 +650,27 @@ const Formdev: React.FC = () => {
             variant="text"
             color="error"
             onClick={() => {
-              // Clear localStorage and redirect to form
-              localStorage.removeItem("reportId");
+              // Clear only CBAM form data, preserve user preferences
+              const cbamKeys = [
+                "reportId",
+                "cbamFormData",
+                "amountFormData",
+                "goodsFormData",
+                "precursorData",
+                "precursorId",
+                "selectedCnCode",
+                "selectedGoods",
+                "selectedIndustry",
+                "activeTable",
+                "selectedCctvIds",
+                "selectedNodeIds",
+              ];
+
+              cbamKeys.forEach((key) => localStorage.removeItem(key));
+
+              // Navigate and refresh
               navigate("/Home");
+              window.location.reload();
             }}
             sx={{ fontSize: "0.8rem" }}
           >

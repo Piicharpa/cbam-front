@@ -260,7 +260,7 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
-  console.log(localStorage);
+  // console.log(localStorage);
 
   const isContinueDisabled = () => {
     // Case 0: Step แรก (Summary) และไม่มี reportId

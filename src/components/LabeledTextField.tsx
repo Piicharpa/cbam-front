@@ -1,6 +1,6 @@
 // components/LabeledTextField.tsx
 import React from "react";
-import { TextField, Typography } from "@mui/material";
+import { TextField, Typography,Box } from "@mui/material";
 
 interface Props {
   caption: string;
@@ -36,6 +36,7 @@ const LabeledTextField: React.FC<Props> = ({
   multiline = false,
 }) => (
   <>
+  <Box mb={5}>
     {caption && (
       <Typography
         variant="caption"
@@ -57,8 +58,10 @@ const LabeledTextField: React.FC<Props> = ({
           marginBottom: "0.25rem", 
           display: "block", 
           fontSize: "16px",
-          opacity: disabled ? 0.6 : 1 // ✅ ลดความเข้มเมื่อ disabled
+          opacity: disabled ? 0.6 : 1 ,
+          minHeight: "53px",
         }}
+        
       >
         {defination}
       </Typography>
@@ -87,6 +90,7 @@ const LabeledTextField: React.FC<Props> = ({
         }
       }}
     />
+    </Box>
   </>
 );
 

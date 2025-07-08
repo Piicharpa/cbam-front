@@ -1,6 +1,6 @@
 // components/LabeledAutocomplete.tsx
 import React from "react";
-import { Autocomplete, TextField, Typography } from "@mui/material";
+import { Autocomplete, TextField, Typography,Box } from "@mui/material";
 
 interface Props {
   caption: string;
@@ -36,21 +36,26 @@ const LabeledAutocomplete: React.FC<Props> = ({
   required = false,
   inputProps,
 }) => (
-  <>
+  <Box mb={5}>
     {caption && (
       <Typography
         variant="caption"
         color="#0290c4"
         style={{ fontWeight: 600, fontSize: "18px" }}
       >
-        {caption} {required && <span style={{ color: 'red' }}>*</span>}
+        {caption} {required && <span style={{ color: "red" }}>*</span>}
       </Typography>
     )}
     {defination && (
       <Typography
         variant="caption"
         color="#74aa15"
-        style={{ marginBottom: "0.25rem", display: "block", fontSize: "16px" }}
+        style={{
+          marginBottom: "0.25rem",
+          display: "block",
+          fontSize: "16px",
+          minHeight: "53px",
+        }}
       >
         {defination}
       </Typography>
@@ -67,7 +72,13 @@ const LabeledAutocomplete: React.FC<Props> = ({
           name={name}
           margin="normal"
           error={!!error}
-          helperText={error ? (typeof error === 'string' ? error : helperText || "กรุณากรอกข้อมูล") : helperText}
+          helperText={
+            error
+              ? typeof error === "string"
+                ? error
+                : helperText || "กรุณากรอกข้อมูล"
+              : helperText
+          }
           disabled={disabled}
           required={required}
           InputProps={{
@@ -80,10 +91,10 @@ const LabeledAutocomplete: React.FC<Props> = ({
           }}
           FormHelperTextProps={{
             style: {
-              color: error ? '#d32f2f' : 'inherit',
-              marginTop: '3px',
-              fontSize: '0.75rem',
-            }
+              color: error ? "#d32f2f" : "inherit",
+              marginTop: "3px",
+              fontSize: "0.75rem",
+            },
           }}
         />
       )}
@@ -92,7 +103,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
       disabled={disabled}
       readOnly={readOnly}
     />
-  </>
+  </Box>
 );
 
 export default LabeledAutocomplete;

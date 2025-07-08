@@ -254,16 +254,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
     return (
       <>
-        <h4>Production Routes</h4>
-        <p
-          style={{
-            color: "#666",
-            fontSize: "0.9rem",
-            marginBottom: "10px",
-          }}
-        >
-          Please select up to 6 routes that apply
-        </p>
+        <h2>Production Routes</h2>
         {[...Array(routeCount)].map((_, index) => (
           <div key={index} style={{ marginBottom: "12px" }}>
             <div

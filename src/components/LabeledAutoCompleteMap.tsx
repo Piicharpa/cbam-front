@@ -1,6 +1,6 @@
 // components/LabeledAutocompleteMap.tsx
 import React from "react";
-import { Autocomplete, TextField, Typography } from "@mui/material";
+import { Autocomplete, TextField, Typography,Box } from "@mui/material";
 
 interface Option {
   label: string;
@@ -47,6 +47,7 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
   
   return (
     <>
+    <Box mb={5}>
       {caption && (
         <Typography
           variant="caption"
@@ -60,7 +61,7 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
         <Typography
           variant="caption"
           color="#74aa15"
-          style={{ marginBottom: "0.25rem", display: "block", fontSize: "16px" }}
+          style={{ marginBottom: "0.25rem", display: "block", fontSize: "16px", minHeight: "53px", }}
         >
           {defination}
         </Typography>
@@ -113,6 +114,7 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
           />
         )}
       />
+      </Box>
     </>
   );
 };

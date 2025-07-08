@@ -260,11 +260,11 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
-  // console.log(localStorage);
+  console.log(localStorage);
 
   const isContinueDisabled = () => {
     // Case 0: Step แรก (Summary) และไม่มี reportId
-    if (activeStep === 0 && !reportId) {
+    if (activeStep === 0 && !localStorage.getItem("reportId")) {
       return true;
     }
 
@@ -275,7 +275,7 @@ const Formdev: React.FC = () => {
   // ✅ เพิ่ม function ใหม่นี้
   const getContinueButtonText = () => {
     // Case 0: Step แรกและไม่มี reportId
-    if (activeStep === 0 && !reportId) {
+    if (activeStep === 0 && !localStorage.getItem("reportId")) {
       return "Please Create Report First";
     }
 
@@ -287,7 +287,7 @@ const Formdev: React.FC = () => {
     let canProceed = true;
     if (
       activeStep === 0 &&
-      !reportId &&
+      // !reportId &&
       localStorage.getItem("reportId") === null
     ) {
       alert("❌ Please create a report in the Summary step first!");

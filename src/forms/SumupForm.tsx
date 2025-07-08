@@ -96,9 +96,9 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   useEffect(() => {
     if (reportIdFromUrl) {
       localStorage.setItem("reportId", String(reportIdFromUrl));
-    } else {
+    // } else {
       // ถ้าไม่มี reportId ให้เคลียร์ localStorage
-      localStorage.removeItem("reportId");
+      // localStorage.removeItem("reportId");
     }
   }, [reportIdFromUrl, isEditMode]);
 

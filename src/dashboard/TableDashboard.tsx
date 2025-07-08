@@ -190,7 +190,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
-                     <SearchIcon fontSize="small" color="action" />
+                    <SearchIcon fontSize="small" color="action" />
                   </InputAdornment>
                 ),
                 endAdornment: searchTerm ? (
@@ -268,7 +268,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
 
             <Grid container spacing={2} alignItems="center">
               <Grid size={6.4}>
-                                <FormControl fullWidth variant="outlined" size="small">
+                <FormControl fullWidth variant="outlined" size="small">
                   <InputLabel id="category-filter-label">Category</InputLabel>
                   <Select
                     labelId="category-filter-label"
@@ -343,7 +343,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             endAdornment: endDate && (
                               <InputAdornment position="end">
                                 <IconButton
-                                   size="small"
+                                  size="small"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     setEndDate(null);
@@ -463,7 +463,10 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
             <TableHead sx={{ backgroundColor: "#f9f9f9" }}>
               <TableRow>
                 <TableCell>
-                  <strong style={{ fontSize: "14px" }} >ชื่อผลิตภัณฑ์</strong>
+                  <strong style={{ fontSize: "14px" }}>ลำดับ</strong>
+                </TableCell>
+                <TableCell>
+                  <strong style={{ fontSize: "14px" }}>ชื่อผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
                   <strong style={{ fontSize: "14px" }}>หมวดหมู่สินค้า</strong>
@@ -488,7 +491,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                     )}
                   </strong>
                 </TableCell>
-                <TableCell align="center" >
+                <TableCell align="center">
                   <strong style={{ fontSize: "14px" }}>รายงาน</strong>
                 </TableCell>
                 <TableCell align="center">
@@ -510,12 +513,26 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                     key={`${row.id}-${idx}`}
                     sx={{ "&:hover": { backgroundColor: "#f5f5f5" } }}
                   >
+                    {/* New Index Column */}
                     <TableCell>
-                      <Typography variant="body2" fontWeight="medium" fontSize= "14px">
-                        {row.product}
+                      <Typography
+                        variant="body2"
+                        fontWeight="medium"
+                        fontSize="14px"
+                      >
+                        {idx + 1} {/* Index starts from 1 */}
                       </Typography>
                     </TableCell>
 
+                    <TableCell>
+                      <Typography
+                        variant="body2"
+                        fontWeight="medium"
+                        fontSize="14px"
+                      >
+                        {row.product}
+                      </Typography>
+                    </TableCell>
                     <TableCell>
                       {row.category && (
                         <Chip
@@ -527,7 +544,11 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                       )}
                     </TableCell>
                     <TableCell>
-                      <Typography variant="body2" fontFamily="monospace" fontSize= "14px">
+                      <Typography
+                        variant="body2"
+                        fontFamily="monospace"
+                        fontSize="14px"
+                      >
                         {row.cncode}
                       </Typography>
                     </TableCell>
@@ -536,7 +557,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                         label={row.date}
                         color="primary"
                         variant="outlined"
-                        sx={{ fontWeight: 500 , fontSize: "14px" }}
+                        sx={{ fontWeight: 500, fontSize: "14px" }}
                       />
                     </TableCell>
                     <TableCell align="center">
@@ -564,7 +585,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                                 "&:hover": {
                                   backgroundColor: "primary.light",
                                   color: "white",
-                                  fontSize: "14px" 
+                                  fontSize: "14px",
                                 },
                               }}
                             >
@@ -572,28 +593,27 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             </IconButton>
                           </Tooltip>
                         )}
-                      </Box>
-                      {/* </TableCell> */}
-                      {/* <TableCell align="center"> */}
-                      <Box>
-                        {/* Delete Button - only show if callback exists */}
-                        {onDeleteReport && (
-                          <Tooltip title="">
-                            <IconButton
-                              onClick={() => handleDelete(row.id)}
-                              color="error"
-                              size="medium"
-                              sx={{
-                                "&:hover": {
-                                  backgroundColor: "error.light",
-                                  color: "white",
-                                },
-                              }}
-                            >
-                              <DeleteIcon fontSize="medium" />
-                            </IconButton>
-                          </Tooltip>
-                        )}
+                        </Box>
+                        <Box>
+                          {/* Delete Button - only show if callback exists */}
+                          {onDeleteReport && (
+                            <Tooltip title="">
+                              <IconButton
+                                onClick={() => handleDelete(row.id)}
+                                color="error"
+                                size="medium"
+                                sx={{
+                                  "&:hover": {
+                                    backgroundColor: "error.light",
+                                    color: "white",
+                                  },
+                                }}
+                              >
+                                <DeleteIcon fontSize="medium" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        
                       </Box>
                     </TableCell>
                   </TableRow>

@@ -76,9 +76,46 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
   }, [reportId, config.apiEndpoint, apiUrl]);
 
   const handleCopy = (value: string, cell: string) => {
-    navigator.clipboard.writeText(value || "");
-    setCopiedCell(cell);
-    setTimeout(() => setCopiedCell(null), 2000);
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard
+        .writeText(value || "")
+        .then(() => {
+          setCopiedCell(cell);
+          setTimeout(() => setCopiedCell(null), 2000);
+        })
+        .catch((err) => {
+          console.error("Secure copy failed, falling back", err);
+          fallbackCopy(value, cell);
+        });
+    } else {
+      fallbackCopy(value, cell);
+    }
+  };
+
+  const fallbackCopy = (value: string, cell: string) => {
+    const textArea = document.createElement("textarea");
+    textArea.value = value || "";
+    textArea.style.position = "fixed";
+    textArea.style.top = "0";
+    textArea.style.left = "0";
+    textArea.style.opacity = "0";
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    try {
+      const successful = document.execCommand("copy");
+      if (successful) {
+        setCopiedCell(cell);
+        setTimeout(() => setCopiedCell(null), 2000);
+      } else {
+        console.error("Fallback: Copy command was unsuccessful");
+      }
+    } catch (err) {
+      console.error("Fallback: Unable to copy", err);
+    }
+
+    document.body.removeChild(textArea);
   };
 
   if (loading) {
@@ -208,7 +245,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                         fontSize: "0.875rem",
                       }}
                     >
-                      <Box sx={{ minWidth: 10 }}/>
+                      <Box sx={{ minWidth: 10 }} />
                       <Box sx={{ minWidth: 130 }}># </Box>
 
                       <Box sx={{ minWidth: 130, maxWidth: 180, flexShrink: 0 }}>
@@ -293,7 +330,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   {row.name}
                                 </Typography>
                               </Box>
-
 
                               <Box
                                 sx={{

@@ -504,7 +504,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 .sort((a, b) => {
                   const dateA = dayjs(a.rawDate);
                   const dateB = dayjs(b.rawDate);
-                  return sortDirection === "asc"
+                  return sortDirection === "desc"
                     ? dateA.diff(dateB)
                     : dateB.diff(dateA);
                 })

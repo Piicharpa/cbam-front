@@ -428,7 +428,7 @@ const Form: React.FC = () => {
             </Box>
 
             {/* Show API endpoint being used (for debugging) */}
-            {process.env.NODE_ENV === "development" && (
+            {/* {process.env.NODE_ENV === "development" && (
               <Box
                 mt={2}
                 p={2}
@@ -449,7 +449,7 @@ const Form: React.FC = () => {
                   DELETE {apiUrl}/api/cbam/report/del/{reportToDelete}
                 </Typography>
               </Box>
-            )}
+            )} */}
           </DialogContent>
           <DialogActions sx={{ p: 3, pt: 1 }}>
             <Button

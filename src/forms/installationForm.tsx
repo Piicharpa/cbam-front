@@ -82,12 +82,29 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Date formatter
+  // Date formatter แสดงในรูปแบบ วัน/เดือน/ปี
   const formatDate = (date: any): string => {
     if (!date) return "";
-    if (date instanceof Date) return date.toISOString().split("T")[0];
-    if (typeof date === "string") return date;
-    return "";
+
+    let dateObj: Date;
+
+    if (date instanceof Date) {
+      dateObj = date;
+    } else if (typeof date === "string") {
+      dateObj = new Date(date);
+    } else {
+      return "";
+    }
+
+    // ตรวจสอบว่า dateObj เป็น valid date หรือไม่
+    if (isNaN(dateObj.getTime())) return "";
+
+    // รูปแบบ วัน/เดือน/ปี
+    const day = dateObj.getDate().toString().padStart(2, "0");
+    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+    const year = dateObj.getFullYear();
+
+    return `${day}/${month}/${year}`;
   };
 
   // 🏭 Fetch specific installation data (for EDIT mode)
@@ -350,7 +367,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       "country_id",
       "post_code",
       "latitude",
-      "longitude"
+      "longitude",
     ];
 
     const newErrors: { [key: string]: string } = {};
@@ -384,7 +401,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     }
 
     try {
-    
       const installationPayload = {
         name: formValues.name,
         name_specific: formValues.name_specific || null,
@@ -766,7 +782,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.author_represent}
                     helperText={formErrors.author_represent || ""}
-                   
                   />
                 </Grid>
 
@@ -782,7 +797,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.email}
                     helperText={formErrors.email || ""}
-                    
                   />
                 </Grid>
 
@@ -797,7 +811,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.tel}
                     helperText={formErrors.tel || ""}
-                   
                   />
                 </Grid>
               </Grid>

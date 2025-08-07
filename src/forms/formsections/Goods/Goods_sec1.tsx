@@ -15,8 +15,8 @@ interface FormValues {
   name: string;
   industry_type: string;
   goods_category: string;
-  routes: string[]; 
-  amounts: string[]; 
+  routes: string[];
+  amounts: string[];
 }
 
 interface FormErrors {
@@ -36,35 +36,39 @@ interface Props {
 }
 
 const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
-  
-  
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
   const [routesOptions, setRoutesOptions] = useState<OptionType[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
- 
   const routeCount = useMemo(() => {
     if (Array.isArray(values.routes)) {
-     
       return Math.min(Math.max(values.routes.length, 1), 6);
     }
     return 1;
   }, [values.routes]);
 
-  
   const handleAddRoute = () => {
     const currentRoutes = values.routes || [];
     const currentAmounts = values.amounts || [];
 
-    
     if (currentRoutes.length < 6) {
-
-    
       const updatedRoutes = [...currentRoutes, ""];
       const updatedAmounts = [...currentAmounts, ""];
 
+      onChange("routes", updatedRoutes);
+      onChange("amounts", updatedAmounts);
+    }
+  };
+
+  const handleDelRoute = () => {
+    const currentRoutes = values.routes || [];
+    const currentAmounts = values.amounts || [];
+
+    if (currentRoutes.length > 0) {
+      const updatedRoutes = currentRoutes.slice(0, -1);
+      const updatedAmounts = currentAmounts.slice(0, -1);
 
       onChange("routes", updatedRoutes);
       onChange("amounts", updatedAmounts);
@@ -74,21 +78,20 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   const saveToLocalStorage = useCallback(() => {
     if (values.industry_type || values.goods_category) {
       const dataToSave = {
-        routes: values.routes || [], 
-        amounts: values.amounts || [], 
+        routes: values.routes || [],
+        amounts: values.amounts || [],
         industry_type: values.industry_type,
         goods_category: values.goods_category,
         name: values.name,
       };
 
-  
       // const currentSaved = localStorage.getItem("goodsFormData");
       const newData = JSON.stringify(dataToSave);
 
       // if (currentSaved !== newData) {
-        localStorage.setItem("goodsFormData", newData);
-        localStorage.setItem("selectedIndustry", values.industry_type);
-        localStorage.setItem("selectedGoods", values.goods_category);
+      localStorage.setItem("goodsFormData", newData);
+      localStorage.setItem("selectedIndustry", values.industry_type);
+      localStorage.setItem("selectedGoods", values.goods_category);
 
       // }
     }
@@ -100,7 +103,6 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
         const options = getGoodsOptions(goodsData, +industryType);
         setGoodsOptions(options);
 
-      
         const currentGoodsCategory = String(values.goods_category);
         const isValidGoodsCategory = options.some(
           (opt) => String(opt.value) === currentGoodsCategory
@@ -181,7 +183,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     };
 
     loadData();
-  }, []); 
+  }, []);
 
   useEffect(() => {
     if (!isLoading) {
@@ -200,7 +202,6 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   }, [saveToLocalStorage]);
 
   const handleRouteChange = (index: number, value: string) => {
-
     const updatedRoutes = [...(values.routes || [])];
 
     while (updatedRoutes.length <= index) {
@@ -220,7 +221,6 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   };
 
   const handleAmountChange = (index: number, value: string) => {
-
     const updatedAmounts = [...(values.amounts || [])];
 
     while (updatedAmounts.length <= index) {
@@ -320,24 +320,82 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
             </div>
           </div>
         ))}
-
-        {routeCount < 6 && (
-          <button
-            type="button"
-            style={{
-              backgroundColor: "#2ecc71",
-              color: "#fff",
-              padding: "8px 12px",
-              border: "none",
-              borderRadius: "4px",
-              cursor: "pointer",
-              marginTop: "10px",
-            }}
-            onClick={handleAddRoute}
-          >
-            + เพิ่ม Route
-          </button>
-        )}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end", // จัดให้ปุ่มอยู่ชิดขวา
+            width: "100%", // ให้ div กินพื้นที่เต็มความกว้าง
+            marginBottom: "20px", // เพิ่มระยะห่างด้านล่าง (ตามต้องการ)
+          }}
+        >
+          {routeCount < 6 && (
+            <button
+              type="button"
+              style={{
+                backgroundColor: "#2ecc71",
+                color: "#fff",
+                padding: "10px 16px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                marginTop: "15px",
+                marginRight: "10px",
+                fontWeight: 500,
+                display: "inline-flex",
+                alignItems: "center",
+                boxShadow: "0 2px 5px rgba(46, 204, 113, 0.3)",
+                transition: "all 0.2s ease",
+              }}
+              onClick={handleAddRoute}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "#27ae60";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 8px rgba(46, 204, 113, 0.4)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = "#2ecc71";
+                e.currentTarget.style.boxShadow =
+                  "0 2px 5px rgba(46, 204, 113, 0.3)";
+              }}
+            >
+              <span style={{ marginRight: "6px", fontSize: "16px" }}>+</span>
+              เพิ่ม Route
+            </button>
+          )}
+          {routeCount > 1 && (
+            <button
+              type="button"
+              style={{
+                backgroundColor: "#e74c3c",
+                color: "#fff",
+                padding: "10px 16px",
+                border: "none",
+                borderRadius: "8px",
+                cursor: "pointer",
+                marginTop: "15px",
+                fontWeight: 500,
+                display: "inline-flex",
+                alignItems: "center",
+                boxShadow: "0 2px 5px rgba(231, 76, 60, 0.3)",
+                transition: "all 0.2s ease",
+              }}
+              onClick={handleDelRoute}
+              onMouseOver={(e) => {
+                e.currentTarget.style.backgroundColor = "#c0392b";
+                e.currentTarget.style.boxShadow =
+                  "0 4px 8px rgba(231, 76, 60, 0.4)";
+              }}
+              onMouseOut={(e) => {
+                e.currentTarget.style.backgroundColor = "#e74c3c";
+                e.currentTarget.style.boxShadow =
+                  "0 2px 5px rgba(231, 76, 60, 0.3)";
+              }}
+            >
+              <span style={{ marginRight: "6px", fontSize: "16px" }}>−</span>
+              ลบ Route
+            </button>
+          )}
+        </div>
 
         {routesOptions.length > 6 && (
           <p

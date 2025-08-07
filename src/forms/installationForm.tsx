@@ -93,7 +93,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   // 🏭 Fetch specific installation data (for EDIT mode)
   const fetchInstallationData = async (installationId: number) => {
     try {
-
       const response = await fetch(
         `${apiUrl}/api/cbam/installation/${installationId}`
       );
@@ -105,7 +104,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       if (installationDataArray && installationDataArray.length > 0) {
         const installationData = installationDataArray[0];
-        
 
         // Update form values with existing installation data + today's dates
         const updatedFormValues = {
@@ -147,7 +145,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   // 🏢 Fetch latest installation from company (for CREATE mode)
   const fetchLatestCompanyInstallation = async (companyId: number) => {
     try {
-
       const response = await fetch(
         `${apiUrl}/api/cbam/report/company/${companyId}`
       );
@@ -162,7 +159,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       if (installations && installations.length > 0) {
         // Take the last item as requested
         const latestInstallation = installations[installations.length - 1];
-        
 
         const latestinstallationId = latestInstallation.installation_id;
 
@@ -239,11 +235,11 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
           if (report.installation_id) {
             // ✅ SCENARIO 1: EDIT MODE - Report has installation_id
-            
+
             await fetchInstallationData(report.installation_id);
           } else {
             // ✅ SCENARIO 2: CREATE MODE - Report has no installation_id
-            
+
             await fetchLatestCompanyInstallation(companyId);
           }
         } else {
@@ -354,10 +350,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       "country_id",
       "post_code",
       "latitude",
-      "longitude",
-      "author_represent",
-      "email",
-      "tel",
+      "longitude"
     ];
 
     const newErrors: { [key: string]: string } = {};
@@ -391,7 +384,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     }
 
     try {
-      // 1. Create/Update Installation
+    
       const installationPayload = {
         name: formValues.name,
         name_specific: formValues.name_specific || null,
@@ -409,15 +402,12 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         phone: formValues.tel || null,
       };
 
-      
-
       // Determine API call based on mode
       let installationResponse;
       let newInstallationId;
 
       if (formMode === "edit" && existingData?.installation_id) {
         // UPDATE existing installation
-       
 
         installationResponse = await fetch(
           `${apiUrl}/api/cbam/installation/${existingData.installation_id}`,
@@ -458,7 +448,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       // 2. Update Report with installation_id (as requested)
-      
 
       const reportUpdatePayload = {
         installation_id: newInstallationId,
@@ -485,7 +474,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       }
 
       const reportResult = await reportUpdateResponse.json();
-     
 
       // 3. Keep reportId in localStorage as requested
       localStorage.setItem("reportId", String(reportId));
@@ -531,22 +519,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     >
       <form onSubmit={handleSubmit} noValidate>
         <Grid container spacing={3}>
-          {/* Header Section */}
-          <Grid size={12}>
-            <Typography
-            fontSize="32px"
-              variant="h5"
-              fontWeight="bold"
-              gutterBottom
-              color="#1976d2"
-            >
-              About the installation
-            </Typography>
-            <Typography fontSize="20px" variant="subtitle1" color="text.secondary" gutterBottom>
-              รายละเอียดสถานประกอบการ
-            </Typography>
-          </Grid>
-
           {/* Reporting Period Section */}
           <Grid size={12}>
             <Section
@@ -556,7 +528,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 !!formErrors.reporting_period_start ||
                 !!formErrors.reporting_period_end
               }
-              // defaultExpanded
             >
               <Grid container spacing={2}>
                 <Grid size={12}>
@@ -589,6 +560,27 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 </Grid>
               </Grid>
             </Section>
+          </Grid>
+
+          {/* Header Section */}
+          <Grid size={12}>
+            <Typography
+              fontSize="32px"
+              variant="h5"
+              fontWeight="bold"
+              gutterBottom
+              color="#1976d2"
+            >
+              About the installation
+            </Typography>
+            <Typography
+              fontSize="20px"
+              variant="subtitle1"
+              color="text.secondary"
+              gutterBottom
+            >
+              รายละเอียดสถานประกอบการ
+            </Typography>
           </Grid>
 
           {/* Installation Form Section */}
@@ -674,7 +666,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocompleteMap
                     caption="Country"
-                    defination="ระบุเลือกประเทศ"
+                    defination="เลือกประเทศ"
                     label="Thailand"
                     options={countries.map((c) => ({
                       ...c,
@@ -774,7 +766,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.author_represent}
                     helperText={formErrors.author_represent || ""}
-                    required
+                   
                   />
                 </Grid>
 
@@ -790,7 +782,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.email}
                     helperText={formErrors.email || ""}
-                    required
+                    
                   />
                 </Grid>
 
@@ -805,7 +797,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                     onChange={handleInputChange}
                     error={!!formErrors.tel}
                     helperText={formErrors.tel || ""}
-                    required
+                   
                   />
                 </Grid>
               </Grid>
@@ -816,11 +808,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           <Grid size={12}>
             <Box display="flex" justifyContent="center" mt={2}>
               <PGButton
-                text={
-                  formMode === "edit"
-                    ? "Update"
-                    : "Create"
-                }
+                text={formMode === "edit" ? "Update" : "Create"}
                 loading={isSubmitting}
                 type="submit"
               />

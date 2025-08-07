@@ -582,8 +582,8 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               <Grid container spacing={2}>
                 <Grid size={12}>
                   <LabeledTextField
-                    caption="Name of the verifier"
-                    defination="ระบุชื่อองค์กรผู้ทวนสอบของผู้ทวนสอบ"
+                    caption="Company Name"
+                    defination="ระบุชื่อบริษัททวนสอบ"
                     label=""
                     name="installation_name"
                     value={formValues.installation_name}
@@ -595,7 +595,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Street, Number"
-                    defination="ระบุถนน เลขที่ของผู้ทวนสอบ"
+                    defination="ระบุถนน เลขที่"
                     label=""
                     name="address"
                     value={formValues.address}
@@ -607,7 +607,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="City"
-                    defination="เมือง/จังหวัดของผู้ทวนสอบ"
+                    defination="เมือง/จังหวัด"
                     label=""
                     name="city"
                     value={formValues.city}
@@ -619,7 +619,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Post Code"
-                    defination="รหัสไปรษณีย์ของผู้ทวนสอบ"
+                    defination="รหัสไปรษณีย์"
                     label=""
                     name="post_code"
                     value={formValues.post_code}
@@ -631,7 +631,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocompleteMap
                     caption="Country"
-                    defination="เลือกประเทศของผู้ทวนสอบ"
+                    defination="เลือกประเทศ"
                     label=""
                     name="country_id"
                     options={countries.map((c) => ({
@@ -651,7 +651,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           <Grid size={12}>
             <Section
               title="Authorised Representative"
-              subtitle="ผู้มีอำนาจลงนาม"
+              subtitle="ผู้มีอำนาจลงนามของบริษัททวนสอบ"
               hasError={false}
               defaultExpanded={true}
             >
@@ -672,7 +672,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   <LabeledTextField
                     type="email"
                     caption="Email"
-                    defination="ระบุอีเมลของผู้ทวนสอบ"
+                    defination="ระบุอีเมล"
                     label=""
                     name="email"
                     value={formValues.email}
@@ -685,7 +685,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                   <LabeledTextField
                     type="tel"
                     caption="Phone"
-                    defination="ระบุหมายเลขโทรศัพท์ของผู้ทวนสอบ"
+                    defination="ระบุหมายเลขโทรศัพท์"
                     label=""
                     name="phone"
                     value={formValues.phone}
@@ -697,7 +697,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Fax"
-                    defination="ระบุหมายเลขแฟกซ์ของผู้ทวนสอบ"
+                    defination="ระบุเลขแฟกซ์"
                     label=""
                     name="fax"
                     value={formValues.fax}
@@ -722,7 +722,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledAutocomplete
                     caption="Accreditation Member State"
-                    defination="ระบุรัฐสมาชิกที่ให้การรับรองผู้ทวนสอบ"
+                    defination="ระบุประเทศที่ให้การรับรอง"
                     label=""
                     name="accreditation_state"
                     value={formValues.accreditation_state}
@@ -736,7 +736,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="National Accreditation Body"
-                    defination="เลือกองค์กรรับรองแห่งชาติของผู้ทวนสอบ"
+                    defination="ระบุชื่อหน่วยงานรับรองมาตราฐานแห่งชาติ"
                     label=""
                     name="accreditation_national_body"
                     value={formValues.accreditation_national_body}
@@ -748,7 +748,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
                 <Grid size={12}>
                   <LabeledTextField
                     caption="Registration Number"
-                    defination="ระบุหมายเลขทะเบียนของผู้ทวนสอบ"
+                    defination="ระบุเลขที่การรับรอง"
                     label=""
                     name="registration_no"
                     value={formValues.registration_no}

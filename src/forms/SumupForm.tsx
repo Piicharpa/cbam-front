@@ -449,7 +449,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                 {/* Goods Selection */}
                 <LabeledAutocompleteMap
                   caption="Goods Category"
-                  defination="เลือกหมวดหมู่สินค้า"
+                  defination="เลือกหมวดผลิตภัณฑ์"
                   label="Select goods category"
                   name="goods_id"
                   required

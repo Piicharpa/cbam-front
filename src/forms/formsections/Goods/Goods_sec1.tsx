@@ -403,7 +403,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
           <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
               caption="Aggregated goods category"
-              defination="เลือกหมวดหมู่สินค้า"
+              defination="เลือกหมวดผลิตภัณฑ์"
               label=""
               name="goods_category"
               options={goodsOptions.map((opt) => ({

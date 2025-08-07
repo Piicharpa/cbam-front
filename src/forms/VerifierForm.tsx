@@ -765,7 +765,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           <Grid size={12}>
             <Box display="flex" justifyContent="center" mt={2}>
               <PGButton
-                text={formMode === "edit" ? "Update" : "Create"}
+                text={formMode === "edit" ? "Save" : "Save"}
                 loading={isSubmitting}
                 type="submit"
               />

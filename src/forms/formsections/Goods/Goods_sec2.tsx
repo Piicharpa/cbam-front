@@ -36,8 +36,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         <div style={{ flex: 1 }}>
           <LabeledTextField
             type="number"
-            caption="Total production levels"
-            defination="ระบุปริมาณการผลิตทั้งหมด"
+            caption="Total production levels (t)"
+            defination="ระบุปริมาณการผลิตทั้งหมด (ตัน)"
             label=""
             name="total_production_amounts"
             value={values.total_production_amounts}

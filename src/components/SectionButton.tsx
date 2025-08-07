@@ -40,7 +40,7 @@ const SectionButton: React.FC<SectionButtonProps> = ({
 
   return (
     <PaleGreenButton type="button" onClick={handleClick} aria-label="Proceed to next step">
-      {children || 'Next'}
+      {'Save'}
     </PaleGreenButton>
   );
 };

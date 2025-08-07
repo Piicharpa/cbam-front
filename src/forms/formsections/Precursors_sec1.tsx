@@ -644,17 +644,6 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           marginBottom: "15px",
         }}
       >
-        {/* <div>
-          <h4 style={{ margin: 0, fontSize: "18px" }}>
-            Precursor {index}
-            {existingData?.id && ` (ID: ${existingData.id})`}
-          </h4>
-          {existingData && (
-            <div style={{ fontSize: "12px", color: "#666", marginTop: "4px" }}>
-              Data loaded from report #{reportId}
-            </div>
-          )}
-                  </div> */}
       </div>
 
       {renderPrecursorField()}
@@ -712,8 +701,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             </Box>
             <Box flex={1}>
               <LabeledTextField
-                caption={`Amount`}
-                defination="ระบุปริมาณวัตถุดิบ"
+                caption={`Amount (t)`}
+                defination="ระบุปริมาณวัตถุดิบ (ตัน)"
                 label=""
                 type="number"
                 name={`amount_${routeIndex}_${index}`}
@@ -981,7 +970,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
               }
             }}
           >
-            {isSaving ? "Saving..." : "Save Precursor"}
+            {isSaving ? "Saving..." : "Save"}
           </button>
         </div>
       </div>

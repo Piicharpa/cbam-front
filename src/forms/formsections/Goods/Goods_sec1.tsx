@@ -294,8 +294,8 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               <div style={{ flex: 1 }}>
                 <LabeledTextField
                   type="number"
-                  caption="Amount"
-                  defination="ระบุปริมาณผลิตภัณฑ์ที่ผลิต"
+                  caption="Amount (t)"
+                  defination="ระบุปริมาณผลิตภัณฑ์ที่ผลิต (ตัน)"
                   label=""
                   name={`amount_${index}`}
                   value={

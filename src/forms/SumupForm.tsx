@@ -490,7 +490,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
             >
               <PGButton
                 text={
-                  isSubmitting ? "Saving..." : isEditMode ? "Update" : "Save"
+                  isSubmitting ? "Saving..." : isEditMode ? "Save" : "Save"
                 }
                 loading={isSubmitting}
                 type="submit"

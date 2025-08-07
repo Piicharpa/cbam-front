@@ -548,7 +548,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
           {/* SECTION 1: Source stream and emission source */}
           <Section
             title="Source stream and emission source"
-            subtitle=""
+            subtitle="แหล่งปล่อยก๊าซเรือนกระจก"
             defaultExpanded={true}
           >
             <Source_sec1
@@ -563,7 +563,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
 
           {/* Submit button */}
           <PGButton
-            text={reportId ? "Update" : "Create"}
+            text={reportId ? "Save" : "Save"}
             loading={isSubmitting}
             type="submit"
           />

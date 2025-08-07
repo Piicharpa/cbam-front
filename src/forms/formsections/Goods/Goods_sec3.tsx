@@ -76,8 +76,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <div style={{ flex: 1 }}>
               <LabeledTextField
                 type="number"
-                caption="Amount of net measurable heat (Imported)"
-                defination="ปริมาณความร้อนสุทธิที่นำเข้าจากแหล่งภายนอก"
+                caption="Amount of net measurable heat (Imported) (TJ)"
+                defination="ปริมาณความร้อนสุทธิที่นำเข้าจากแหล่งภายนอก (TJ)"
                 label=""
                 name="imported_heat_value"
                 value={values.imported_heat_value}
@@ -86,8 +86,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               />
               <LabeledTextField
                 type="number"
-                caption="Amount of net measurable heat (Exported)"
-                defination="ปริมาณความร้อนสุทธิที่ที่ส่งออกจากกระบวนการผลิต"
+                caption="Amount of net measurable heat (Exported) (TJ)"
+                defination="ปริมาณความร้อนสุทธิที่ที่ส่งออกจากกระบวนการผลิต (TJ)"
                 label=""
                 name="exported_heat_value"
                 value={values.exported_heat_value}
@@ -99,9 +99,9 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <div style={{ flex: 1 }}>
               <LabeledTextField
                 type="number"
-                caption="Emissions factor (Imported)"
+                caption="Emissions factor (Imported) (tCO2/TJ)"
                 label=""
-                defination="ระบุค่า Emission factor ของความร้อนที่นำเข้าจากแหล่งภายนอก"
+                defination="ระบุค่า Emission factor ของความร้อนที่นำเข้าจากแหล่งภายนอก (tCO2/TJ)"
                 name="ef_imported_heat"
                 value={values.ef_imported_heat}
                 onChange={onChange}
@@ -109,8 +109,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               />
               <LabeledTextField
                 type="number"
-                caption="Emissions factor (Exported)"
-                defination="ระบุค่า Emission factor ของความร้อนที่ส่งออกจากกระบวนการผลิต"
+                caption="Emissions factor (Exported) (tCO2/TJ)"
+                defination="ระบุค่า Emission factor ของความร้อนที่ส่งออกจากกระบวนการผลิต (tCO2/TJ)"
                 label=""
                 name="ef_exported_heat"
                 value={values.ef_exported_heat}
@@ -144,31 +144,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
             <div style={{ flex: 1 }}>
               <LabeledTextField
                 type="number"
-                caption="Emissions factor (Imported)"
-                defination="ระบุค่า Emission factor ของความร้อนที่นำเข้าจากแหล่งภายนอก"
-                label=""
-                name="ef_imported_wgases"
-                value={values.ef_imported_wgases}
-                onChange={onChange}
-                error={errors.ef_imported_wgases}
-              />
-              <LabeledTextField
-                type="number"
-                caption="Emissions factor (Exported)"
-                defination="ระบุค่า Emission factor ของก๊าซของเสียที่ปล่อยหรือส่งออกจากกระบวนการผลิต"
-                label=""
-                name="ef_exported_wgases"
-                value={values.ef_exported_wgases}
-                onChange={onChange}
-                error={errors.ef_exported_wgases}
-              />
-            </div>
-
-            <div style={{ flex: 1 }}>
-              <LabeledTextField
-                type="number"
-                caption="Amount of waste gas (Imported)"
-                defination="ปริมาณความร้อนสุทธิที่นำเข้าจากแหล่งภายนอก"
+                caption="Amount of waste gas (Imported) (TJ)"
+                defination="ปริมาณความร้อนสุทธิที่นำเข้าจากแหล่งภายนอก (TJ)"
                 label=""
                 name="imported_wgases_amount"
                 value={values.imported_wgases_amount}
@@ -177,13 +154,36 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               />
               <LabeledTextField
                 type="number"
-                caption="Amount of waste gas (Exported)"
-                defination=" ปริมาณก๊าซของเสียที่ปล่อยหรือส่งออกจากกระบวนการผลิต"
+                caption="Amount of waste gas (Exported) (TJ)"
+                defination=" ปริมาณก๊าซของเสียที่ปล่อยหรือส่งออกจากกระบวนการผลิต (TJ)"
                 label=""
                 name="exported_wgases_amount"
                 value={values.exported_wgases_amount}
                 onChange={onChange}
                 error={errors.exported_wgases_amount}
+              />
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <LabeledTextField
+                type="number"
+                caption="Emissions factor (Imported) (tCO2/TJ)"
+                defination="ระบุค่า Emission factor ของความร้อนที่นำเข้าจากแหล่งภายนอก (tCO2/TJ)"
+                label=""
+                name="ef_imported_wgases"
+                value={values.ef_imported_wgases}
+                onChange={onChange}
+                error={errors.ef_imported_wgases}
+              />
+              <LabeledTextField
+                type="number"
+                caption="Emissions factor (Exported) (tCO2/TJ)"
+                defination="ระบุค่า Emission factor ของก๊าซของเสียที่ปล่อยหรือส่งออกจากกระบวนการผลิต (tCO2/TJ)"
+                label=""
+                name="ef_exported_wgases"
+                value={values.ef_exported_wgases}
+                onChange={onChange}
+                error={errors.ef_exported_wgases}
               />
             </div>
           </div>
@@ -224,8 +224,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
       <Box mb={3}>
         <LabeledTextField
           type="number"
-          caption="Electricity consumption"
-          defination="ระบุปริมาณการใช้ไฟฟ้ารวมของกระบวนการผลิต"
+          caption="Electricity consumption (MWh)"
+          defination="ระบุปริมาณการใช้ไฟฟ้ารวมของกระบวนการผลิต (MWh)"
           label=""
           name="electricity_consumption_value"
           value={values.electricity_consumption_value}
@@ -239,8 +239,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           <div style={{ flex: 1 }}>
             <LabeledTextField
               type="number"
-              caption="Emission factor of the electricity"
-              defination="ระบุค่า Emission factor ของไฟฟ้า"
+              caption="Emission factor of the electricity (tCO2/MWh)"
+              defination="ระบุค่า Emission factor ของไฟฟ้า (tCO2/MWh)"
               label=""
               name="ef_exported_electricity"
               value={values.ef_exported_electricity}
@@ -276,7 +276,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
       >
         <strong> Electricity exported from the production process</strong>
         <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
-          ปริมาณการผลิตไฟฟ้าในกระบวนการผลิต แต่มีการส่งออกไฟฟ้าออกไปใช้นอกกระบวนการ
+          ปริมาณการผลิตไฟฟ้าในกระบวนการผลิต
+          แต่มีการส่งออกไฟฟ้าออกไปใช้นอกกระบวนการ
         </p>
       </div>
 
@@ -285,8 +286,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           <div style={{ flex: 1 }}>
             <LabeledTextField
               type="number"
-              caption="Emission factor of the electricity"
-              defination="ระบุค่า Emission factor ของไฟฟ้าที่ส่งออกไปใช้นอกกระบวนการ"
+              caption="Emission factor of the electricity (tCO2/MWh)"
+              defination="ระบุค่า Emission factor ของไฟฟ้าที่ส่งออกไปใช้นอกกระบวนการ (tCO2/MWh)"
               label=""
               name="ef_electricity"
               value={values.ef_electricity}
@@ -298,8 +299,8 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           <div style={{ flex: 1 }}>
             <LabeledTextField
               type="number"
-              caption="Amounts exported"
-              defination="ระบุปริมาณไฟฟ้าที่ส่งออกไปใช้นอกกระบวนการ"
+              caption="Amounts exported (MWh)"
+              defination="ระบุปริมาณไฟฟ้าที่ส่งออกไปใช้นอกกระบวนการ (MWh)"
               label=""
               name="exported_electricity_value"
               value={values.exported_electricity_value}
@@ -310,10 +311,6 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           </div>
         </div>
       </Box>
-
-      {/* <div style={{ display: "flex", justifyContent: "right" }}>
-        <SectionButton onValidate={() => true} onSuccess={onNext} />
-      </div> */}
     </Section>
   );
 };

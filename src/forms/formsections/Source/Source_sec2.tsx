@@ -50,8 +50,8 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         </div>
         <LabeledTextField
           type="number"
-          caption="Fuel balance"
-          defination="ปริมาณเชื้อเพลิง"
+          caption="Fuel balance (TJ)"
+          defination="ปริมาณเชื้อเพลิง (TJ)"
           label=""
           name="manual_fuel_balance"
           value={formValues.manual_fuel_balance || ""}

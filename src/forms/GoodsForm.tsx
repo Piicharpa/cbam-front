@@ -483,8 +483,8 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                     isSubmitting
                       ? "Saving..."
                       : formMode === "edit"
-                      ? "Update"
-                      : "Create"
+                      ? "Save"
+                      : "Save"
                   }
                   loading={isSubmitting}
                   type="submit"

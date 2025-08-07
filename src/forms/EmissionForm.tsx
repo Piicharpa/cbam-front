@@ -11,18 +11,6 @@ import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import Source_sec2 from "./formsections/Source/Source_sec2";
 
-// Define an interface for the expected API response structure
-// interface EmissionApiResponse {
-//   id?: number;
-//   report_id?: number;
-//   generatl_info_on_data_quality?: string;
-//   justification_for_use_default_values?: string;
-//   manual_fuel_balance?: string | number;
-//   manual_GHG_emissions_balance?: string | number;
-//   info_qty_assurance?: string;
-//   [key: string]: any; // Allow other fields
-// }
-
 interface EmissionFormProps {
   formValues: {
     generatl_info_on_data_quality?: string;
@@ -307,7 +295,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
           {/* SECTION: Installation-level GHG emissions and energy consumption */}
           <Section
             title="Installation-level GHG emissions and energy consumption"
-            subtitle="การปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
+            subtitle="สรุปผลการปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
             defaultExpanded
           >
             <Source_sec2

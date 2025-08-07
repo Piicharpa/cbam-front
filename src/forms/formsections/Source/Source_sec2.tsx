@@ -51,7 +51,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         <LabeledTextField
           type="number"
           caption="Fuel balance"
-          defination="ระบุปริมาณรวมของการปล่อย Emission ทางอ้อม"
+          defination="ปริมาณเชื้อเพลิง"
           label=""
           name="manual_fuel_balance"
           value={formValues.manual_fuel_balance || ""}
@@ -68,7 +68,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         <LabeledTextField
           type="number"
           caption="Greenhouse gas emissions balance & information on data quality"
-          defination="ระบุปริมาณ emission ของ greenhouse gas"
+          defination="สรุปผลการปล่อยก๊าซเรือนกระจก"
           label=""
           name="manual_GHG_emissions_balance"
           value={formValues.manual_GHG_emissions_balance || ""}
@@ -114,7 +114,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         />
         <LabeledAutocomplete
           caption="Justification for use of default values (if relevant)"
-          defination="เลือกเหตุผลในการใช้ค่าปกติ (ถ้าเกี่ยวข้อง)"
+          defination="เลือกเหตุผลในการใช้ค่ากลาง (ถ้าเกี่ยวข้อง)"
           label=""
           name="justification_for_use_default_values"
           value={formValues.justification_for_use_default_values || ""}
@@ -132,11 +132,11 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           error={formErrors.justification_for_use_default_values}
           helperText={formErrors.justification_for_use_default_values}
           options={justificationOptions}
-          required
+        
         />
         <LabeledAutocomplete
           caption="Information on quality assurance"
-          defination="เลือกข้อมูลการประกันคุณภาพ "
+          defination="คุณภาพของข้อมูลและการประกันคุณภาพของข้อมูล "
           label=""
           name="information_quality_ssurance"
           value={formValues.information_quality_ssurance || ""}

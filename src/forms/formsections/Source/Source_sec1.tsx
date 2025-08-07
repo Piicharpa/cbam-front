@@ -152,7 +152,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Oxidation factor"
-                defination="ระบุค่า Oxidation factor"
+                defination="ระบุค่าค่าปฏิกิริยาออกซิเดชัน (ถ้ามี)"
                 label=""
                 name={`p_oxidation_factor_${section.id}`}
                 value={section.p_oxidation_factor}
@@ -164,7 +164,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                   )
                 }
                 error={formErrors[`p_${section.id}_p_oxidation_factor`]}
-                required
+                
               />
             </div>
             <div style={{ flex: 1 }}>
@@ -211,7 +211,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="text"
                 caption="Net Calorific Value Unit (NCV Unit)"
-                defination="หน่วยของค่าความร้อนของเชื้อเพลิง"
+                defination="ระบุค่าความร้อนของเชื้อเพลิง (ถ้ามี)"
                 label=""
                 name={`p_ncv_unit_${section.id}`}
                 value={section.p_ncv_unit}
@@ -241,7 +241,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               <LabeledTextField
                 type="number"
                 caption="Biomass content"
-                defination="ระบุปริมาณของ Biomass"
+                defination="ระบุสัดส่วนปริมาณชีวมวล (ถ้ามี)"
                 label=""
                 name={`p_biomass_content_${section.id}`}
                 value={section.p_biomass_content}

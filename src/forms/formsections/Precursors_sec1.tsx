@@ -188,7 +188,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     updatedValues[`purchased_precursors_${index}`] =
       data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
-        updatedValues[`embedded_direct_emissions_value_${index}`] =
+    updatedValues[`embedded_direct_emissions_value_${index}`] =
       data.embedded_direct_emissions_value || 0;
     updatedValues[`source_embedded_direct_emissions_${index}`] =
       data.source_embedded_direct_emissions || "";
@@ -247,80 +247,72 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
     }
   };
 
-
-
-
-
-
-
-
-
-
-
   const renderPrecursorField = () => {
-  if (loadingPrecursors) {
+    if (loadingPrecursors) {
+      return (
+        <div style={{ padding: "20px", textAlign: "center" }}>
+          <CircularProgress size={24} />
+          <span style={{ marginLeft: "10px", color: "#666" }}>
+            Loading precursors...
+          </span>
+        </div>
+      );
+    }
+
+    if (noPrecursors || precursorOptions.length === 0) {
+      return (
+        <div
+          style={{
+            padding: "15px",
+            backgroundColor: "#fff3cd",
+            border: "1px solid #ffeaa7",
+            borderRadius: "4px",
+            marginBottom: "20px",
+          }}
+        >
+          <span style={{ color: "#856404", fontSize: "20px" }}>
+            ℹ️ ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
+          </span>
+        </div>
+      );
+    }
+
+    // Get the specific precursor for this index
+    const currentPrecursor = precursorOptions[index - 1] || null;
+
+    if (!currentPrecursor) {
+      return (
+        <div
+          style={{
+            padding: "15px",
+            backgroundColor: "#f8f9fa",
+            border: "1px solid #dee2e6",
+            borderRadius: "4px",
+            marginBottom: "20px",
+          }}
+        >
+          <span style={{ color: "#6c757d", fontSize: "20px" }}>
+            ℹ️ No precursor available for position {index}
+          </span>
+        </div>
+      );
+    }
+
+    // Show the specific precursor for this loop/index (read-only)
     return (
-      <div style={{ padding: "20px", textAlign: "center" }}>
-        <CircularProgress size={24} />
-        <span style={{ marginLeft: "10px", color: "#666" }}>
-          Loading precursors...
-        </span>
-      </div>
-    );
-  }
+      <div style={{ marginBottom: "20px" }}>
+        <div
+          style={{
+            marginBottom: "15px",
+            fontSize: "24px",
+            fontWeight: "600",
+            color: "#000000",
+          }}
+        >
+          {currentPrecursor}
+        </div>
 
-  if (noPrecursors || precursorOptions.length === 0) {
-    return (
-      <div
-        style={{
-          padding: "15px",
-          backgroundColor: "#fff3cd",
-          border: "1px solid #ffeaa7",
-          borderRadius: "4px",
-          marginBottom: "20px",
-        }}
-      >
-        <span style={{ color: "#856404", fontSize: "20px" }}>
-          ℹ️ ไม่มี Precursor ที่เกี่ยวข้องสำหรับสินค้านี้
-        </span>
-      </div>
-    );
-  }
-
-  // Get the specific precursor for this index
-  const currentPrecursor = precursorOptions[index-1] || null;
-
-  if (!currentPrecursor) {
-    return (
-      <div
-        style={{
-          padding: "15px",
-          backgroundColor: "#f8f9fa",
-          border: "1px solid #dee2e6",
-          borderRadius: "4px",
-          marginBottom: "20px",
-        }}
-      >
-        <span style={{ color: "#6c757d", fontSize: "20px" }}>
-          ℹ️ No precursor available for position {index }
-        </span>
-      </div>
-    );
-  }
-
-  // Show the specific precursor for this loop/index (read-only)
-  return (
-    <div style={{ marginBottom: "20px" }}>
-      <div style={{ 
-        marginBottom: "15px", 
-        fontSize: "24px", 
-        fontWeight: "600", 
-        color: "#000000" 
-      }}>
-         {currentPrecursor}
-      </div>
-      
-      {/* <div
+        {/* <div
         style={{
           marginBottom: "15px",
           padding: "12px",
@@ -362,9 +354,9 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           value={currentPrecursor}
         />
       </div> */}
-    </div>
-  );
-};
+      </div>
+    );
+  };
 
   useEffect(() => {
     const savedGoods = existingData?.goods_id;
@@ -389,7 +381,11 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
         setIsLoadingRoutes(true);
         try {
           const data = await fetchGoodsData();
-          const routesOptions = getRoutesOptions(data, selectedIndustry, selectedGoods);
+          const routesOptions = getRoutesOptions(
+            data,
+            selectedIndustry,
+            selectedGoods
+          );
           setRouteOptions(routesOptions);
         } catch (error) {
           setRouteOptions([]);
@@ -403,7 +399,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
   useEffect(() => {
     const initialValues: { [key: string]: string | number } = {};
-    
+
     Object.keys(formValues).forEach((key) => {
       if (key.endsWith(`_${index}`) || key.includes(`_${index}_`)) {
         initialValues[key] = formValues[key] ?? "";
@@ -459,7 +455,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
 
     const amountValue = fieldValues[`amount_${index}`];
     if (!amountValue && amountValue !== 0) {
-            errors[`amount_${index}`] = "กรุณาระบุจำนวน";
+      errors[`amount_${index}`] = "กรุณาระบุจำนวน";
     } else {
       const numValue = parseFloat(String(amountValue));
       if (isNaN(numValue) || numValue < 0) {
@@ -690,7 +686,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             <Box flex={1}>
               <LabeledAutocomplete
                 caption={`Production Route ${routeIndex + 1}`}
-                defination="เลือกเทคโนโลยีการผลิตที่ใช้วัตถุดิบนี้"
+                defination="เลือกเทคโนโลยีการผลิตที่ใช้วัตถุดิบ"
                 label=""
                 name={`route_${routeIndex}_${index}`}
                 error={
@@ -716,8 +712,8 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             </Box>
             <Box flex={1}>
               <LabeledTextField
-                caption={`Amount for Route ${routeIndex + 1}`}
-                defination="ระบุจำนวน"
+                caption={`Amount`}
+                defination="ระบุปริมาณวัตถุดิบ"
                 label=""
                 type="number"
                 name={`amount_${routeIndex}_${index}`}
@@ -787,12 +783,12 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
             textAlign: "left",
             marginBottom: "1.5rem",
             fontSize: "18px",
-            color: "#0290c4",
           }}
         >
-          <strong>
-            Specific embedded direct emissions (SEE (direct)) Unit: tCO2e/t
-          </strong>
+          <strong> Specific embedded direct emissions (SEE (direct))</strong>
+          <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
+            ค่าการปล่อยก๊าซเรือนกระจกทางตรงที่แฝงอยู่ในวัตถุดิบ
+          </p>
         </div>
         <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
           <div style={{ flex: 1 }}>
@@ -847,13 +843,16 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
           style={{
             textAlign: "left",
             marginBottom: "1.5rem",
-            fontSize: "20px",
-            color: "#0290c4",
+            fontSize: "18px",
           }}
         >
           <strong>
-            Specific electricity consumption (for SEE (indirect)) Unit: MWh/t
+            {" "}
+            Specific electricity consumption (for SEE (indirect))
           </strong>
+          <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
+            ปริมาณการใช้ไฟฟ้าที่ใช้ในการผลิตวัตถุดิบ
+          </p>
         </div>
         <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
           <div style={{ flex: 1 }}>
@@ -874,7 +873,7 @@ const PrecursorFields: React.FC<PrecursorFieldsProps> = ({
               }
             />
           </div>
-                    <div style={{ flex: 1 }}>
+          <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
               caption=""
               defination="ระบุแหล่งที่มาของข้อมูล"

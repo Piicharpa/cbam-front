@@ -257,7 +257,10 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
     return (
       <>
-        <h2>Production Routes</h2>
+        <h2> Production Routes </h2>
+        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
+          ระบุรายละเอียดของเทคโนโลยีการผลิต
+        </p>
         {[...Array(routeCount)].map((_, index) => (
           <div key={index} style={{ marginBottom: "12px" }}>
             <div
@@ -270,7 +273,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
               <div style={{ flex: 3 }}>
                 <LabeledAutocompleteMap
                   caption={`Route ${index + 1}`}
-                  defination="เลือกวัตถุดิบที่เกี่ยวข้อง"
+                  defination=" เลือกเทคโนโลยีการผลิต"
                   label=""
                   name={`route_${index}`}
                   options={routesOptions.map((opt) => ({
@@ -292,7 +295,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
                 <LabeledTextField
                   type="number"
                   caption="Amount"
-                  defination="ระบุปริมาณวัตถุดิบที่เกี่ยวข้อง"
+                  defination="ระบุปริมาณผลิตภัณฑ์ที่ผลิต"
                   label=""
                   name={`amount_${index}`}
                   value={
@@ -371,7 +374,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     <Section
       defaultExpanded={true}
       title="List of aggregated goods categories and corresponding production routes"
-      subtitle="ระบุชื่อและที่อยู่ผู้ทวนสอบ"
+      subtitle="ระบุรายละเอียดของกลุ่มผลิตภัณฑ์และกระบวนการผลิต"
       hasError={
         !!(
           errors.industry_type ||
@@ -403,7 +406,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
           <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
               caption="Aggregated goods category"
-              defination="เลือกหมวดผลิตภัณฑ์"
+              defination="เลือกหมวดหมู่ของผลิตภัณฑ์"
               label=""
               name="goods_category"
               options={goodsOptions.map((opt) => ({
@@ -420,7 +423,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
           <div style={{ flex: 1 }}>
             <LabeledTextField
               caption="Name"
-              defination="ระบุชื่อ"
+              defination="ระบุชื่อผลิตภัณฑ์"
               label=""
               name="name"
               type="text"

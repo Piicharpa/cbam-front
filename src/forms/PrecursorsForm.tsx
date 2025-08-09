@@ -1,9 +1,14 @@
-import React, { useState, useEffect, useRef } from "react";
-import { Container, Typography, Grid, Button, Box, Paper } from "@mui/material";
+import React, { useState, useEffect } from "react";
+import {
+  Container,
+  Typography,
+  Grid,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import PGButton from "../components/FormButton";
 import Section from "../components/Section";
-import PrecursorFields from "./formsections/Precursors_sec1";
+import PrecursorFields1 from "./formsections/Precursors_sec1(a)";
 import {
   fetchCountries,
   CountryOption,
@@ -256,6 +261,68 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     }
 
     return precursorSubmissions;
+  };
+
+  // Add this function to PrecursorsForm component right before the return statement
+  const renderPrecursorField = (index: number) => {
+    // Find the appropriate precursor from our data
+    const precursorOptions =
+      industryTypeId && goodsId
+        ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
+        : [];
+
+    // Get the precursor for this index
+    const precursor = precursorOptions[index - 1];
+
+    if (isLoading) {
+      return (
+        <div
+          style={{ padding: "20px", textAlign: "center", marginBottom: "15px" }}
+        >
+          <CircularProgress size={24} />
+          <span style={{ marginLeft: "10px", color: "#666" }}>
+            Loading precursor data...
+          </span>
+        </div>
+      );
+    }
+
+    if (!precursor) {
+      return (
+        <div
+          style={{
+            padding: "15px",
+            backgroundColor: "#fff3cd",
+            border: "1px solid #ffeaa7",
+            borderRadius: "4px",
+            marginBottom: "15px",
+          }}
+        >
+          <span style={{ color: "#856404", fontSize: "18px" }}>
+            ℹ️ No precursor information available for position {index}
+          </span>
+        </div>
+      );
+    }
+
+    return (
+      <div
+        style={{
+          marginBottom: "20px",
+          padding: "15px",
+          backgroundColor: "#f8f9fa",
+          borderRadius: "8px",
+          borderLeft: "6px solid #0190c3",
+        }}
+      >
+        <div style={{ fontSize: "24px", fontWeight: "600", color: "#0190c3" }}>
+          Precursor {index}: {precursor.label}
+        </div>
+        <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+          Value: {precursor.value}
+        </div>
+      </div>
+    );
   };
 
   // Handle form submission - save all precursors at once
@@ -563,47 +630,6 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     }
   };
 
-  // Validate the full form before submission
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    // Check each precursor field
-    for (let i = 1; i <= precursorsCount; i++) {
-      // Check required fields
-      if (!localFormValues[`purchased_precursors_${i}`]) {
-        newErrors[`purchased_precursors_${i}`] = "Precursor name is required";
-      }
-
-      // Check country code
-      if (!localFormValues[`country_code_${i}`]) {
-        newErrors[`country_code_${i}`] = "Country is required";
-      }
-
-      // Check amount is a valid number
-      const amountValue = localFormValues[`amount_${i}`];
-      if (
-        amountValue === undefined ||
-        amountValue === null ||
-        amountValue === ""
-      ) {
-        newErrors[`amount_${i}`] = "Amount is required";
-      } else {
-        const numValue =
-          typeof amountValue === "number"
-            ? amountValue
-            : parseFloat(String(amountValue));
-        if (isNaN(numValue)) {
-          newErrors[`amount_${i}`] = "Amount must be a number";
-        } else if (numValue < 0) {
-          newErrors[`amount_${i}`] = "Amount cannot be negative";
-        }
-      }
-    }
-
-    setFormErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   // Loading state check
   if (isLoading && !dataLoaded && !initialized) {
     return (
@@ -672,68 +698,77 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
 
       <form onSubmit={handleSubmit}>
         <Grid container spacing={3}>
-          <Section
-            defaultExpanded
-            title="(a) List of purchased precursors"
-            subtitle="รายการวัตถุดิบ"
-            hasError={Object.keys(formErrors).length > 0}
-          >
-            {precursorsCount === 0 ? (
-              <Typography
-                color="#1976d2"
-                sx={{ mt: 2, textAlign: "center" }}
-                variant="h6"
+          {precursorsCount === 0 ? (
+            <Grid size={12}>
+              <Section
+                defaultExpanded
+                title="List of purchased precursors"
+                subtitle="รายการวัตถุดิบ"
+                hasError={false}
               >
-                ไม่มีรายการวัตถุดิบสำหรับผลิตภัณฑ์นี้ <br />
-                กรุณากดปุ่ม continue to next step เพื่อกรอกแบบฟอร์มถัดไป
-              </Typography>
-            ) : (
-              <>
-                {/* Show available precursors */}
-                {Array.from({ length: precursorsCount }).map((_, idx) => {
-                  const index = idx + 1;
-                  // Find the appropriate precursor from our data
-                  const precursorOptions =
-                    industryTypeId && goodsId
-                      ? getPrecursorsOptions(
-                          goodsData,
-                          industryTypeId,
-                          goodsId
-                        ) || []
-                      : [];
+                <Typography
+                  color="#1976d2"
+                  sx={{ mt: 2, textAlign: "center" }}
+                  variant="h6"
+                >
+                  ไม่มีรายการวัตถุดิบสำหรับผลิตภัณฑ์นี้ <br />
+                  กรุณากดปุ่ม continue to next step เพื่อกรอกแบบฟอร์มถัดไป
+                </Typography>
+              </Section>
+            </Grid>
+          ) : (
+            /* Show available precursors as individual sections */
+            Array.from({ length: precursorsCount }).map((_, idx) => {
+              const index = idx + 1;
+              const precursorOptions =
+                industryTypeId && goodsId
+                  ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) ||
+                    []
+                  : [];
+              const precursor = precursorOptions[idx];
+              const precursorValue = precursor?.value?.toString() || "";
+              const precursorName = precursor?.label || `Precursor ${index}`;
 
-                  // Get the precursor value for this field
-                  const precursorValue =
-                    precursorOptions[idx]?.value?.toString() || "";
+              // Check if there are errors related to this precursor
+              const hasErrors = Object.keys(formErrors).some(
+                (key) => key.includes(`_${index}`) || key.endsWith(`_${index}`)
+              );
 
-                  return (
-                    <PrecursorFields
-                      key={`precursor-${index}`}
+              return (
+                <Grid size={12} key={`precursor-section-${index}`}>
+                  <Section
+                    title={`${precursorName} (Precursor ${index})`}
+                    subtitle={`รายละเอียดของวัตถุดิบลำดับที่ ${index}`}
+                    hasError={hasErrors}
+                  >
+                    <PrecursorFields1
                       index={index}
                       formValues={localFormValues}
                       formErrors={formErrors}
                       countries={countries}
                       onChange={handleChange}
                       precursorValue={precursorValue}
-                      // precursorName={precursorOptions[idx]?.label || ''}
                       industryTypeId={industryTypeId}
                       goodsId={goodsId}
-                      // readOnly={true}
                     />
-                  );
-                })}
-              </>
-            )}
-          </Section>
-           {/* ✅ Instructions for user */}
+                  </Section>
+                </Grid>
+              );
+            })
+          )}
+
+          {/* ✅ Instructions for user */}
           <Grid size={12}>
-            <div style={{ 
-              textAlign: "center", 
-              color: "#666", 
-              fontSize: "0.9rem",
-              marginTop: "1rem"
-            }}>
-              💡 After saving, use "Continue to Next Step" button to proceed to Installation details
+            <div
+              style={{
+                textAlign: "center",
+                color: "#666",
+                fontSize: "0.9rem",
+                marginTop: "1rem",
+              }}
+            >
+              💡 After saving, use "Continue to Next Step" button to proceed to
+              Installation details
             </div>
           </Grid>
         </Grid>

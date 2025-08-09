@@ -343,7 +343,39 @@ const Report = () => {
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            รายงานข้อมูล CBAM
+            Product: 
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
+            CN code:
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
+            SEE (direct)Unit tCO2e/t: 
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
+            SEE (indirect)Unit tCO2e/t: 
+          </Typography>
+
+          <Typography
+            variant="body1"
+            color="text.secondary"
+            sx={{ position: "relative", zIndex: 1 }}
+          >
+            SEE (total)Unit tCO2e/t: 
           </Typography>
         </Paper>
         {/* Main Content Paper */}

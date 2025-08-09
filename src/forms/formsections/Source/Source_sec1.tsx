@@ -1,12 +1,15 @@
 import React from "react";
-import { Box } from "@mui/material";
+import { Box, Button, Stack, Accordion, AccordionSummary,AccordionDetails,Typography } from "@mui/material";
 import LabeledTextField from "../../../components/LabeledTextField";
 import LabeledAutocompleteMap from "../../../components/LabeledAutoCompleteMap";
 import LabeledAutocomplete from "../../../components/LabeledAutoComplete";
 import DeleteIcon from "@mui/icons-material/Delete";
+import AddIcon from "@mui/icons-material/Add";
+import ExpandMoreIcon from "@mui/icons-material/Expand";
 import { emission } from "../../../components/dropdown/emission";
 import { adunits } from "../../../components/dropdown/adunits";
 import { efunits } from "../../../components/dropdown/efunits";
+
 // In Source_sec1.tsx
 export interface ProcessEmissionSection {
   id: number; // Client-side ID for React rendering
@@ -46,6 +49,26 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
     <>
       {processEmissionSections.map((section, index) => (
         <React.Fragment key={section.id}>
+          <Accordion 
+      sx={{ 
+        mb: 2, 
+        border: '1px solid #e0e0e0', 
+        borderRadius: '8px', 
+        boxShadow: 'none',
+        backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+        '&:before': { display: 'none' },
+      }}
+    >
+      <AccordionSummary 
+        expandIcon={<ExpandMoreIcon />}
+        sx={{ padding: '8px 16px' }}
+      >
+        <Typography fontWeight="medium">
+          แหล่งปล่อยมลพิษ: {section.p_source_stream_name || ''} 
+          {section.p_method && ` - ${section.p_method}`}
+        </Typography>
+      </AccordionSummary>
+      <AccordionDetails>
           <Box
             key={section.id}
             mb={4}
@@ -57,23 +80,6 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
             }}
           >
-            {processEmissionSections.length > 1 && (
-              <Box
-                sx={{
-                  position: "absolute",
-                  right: "10px",
-                  top: "10px",
-                  cursor: "pointer",
-                  color: "error.main",
-                  "&:hover": {
-                    color: "error.dark",
-                  },
-                }}
-                onClick={() => removeProcessSection(section.id)}
-              >
-                <DeleteIcon />
-              </Box>
-            )}
             <div
               style={{
                 display: "flex",
@@ -161,6 +167,33 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                     )
                   }
                   error={formErrors[`p_${section.id}_p_oxidation_factor`]}
+                />
+
+                <LabeledTextField
+                  type="text"
+                  caption="CO2e fossil"
+                  defination="ค่า CO2e fossil"
+                  unit="Tonne"
+                  label=""
+                  name={`p_co2e_fossil_${section.id}`}
+                  value={section.p_co2e_fossil}
+                  onChange={() => {}}
+                  readOnly
+                  disabled
+                  error={formErrors[`p_${section.id}_p_co2e_fossil`]}
+                />
+                <LabeledTextField
+                  type="text"
+                  caption="CO2e bio"
+                  defination="ค่า CO2e bio"
+                  unit="Tonne"
+                  label=""
+                  name={`p_co2e_bio_${section.id}`}
+                  value={section.p_co2e_bio}
+                  onChange={() => {}}
+                  disabled
+                  readOnly
+                  error={formErrors[`p_${section.id}_p_co2e_bio`]}
                 />
               </div>
               <div style={{ flex: 1 }}>
@@ -250,116 +283,76 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                   }
                   error={formErrors[`p_${section.id}_p_biomass_content`]}
                 />
-              </div>
-            </div>
-          </Box>
-          <Box
-            mt={3}
-            p={2}
-            sx={{
-              backgroundColor: "#f0f7fa",
-              border: "1px dashed #0190c3",
-              borderRadius: "8px",
-              boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
-            }}
-          >
-            <div style={{ marginBottom: "10px" }}>
-              <strong style={{ color: "#0190c3", fontSize: "1rem" }}>
-                ผลการคํานวณ
-              </strong>
-            </div>
-            <div
-              style={{
-                display: "flex",
-                gap: "1.5rem",
-                marginBottom: "0.5rem",
-              }}
-            >
-              <div style={{ flex: 1 }}>
+
                 <LabeledTextField
                   type="text"
-                  caption="CO2e fossil (t)"
-                  defination="ค่า CO2e fossil (t)"
-                  label=""
-                  name={`p_co2e_fossil_${section.id}`}
-                  value={section.p_co2e_fossil}
-                  onChange={() => {}}
-                  readOnly
-                  error={formErrors[`p_${section.id}_p_co2e_fossil`]}
-                />
-                <LabeledTextField
-                  type="text"
-                  caption="CO2e bio (t)"
-                  defination="ค่า CO2e bio (t)"
-                  label=""
-                  name={`p_co2e_bio_${section.id}`}
-                  value={section.p_co2e_bio}
-                  onChange={() => {}}
-                  readOnly
-                  error={formErrors[`p_${section.id}_p_co2e_bio`]}
-                />
-              </div>
-              <div style={{ flex: 1 }}>
-                <LabeledTextField
-                  type="text"
-                  caption="Energy content (fossil), TJ"
+                  caption="Energy content (fossil)"
                   defination="ค่า Energy content (fossil)"
+                  unit="TJ"
                   label=""
                   name={`p_energy_content_fossil_${section.id}`}
                   value={section.p_energy_content_fossil}
                   onChange={() => {}}
                   readOnly
+                  disabled
                   error={formErrors[`p_${section.id}_p_energy_content_fossil`]}
                 />
                 <LabeledTextField
                   type="text"
-                  caption="Energy content (bio), TJ"
+                  caption="Energy content (bio)"
                   defination="ค่า Energy content (bio)"
+                  unit="TJ"
                   label=""
                   name={`p_energy_content_bio_${section.id}`}
                   value={section.p_energy_content_bio}
                   onChange={() => {}}
                   readOnly
+                  disabled
                   error={formErrors[`p_${section.id}_p_energy_content_bio`]}
                 />
               </div>
             </div>
+            <Box display="flex" width="100%" justifyContent="flex-end">
+              <Button
+                variant="contained"
+                startIcon={<DeleteIcon />}
+                onClick={() => removeProcessSection(section.id)}
+                sx={{
+                  bgcolor: "#bb2929",
+                  "&:hover": { bgcolor: "#d32f2f" },
+                  borderRadius: "8px",
+                  boxShadow: "0 2px 6px rgba(187, 41, 41, 0.3)",
+                  fontWeight: "bold",
+                }}
+              >
+                ลบแหล่งปล่อยมลพิษกระบวนการ
+              </Button>
+            </Box>
           </Box>
+          </AccordionDetails>
+          </Accordion>
         </React.Fragment>
+        
       ))}
       {/* ปุ่มเพิ่มส่วนใหม่สำหรับ Process emissions */}
-      <Box textAlign="center" mb={2}>
-        <button
-          type="button"
-          style={{
-            backgroundColor: "#0190c3",
-            color: "#fff",
-            padding: "10px 20px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: "pointer",
-            fontWeight: "bold",
-            display: "flex",
-            alignItems: "center",
-            margin: "0 auto",
-            boxShadow: "0 2px 6px rgba(1, 144, 195, 0.3)",
-            transition: "all 0.2s ease",
-          }}
-          onClick={addNewProcessSection}
-          onMouseOver={(e) => {
-            e.currentTarget.style.backgroundColor = "#07b8dd";
-            e.currentTarget.style.boxShadow =
-              "0 4px 8px rgba(1, 144, 195, 0.4)";
-          }}
-          onMouseOut={(e) => {
-            e.currentTarget.style.backgroundColor = "#0190c3";
-            e.currentTarget.style.boxShadow =
-              "0 2px 6px rgba(1, 144, 195, 0.3)";
-          }}
-        >
-          <span style={{ marginRight: "8px", fontSize: "20px" }}>+</span>
-          เพิ่มแหล่งปล่อยมลพิษกระบวนการ
-        </button>
+
+      <Box textAlign="center" mb={2} position="relative">
+        <Stack direction="row" spacing={2} justifyContent="center">
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={addNewProcessSection}
+            sx={{
+              bgcolor: "#0190c3",
+              "&:hover": { bgcolor: "#07b8dd" },
+              borderRadius: "8px",
+              boxShadow: "0 2px 6px rgba(1, 144, 195, 0.3)",
+              fontWeight: "bold",
+            }}
+          >
+            เพิ่มแหล่งปล่อยมลพิษกระบวนการ
+          </Button>
+        </Stack>
       </Box>
     </>
   );

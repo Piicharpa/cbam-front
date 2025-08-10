@@ -11,6 +11,7 @@ import {
   OptionType,
 } from "../../components/dropdown/goods";
 import { justification } from "../../components/dropdown/justification";
+import {electricitys} from "../../components/dropdown/electricitys" ;
 
 interface PrecursorFieldsProps {
   index: number;
@@ -116,7 +117,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   const [routeOptions, setRouteOptions] = useState<OptionType[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
   const [routeCount, setRouteCount] = useState<number>(1);
-  const [routeCount1, setRouteCount1] = useState<number>(6);
+  const [routeCount1, setRouteCount1] = useState<number>(1);
   const [routeCount2, setRouteCount2] = useState<number>(1);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
@@ -719,6 +720,23 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         <Box mb={3}>
           <ADDDELButton routeCount={routeCount1} setRouteCount={setRouteCount1} />
         </Box>
+
+        <LabeledTextField
+                caption= "Total purchased levels"
+                defination="ปริมาณการสั่งซื้อทั้งหมด"
+                unit="Tonne"
+                label=""
+                type="number"
+                name={``}
+                value={fieldValues}
+                onChange={(e) =>
+                  handleInputChange(e.target.name, e.target.value)
+                }
+                error={
+                  fieldErrors[``] ||
+                  formErrors[`amount_`]
+                }
+              />
       </Box>
 
       <div
@@ -747,7 +765,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           >
             <div style={{ flex: 1 }}>
               <LabeledAutocomplete
-                caption={`Production Route ${routeIndex + 1}`}
+                caption={`Production Process${routeIndex + 1}`}
                 defination="เลือกเทคโนโลยีการผลิตที่ใช้วัตถุดิบ"
                 label=""
                 name={`route_${routeIndex}_${index}`}
@@ -909,7 +927,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               type="number"
               caption=""
               defination="ระบุเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
-              unit="CO2e/t"
+              unit="tCO2e/t"
               label=""
               name={`embedded_direct_emissions_value_${index}`}
               value={
@@ -986,6 +1004,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
                 fieldErrors[`embedded_indirection_emissions_value_${index}`] ||
                 formErrors[`embedded_indirection_emissions_value_${index}`]
               }
+              
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -1054,20 +1073,16 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             />
           </div>
           <div style={{ flex: 1 }}>
-            <LabeledAutocompleteMap
+            <LabeledAutocomplete
               caption=""
               defination="ระบุแหล่งที่มาของข้อมูล"
               label=""
               name={`source_embedded_indirect_emissions_${index}`}
-              options={[
-                { label: "Source", value: "Source" },
-                { label: "Measured", value: "Measured" },
-                { label: "Default", value: "Default" },
-                { label: "Unknown", value: "Unknown" },
-              ]}
-              value={
-                fieldValues[`source_embedded_indirect_emissions_${index}`] || ""
-              }
+              options={electricitys.map((e) => e.name)}
+              value={String(
+                fieldValues[`source_embedded_indirect_emissions_${index}`] ||
+                  ""
+              )}
               error={
                 fieldErrors[`source_embedded_indirect_emissions_${index}`] ||
                 formErrors[`source_embedded_indirect_emissions_${index}`]
@@ -1092,7 +1107,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           }}
         >
           <strong style={{ color: "#0290c4" }}>
-            Specific embedded indirect emissions (for SEE (indirect))
+            Specific embedded indirect emissions (SEE (indirect))
           </strong>
           <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
             ปริมาณการใช้ไฟฟ้าที่ใช้ในการผลิตวัตถุดิบ
@@ -1116,6 +1131,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
                 formErrors[`embedded_indirection_emissions_value_${index}`]
               }
               unit="tCO2e/t"
+              disabled
             />
           </div>
         </div>

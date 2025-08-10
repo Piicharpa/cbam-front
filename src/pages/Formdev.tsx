@@ -23,7 +23,9 @@ import {
   ButtonDecoration,
 } from "../components/pages/form/Style";
 import styled from "@emotion/styled";
-import InstallationForm ,{ InstallationFormProps }from "../forms/installationForm";
+import InstallationForm, {
+  InstallationFormProps,
+} from "../forms/installationForm";
 import VerifierForm from "../forms/VerifierForm";
 import GoodsForm, {GoodsFormProps}from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
@@ -31,7 +33,7 @@ import SourceForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
 import { Theme } from "@mui/material/styles";
 import EmissionForm from "../forms/EmissionForm";
-import dayjs, { Dayjs } from 'dayjs';
+import dayjs, { Dayjs } from "dayjs";
 
 const StyledBox = styled(Box)(({ theme }: { theme: Theme }) => ({
   width: "100%",
@@ -119,7 +121,9 @@ const Formdev: React.FC = () => {
     cn_id: "",
   });
 
-  const [installationData, setInstallationData] = useState<InstallationFormProps["data"]>({
+  const [installationData, setInstallationData] = useState<
+    InstallationFormProps["data"]
+  >({
     reportId: 0,
     name: "",
     name_specific: "",

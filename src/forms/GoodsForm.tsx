@@ -102,7 +102,9 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     total_production_amounts: formValues.total_production_amounts || 0,
   });
 
-  const [localFormValues, setLocalFormValues] = useState<FormValues>(getDefaultFormValues());
+  const [localFormValues, setLocalFormValues] = useState<FormValues>(
+    getDefaultFormValues()
+  );
 
   // --- Fetch countries on mount ---
   useEffect(() => {
@@ -135,35 +137,40 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         // 1. fetch report data
         const reportRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`);
         if (!reportRes.ok) throw new Error(`Failed to fetch report`);
-        
+
         const reportArr = await reportRes.json();
         const report = reportArr[0];
+
         setExistingData(report);
-        
+
         // ตรวจสอบว่ามี goods_id หรือไม่
-        if (report && report.goods_id) {
+
+        if (report && report.d_processes_id) {
           try {
             // กรณีมี goods_id ให้ดึงข้อมูล
             const goodsRes = await fetch(
-              `${apiUrl}/api/cbam/d_goods/${report.goods_id}`
+              `${apiUrl}/api/cbam/d_goods/${report.d_processes_id}`
             );
-            
+
             if (!goodsRes.ok) {
               // ถ้าดึงข้อมูล goods ไม่สำเร็จ (อาจ goods_id ไม่ถูกต้อง) ให้ใช้ค่าว่างเปล่า
-              console.error("Failed to fetch goods data:", await goodsRes.text());
+              console.error(
+                "Failed to fetch goods data:",
+                await goodsRes.text()
+              );
               setFormMode("create");
               const defaultEmptyValues = getDefaultFormValues();
               setLocalFormValues(defaultEmptyValues);
               onChange(defaultEmptyValues);
               return;
             }
-            
+
             const goodsDataRes = await goodsRes.json();
             const goodsData = Array.isArray(goodsDataRes)
               ? goodsDataRes[0]
               : goodsDataRes;
-              
-              if (!goodsData) {
+
+            if (!goodsData) {
               // ถ้าไม่มีข้อมูล goods ให้ใช้ค่าว่างเปล่า
               console.log("No goods data found with ID:", report.goods_id);
               setFormMode("create");
@@ -172,14 +179,14 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
               onChange(defaultEmptyValues);
               return;
             }
-            
+
             // มีข้อมูลถูกต้อง ดึงค่าต่างๆ
             console.log("Found goods data:", goodsData);
             const extractedValues = {
               report_id: goodsData.report_id || reportId,
               name: String(goodsData.name || ""),
               goods_category: String(goodsData.goods_category || ""),
-              industry_type: String(goodsData.industry_type || ""),
+              industry_type: String(report.industry_type_id || ""),
               routes: (() => {
                 if (!goodsData.routes) return [];
                 try {
@@ -245,12 +252,12 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
               ),
               ef_exported_wgases: Number(goodsData.ef_exported_wgases ?? 0),
             };
-            
+
             // Clear cached form data since we're loading from API
             localStorage.removeItem("goodsFormData");
             localStorage.removeItem("selectedIndustry");
             localStorage.removeItem("selectedGoods");
-            
+
             setLocalFormValues(extractedValues);
             onChange(extractedValues);
             setFormMode("edit");
@@ -265,45 +272,23 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           // ไม่มี goods_id ให้ใช้ค่าว่างเปล่า
           console.log("No goods_id found in report, using empty values");
           setFormMode("create");
-          
-          // ตรวจสอบว่ามีข้อมูลใน localStorage หรือไม่
-          const savedData = localStorage.getItem("goodsFormData");
-          if (savedData) {
-            try {
-              const parsedData = JSON.parse(savedData);
-              // ใช้ข้อมูลจาก localStorage แต่อัปเดตบาง fields
-              const savedValues = {
-                ...getDefaultFormValues(),
-                ...parsedData,
-                report_id: reportId // ใช้ reportId ปัจจุบัน
-              };
-              setLocalFormValues(savedValues);
-              onChange(savedValues);
-              console.log("Loaded goods data from localStorage:", savedValues);
-            } catch (error) {
-              console.error("Error parsing local storage data:", error);
-              const defaultEmptyValues = getDefaultFormValues();
-              setLocalFormValues(defaultEmptyValues);
-              onChange(defaultEmptyValues);
-            }
-          } else {
-            const defaultEmptyValues = getDefaultFormValues();
-            setLocalFormValues(defaultEmptyValues);
-            onChange(defaultEmptyValues);
-          }
+          setLocalFormValues({
+            ...localFormValues,
+            industry_type: String(report.industry_type_id || ""),
+          });
+          onChange(getDefaultFormValues());
         }
       } catch (error) {
         console.error("Error loading goods data:", error);
         // กรณีเกิดข้อผิดพลาดให้ใช้ค่าว่างเปล่า
         setFormMode("create");
-        const defaultEmptyValues = getDefaultFormValues();
-        setLocalFormValues(defaultEmptyValues);
-        onChange(defaultEmptyValues);
+        setLocalFormValues(getDefaultFormValues());
+        onChange(getDefaultFormValues());
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     loadGoodsData();
     // eslint-disable-next-line
   }, [apiUrl, reportId]);
@@ -338,7 +323,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     "source_of_ef_electricity",
     "name",
     "total_production_amounts",
-    "consumed_in_others_amounts", 
+    "consumed_in_others_amounts",
     "produced_for_market_amount",
     "condumed_non_cbam_goods_amounts",
   ];
@@ -350,14 +335,14 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       if (!value && value !== 0)
         errors[field] = `${field.replace(/_/g, " ")} is required`;
     });
-    
-        if (
+
+    if (
       localFormValues.routes.length === 0 ||
       localFormValues.routes.every((route) => !route)
     ) {
       errors.routes = "At least one route is required";
     }
-    
+
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -366,14 +351,14 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateForm()) return;
-    
+
     setIsSubmitting(true);
     try {
       // ตรวจสอบว่า report_id มีค่าหรือไม่
       if (!localFormValues.report_id && !reportId) {
         throw new Error("No report ID available. Cannot save goods data.");
       }
-      
+
       const cleanPayload = {
         report_id: localFormValues.report_id || reportId,
         name: localFormValues.name,
@@ -413,12 +398,15 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           Number(localFormValues.exported_wgases_amount) || 0,
         ef_exported_wgases: Number(localFormValues.ef_exported_wgases) || 0,
       };
-      
+
       let response, newGoodsId;
-      
+
       if (formMode === "edit" && existingData?.goods_id) {
         // UPDATE existing goods data
-        console.log("Updating existing goods data with ID:", existingData.goods_id);
+        console.log(
+          "Updating existing goods data with ID:",
+          existingData.goods_id
+        );
         response = await fetch(
           `${apiUrl}/api/cbam/d_goods/${existingData.goods_id}`,
           {
@@ -437,42 +425,46 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           body: JSON.stringify(cleanPayload),
         });
       }
-      
+
       if (!response.ok) {
         const errorData = await response.text();
         console.error("Server error response:", errorData);
-        throw new Error(
-          `Server error saving goods data: ${errorData}`
-        );
+        throw new Error(`Server error saving goods data: ${errorData}`);
       }
-      
+
       const result = await response.json();
       if (formMode !== "edit") {
         newGoodsId = result.id;
         console.log("Created new goods with ID:", newGoodsId);
       }
-      
+
       // Update report with goods_id if needed
       if (reportId && newGoodsId) {
         console.log("Updating report with goods_id:", newGoodsId);
-        const updateReportResponse = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ goods_id: newGoodsId }),
-        });
-        
+        const updateReportResponse = await fetch(
+          `${apiUrl}/api/cbam/report/${reportId}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ goods_id: newGoodsId }),
+          }
+        );
+
         if (!updateReportResponse.ok) {
-          console.warn("Failed to update report with goods_id:", await updateReportResponse.text());
+          console.warn(
+            "Failed to update report with goods_id:",
+            await updateReportResponse.text()
+          );
         } else {
           console.log("Successfully updated report with goods_id");
         }
       }
-      
+
       // Clear localStorage data
       localStorage.removeItem("goodsFormData");
       localStorage.removeItem("selectedIndustry");
       localStorage.removeItem("selectedGoods");
-      
+
       onNextStep();
     } catch (error: any) {
       setFormErrors((prev) => ({
@@ -553,7 +545,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             />
           </Grid>
 
-                    {/* Section 2 - Production Amounts */}
+          {/* Section 2 - Production Amounts */}
           <Grid size={12}>
             <Section2
               values={{

@@ -124,10 +124,6 @@ function App() {
 
       localStorage.setItem("user_account", JSON.stringify(token));
     });
-
-    // return () => {
-    //   window.removeEventListener("message", handleMessage);
-    // };
   }, []);
   return (
     <ThemeProvider theme={theme}>

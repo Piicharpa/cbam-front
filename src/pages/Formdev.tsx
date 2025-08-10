@@ -1,7 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import {
-  Container,
   Stepper,
   Step,
   StepLabel,
@@ -9,7 +8,6 @@ import {
   Box,
   Typography,
   ThemeProvider,
-  Fade,
 } from "@mui/material";
 import theme from "../components/pages/form/Theme";
 import {
@@ -18,17 +16,14 @@ import {
   steps,
 } from "../components/pages/form/Stepper";
 import {
-  HeaderPatternBox,
-  HeaderBanner,
   StepperContainer,
   TopRightCircle,
   BottomLeftCircle,
-  ContentPaper,
   NavigationContainer,
   ButtonDecoration,
 } from "../components/pages/form/Style";
 import styled from "@emotion/styled";
-import InstallationForm from "../forms/installationForm";
+import InstallationForm ,{ InstallationFormProps }from "../forms/installationForm";
 import VerifierForm from "../forms/VerifierForm";
 import GoodsForm from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
@@ -36,6 +31,7 @@ import SourceForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
 import { Theme } from "@mui/material/styles";
 import EmissionForm from "../forms/EmissionForm";
+import dayjs, { Dayjs } from 'dayjs';
 
 const StyledBox = styled(Box)(({ theme }: { theme: Theme }) => ({
   width: "100%",
@@ -124,7 +120,7 @@ const Formdev: React.FC = () => {
     cn_id: "",
   });
 
-  const [installationData, setInstallationData] = useState({
+  const [installationData, setInstallationData] = useState<InstallationFormProps["data"]>({
     reportId: 0,
     name: "",
     name_specific: "",
@@ -140,8 +136,8 @@ const Formdev: React.FC = () => {
     email: "",
     tel: "",
     unlocode: "",
-    reporting_period_start: new Date(),
-    reporting_period_end: new Date(),
+    reporting_period_start: dayjs(),
+    reporting_period_end: dayjs(),
   });
 
   const [verifierData, setVerifierData] = useState({
@@ -274,7 +270,6 @@ const Formdev: React.FC = () => {
 
   // ✅ เพิ่ม function ใหม่นี้
   const getContinueButtonText = () => {
-    // Case 0: Step แรกและไม่มี reportId
     if (activeStep === 0 && !localStorage.getItem("reportId")) {
       return "Please Create Report First";
     }
@@ -435,7 +430,7 @@ const Formdev: React.FC = () => {
       case 1:
         return (
           <InstallationForm
-            data={installationData} // Just pass the entire object as is
+            data={installationData}
             onChange={setInstallationData}
             onNextStep={handleNext}
           />

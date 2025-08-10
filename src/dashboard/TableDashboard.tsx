@@ -300,9 +300,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                     <DatePicker
                       label="Start Date"
                       value={startDate}
-                      onChange={(newValue: Dayjs | null) =>
-                        setStartDate(newValue)
-                      }
+                      onChange={(value) => setStartDate(value)}
                       slotProps={{
                         textField: {
                           fullWidth: true,

@@ -9,8 +9,14 @@ import {
   fetchCountries,
   CountryOption,
 } from "../components/dropdown/contriesmap";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+import dayjs, { Dayjs } from "dayjs";
+import "dayjs/locale/th";
 
-interface InstallationFormProps {
+// Modify the interface to use Dayjs instead of Date for date fields
+export interface InstallationFormProps {
   data: {
     reportId: number;
     name: string;
@@ -27,8 +33,8 @@ interface InstallationFormProps {
     email: string;
     tel: string;
     unlocode: string;
-    reporting_period_start: Date;
-    reporting_period_end: Date;
+    reporting_period_start: Date | Dayjs;
+    reporting_period_end: Date | Dayjs;
   };
   onChange: (data: InstallationFormProps["data"]) => void;
   onNextStep: () => void;
@@ -39,16 +45,11 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
   // Get report ID from localStorage (always exists in real situation)
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
-
   const companyId = 1;
   const apiUrl = process.env.REACT_APP_API_URL;
-
   const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -58,7 +59,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   );
 
   // Initialize form values with today's date
-  const getTodayDate = () => new Date();
+  const getTodayDate = () => dayjs();
 
   const [formValues, setFormValues] = useState({
     reportId: reportId || 0,
@@ -76,55 +77,95 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     email: data.email || "",
     tel: data.tel || "",
     unlocode: data.unlocode || "",
-    reporting_period_start: getTodayDate(),
-    reporting_period_end: getTodayDate(),
+    reporting_period_start: dayjs(),
+    reporting_period_end: dayjs(),
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
 
-  // Date formatter แสดงในรูปแบบ วัน/เดือน/ปี
-  const formatDate = (date: any): string => {
-    if (!date) return "";
+  // Handle date change with dayjs objects
+  const handleDateChange = (name: string, date: dayjs.Dayjs | null) => {
+    if (!date) return;
 
-    let dateObj: Date;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: date, // Store dayjs object directly
+    }));
 
-    if (date instanceof Date) {
-      dateObj = date;
-    } else if (typeof date === "string") {
-      dateObj = new Date(date);
-    } else {
-      return "";
+    // Update parent component
+    const updatedFormValues = {
+      ...formValues,
+      [name]: date, // Pass dayjs object
+      reportId: reportId || 0,
+    };
+    onChange(updatedFormValues as InstallationFormProps["data"]);
+
+    // Clear error if any
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
-    // ตรวจสอบว่า dateObj เป็น valid date หรือไม่
-    if (isNaN(dateObj.getTime())) return "";
-
-    // รูปแบบ วัน/เดือน/ปี
-    const day = dateObj.getDate().toString().padStart(2, "0");
-    const month = (dateObj.getMonth() + 1).toString().padStart(2, "0");
-    const year = dateObj.getFullYear();
-
-    return `${day}/${month}/${year}`;
   };
 
-  // 🏭 Fetch specific installation data (for EDIT mode)
   const fetchInstallationData = async (installationId: number) => {
     try {
-      const response = await fetch(
-        `${apiUrl}/api/cbam/installation/${installationId}`
-      );
-      if (!response.ok) {
-        throw new Error(`Error fetching installation: ${response.statusText}`);
+      // ตรวจสอบ reportId ก่อนใช้
+      if (!reportId) {
+        console.error("reportId is null, cannot fetch installation data");
+        return null;
       }
 
-      const installationDataArray = await response.json();
+      // เรียกข้อมูลสถานที่ติดตั้ง
+      const installationResponse = await fetch(
+        `${apiUrl}/api/cbam/installation/${installationId}`
+      );
+      if (!installationResponse.ok) {
+        throw new Error(
+          `Error fetching installation: ${installationResponse.statusText}`
+        );
+      }
+
+      // เรียกข้อมูลรายงานทั้งหมดของบริษัท
+      const companyReportsResponse = await fetch(
+        `${apiUrl}/api/cbam/report/company/${companyId}`
+      );
+
+      // เรียกข้อมูลรายงานที่กำลังแก้ไข (รายงานปัจจุบัน)
+      const currentReportResponse = await fetch(
+        `${apiUrl}/api/cbam/report/${reportId}`
+      );
+
+      // ประมวลผลข้อมูล
+      const installationDataArray = await installationResponse.json();
+      const companyReports = await companyReportsResponse.json();
+      const currentReportData = await currentReportResponse.json();
+
+      console.log("Installation data:", installationDataArray);
+      console.log("Company reports:", companyReports);
+      console.log("Current report:", currentReportData);
+
+      // ค้นหารายงานที่ตรงกับ reportId ที่กำลังแก้ไข - รูปแบบที่ 1
+      let reportDateInfo = null;
+      if (Array.isArray(companyReports)) {
+        reportDateInfo = companyReports.find(
+          (report) => report.id === reportId
+        );
+      }
+
+      // ถ้าไม่พบ ลองหาจากรายงานปัจจุบันที่กำลังแก้ไข - รูปแบบที่ 2
+      if (
+        !reportDateInfo &&
+        Array.isArray(currentReportData) &&
+        currentReportData.length > 0
+      ) {
+        reportDateInfo = currentReportData[0];
+      }
 
       if (installationDataArray && installationDataArray.length > 0) {
         const installationData = installationDataArray[0];
 
-        // Update form values with existing installation data + today's dates
+        // สร้างข้อมูลฟอร์ม
         const updatedFormValues = {
-          reportId: reportId || 0,
+          reportId: reportId,
           name: installationData.name || "",
           name_specific: installationData.name_specific || "",
           eco_activity: installationData.eco_activity || "",
@@ -141,21 +182,29 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           email: installationData.email || "",
           tel: installationData.phone || "", // phone -> tel
           unlocode: installationData.unlocode || "",
-          // Set dates to today as requested
-          reporting_period_start: getTodayDate(),
-          reporting_period_end: getTodayDate(),
+
+          // ใช้วันที่จากรายงานหรือใช้วันที่ปัจจุบัน
+          reporting_period_start: reportDateInfo?.reporting_period_start
+            ? dayjs(reportDateInfo.reporting_period_start)
+            : getTodayDate(),
+          reporting_period_end: reportDateInfo?.reporting_period_end
+            ? dayjs(reportDateInfo.reporting_period_end)
+            : getTodayDate(),
         };
+
+        console.log("Setting form with dates:", {
+          start: updatedFormValues.reporting_period_start,
+          end: updatedFormValues.reporting_period_end,
+        });
 
         setFormValues(updatedFormValues);
         onChange(updatedFormValues);
         setFormMode("edit");
-
         return installationData.id;
       }
     } catch (error) {
       console.error("❌ Error fetching installation data:", error);
     }
-
     return null;
   };
 
@@ -170,21 +219,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           `Error fetching company installations: ${response.statusText}`
         );
       }
-
       const installations = await response.json();
-
       if (installations && installations.length > 0) {
         // Take the last item as requested
         const latestInstallation = installations[installations.length - 1];
-
         const latestinstallationId = latestInstallation.installation_id;
-
         const latestdata_response = await fetch(
           `${apiUrl}/api/cbam/installation/${latestinstallationId}`
         );
-
         const latestdata = await latestdata_response.json();
-
         // Update form with basic info but set dates to today
         const updatedFormValues = {
           reportId: reportId || 0,
@@ -205,10 +248,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           tel: latestdata.phone || "",
           unlocode: latestdata.unlocode || "",
           // Set dates to today as requested
-          reporting_period_start: getTodayDate(),
-          reporting_period_end: getTodayDate(),
+          reporting_period_start: latestdata.reporting_period_start,
+          reporting_period_end: latestdata.reporting_period_end,
         };
-
         setFormValues(updatedFormValues);
         onChange(updatedFormValues);
         setFormMode("create");
@@ -225,7 +267,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   useEffect(() => {
     const loadInstallationData = async () => {
       setIsLoading(true);
-
       try {
         // Case 1: No reportId - show empty form (shouldn't happen in real life)
         if (!reportId) {
@@ -233,7 +274,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           setIsLoading(false);
           return;
         }
-
         // Case 2: Fetch report data to check if it has installation_id
         const reportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`
@@ -243,20 +283,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             `Failed to fetch report: ${reportResponse.statusText}`
           );
         }
-
         const reportData = await reportResponse.json();
-
         if (reportData && reportData.length > 0) {
           const report = reportData[0];
           setExistingData(report);
-
           if (report.installation_id) {
             // ✅ SCENARIO 1: EDIT MODE - Report has installation_id
-
             await fetchInstallationData(report.installation_id);
           } else {
             // ✅ SCENARIO 2: CREATE MODE - Report has no installation_id
-
             await fetchLatestCompanyInstallation(companyId);
           }
         } else {
@@ -269,7 +304,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         setIsLoading(false);
       }
     };
-
     loadInstallationData();
   }, [apiUrl, reportId, companyId]);
 
@@ -281,9 +315,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           countries: CountryOption[];
           defaultCountry: CountryOption | null;
         };
-
         setCountries(result.countries);
-
         // Auto-select default country if none selected
         if (result.defaultCountry && !formValues.country_id) {
           const defaultCountryData = {
@@ -291,41 +323,54 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             country_id: String(result.defaultCountry.value),
             unlocode: String(result.defaultCountry.abbreviation),
           };
-
           setFormValues((prev) => ({
             ...prev,
             country_id: String(result.defaultCountry!.value),
             unlocode: String(result.defaultCountry!.abbreviation),
           }));
-
           onChange(defaultCountryData);
         }
       } catch (error) {
         console.error("❌ Error loading countries:", error);
       }
     };
-
     loadCountries();
   }, []);
+
+  // Add this function for API date formatting (YYYY-MM-DD)
+  const formatDateForAPI = (date: any): string => {
+    if (!date) return "";
+
+    // If it's a dayjs object
+    if (date && typeof date === "object" && "format" in date) {
+      return date.format("YYYY-MM-DD");
+    }
+
+    // If it's a Date object
+    if (date instanceof Date) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    return String(date);
+  };
 
   // Handle form field changes
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-
     setFormValues((prev) => ({ ...prev, [name]: value }));
-
     // Clear error when user starts typing
     if (formErrors[name]) {
       setFormErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
     // Update parent component
     const updatedFormValues = {
       ...formValues,
       [name]: value,
       reportId: reportId || 0,
     };
-
     onChange(updatedFormValues as InstallationFormProps["data"]);
   };
 
@@ -336,16 +381,13 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     // Convert to string to handle all possible types
     const value = String(countryValue);
     const selectedCountry = countries.find((c) => String(c.value) === value);
-
     const updatedFormValues = {
       ...formValues,
       country_id: value,
       unlocode: selectedCountry?.abbreviation || "",
     };
-
     setFormValues(updatedFormValues);
     onChange(updatedFormValues);
-
     // Clear country error
     if (formErrors.country_id) {
       setFormErrors((prev) => ({ ...prev, country_id: "" }));
@@ -356,9 +398,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
-
     setIsSubmitting(true);
-
     // Validation
     const requiredFields = [
       "name",
@@ -369,15 +409,12 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       "latitude",
       "longitude",
     ];
-
     const newErrors: { [key: string]: string } = {};
-
     requiredFields.forEach((field) => {
       if (!formValues[field as keyof typeof formValues]) {
         newErrors[field] = "กรุณากรอกข้อมูล";
       }
     });
-
     // Email validation
     if (
       formValues.email &&
@@ -385,21 +422,17 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
     ) {
       newErrors.email = "รูปแบบอีเมลไม่ถูกต้อง";
     }
-
     if (Object.keys(newErrors).length > 0) {
       setFormErrors(newErrors);
-
       // Scroll to first error
       const firstErrorField = Object.keys(newErrors)[0];
       const errorElement = document.getElementsByName(firstErrorField)[0];
       if (errorElement) {
         errorElement.scrollIntoView({ behavior: "smooth", block: "center" });
       }
-
       setIsSubmitting(false);
       return;
     }
-
     try {
       const installationPayload = {
         name: formValues.name,
@@ -417,14 +450,11 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         email: formValues.email || null,
         phone: formValues.tel || null,
       };
-
       // Determine API call based on mode
       let installationResponse;
       let newInstallationId;
-
       if (formMode === "edit" && existingData?.installation_id) {
         // UPDATE existing installation
-
         installationResponse = await fetch(
           `${apiUrl}/api/cbam/installation/${existingData.installation_id}`,
           {
@@ -433,18 +463,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             body: JSON.stringify(installationPayload),
           }
         );
-
         newInstallationId = existingData.installation_id;
       } else {
         // CREATE new installation
-
         installationResponse = await fetch(`${apiUrl}/api/cbam/installation`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(installationPayload),
         });
       }
-
       if (!installationResponse.ok) {
         const errorText = await installationResponse.text();
         console.error(
@@ -455,21 +482,19 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           `Cannot ${formMode === "edit" ? "update" : "create"} installation`
         );
       }
-
       const installationResult = await installationResponse.json();
-
       // Get installation ID (for new installations)
       if (formMode !== "edit") {
         newInstallationId = installationResult.id;
       }
-
       // 2. Update Report with installation_id (as requested)
-
       const reportUpdatePayload = {
         installation_id: newInstallationId,
         company_id: companyId,
-        reporting_period_start: formatDate(formValues.reporting_period_start),
-        reporting_period_end: formatDate(formValues.reporting_period_end),
+        reporting_period_start: formatDateForAPI(
+          formValues.reporting_period_start
+        ),
+        reporting_period_end: formatDateForAPI(formValues.reporting_period_end),
       };
 
       const reportUpdateResponse = await fetch(
@@ -488,7 +513,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           `Could not update report with installation: ${errorText}`
         );
       }
-
       const reportResult = await reportUpdateResponse.json();
 
       // 3. Keep reportId in localStorage as requested
@@ -503,7 +527,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           `🔗 Report #${reportId} linked with installation\n` +
           `📋 Ready for next step`
       );
-
       // Move to next step
       onNextStep();
     } catch (err: any) {
@@ -534,300 +557,316 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
     >
       <form onSubmit={handleSubmit} noValidate>
-        <Grid container spacing={3}>
-          {/* Reporting Period Section */}
-          <Grid size={12}>
-            <Section
-              title="Reporting Period"
-              subtitle="Set reporting dates"
-              hasError={
-                !!formErrors.reporting_period_start ||
-                !!formErrors.reporting_period_end
-              }
-            >
-              <Grid container spacing={2}>
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Start Time"
-                    defination="ระบุวันที่เริ่มต้นรายงาน"
-                    label=""
-                    name="reporting_period_start"
-                    type="date"
-                    value={formatDate(formValues.reporting_period_start)}
-                    onChange={handleInputChange}
-                    error={!!formErrors.reporting_period_start}
-                    helperText={formErrors.reporting_period_start || ""}
-                    required
-                  />
+        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="th">
+          <Grid container spacing={3}>
+            {/* Reporting Period Section */}
+            <Grid size={12}>
+              <Section
+                title="Reporting Period"
+                subtitle="Set reporting dates"
+                hasError={
+                  !!formErrors.reporting_period_start ||
+                  !!formErrors.reporting_period_end
+                }
+              >
+                <Grid container spacing={2}>
+                  <Grid size={12}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="medium"
+                        mb={1}
+                      >
+                        Start Time
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" mb={1}>
+                        ระบุวันที่เริ่มต้นรายงาน
+                      </Typography>
+                      <DatePicker
+                        value={formValues.reporting_period_start}
+                        onChange={(newDate) =>
+                          handleDateChange("reporting_period_start", newDate)
+                        }
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            error: !!formErrors.reporting_period_start,
+                            helperText: formErrors.reporting_period_start || "",
+                            required: true,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Grid>
+                  <Grid size={12}>
+                    <Box sx={{ mb: 2 }}>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="medium"
+                        mb={1}
+                      >
+                        End Time
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" mb={1}>
+                        ระบุวันที่สิ้นสุดรายงาน
+                      </Typography>
+                      <DatePicker
+                        value={formValues.reporting_period_end}
+                        onChange={(newDate) =>
+                          handleDateChange("reporting_period_end", newDate)
+                        }
+                        slotProps={{
+                          textField: {
+                            fullWidth: true,
+                            error: !!formErrors.reporting_period_end,
+                            helperText: formErrors.reporting_period_end || "",
+                            required: true,
+                          },
+                        }}
+                      />
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="End Time"
-                    defination="ระบุวันที่สิ้นสุดรายงาน"
-                    label=""
-                    name="reporting_period_end"
-                    type="date"
-                    value={formatDate(formValues.reporting_period_end)}
-                    onChange={handleInputChange}
-                    error={!!formErrors.reporting_period_end}
-                    helperText={formErrors.reporting_period_end || ""}
-                    required
-                  />
+              </Section>
+            </Grid>
+
+            {/* Header Section */}
+            <Grid size={12}>
+              <Typography
+                fontSize="32px"
+                variant="h5"
+                fontWeight="bold"
+                gutterBottom
+                color="#1976d2"
+              >
+                About the installation
+              </Typography>
+              <Typography
+                fontSize="20px"
+                variant="subtitle1"
+                color="text.secondary"
+                gutterBottom
+              >
+                รายละเอียดสถานประกอบการ
+              </Typography>
+            </Grid>
+
+            {/* Installation Form Section */}
+            <Grid size={12}>
+              <Section
+                title="Installation Information"
+                subtitle="Fill in installation details"
+                hasError={Object.values(formErrors).some((e) => !!e)}
+                defaultExpanded
+              >
+                <Grid container spacing={2}>
+                  {/* Name Fields */}
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Name of the installation (ENG)"
+                      defination="ระบุชื่อสถานประกอบการเป็นภาษาอังกฤษ"
+                      label=""
+                      name="name"
+                      value={formValues.name}
+                      onChange={handleInputChange}
+                      error={!!formErrors.name}
+                      helperText={formErrors.name || ""}
+                      required
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Name of the installation (TH)"
+                      defination="ระบุชื่อสถานประกอบการเป็นภาษาไทย (ไม่บังคับ)"
+                      label=""
+                      name="name_specific"
+                      value={formValues.name_specific}
+                      onChange={handleInputChange}
+                      error={!!formErrors.name_specific}
+                      helperText={formErrors.name_specific || ""}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Economic activity"
+                      defination="ระบุกิจกรรมทางเศรษฐกิจหลัก"
+                      label=""
+                      name="eco_activity"
+                      value={formValues.eco_activity}
+                      onChange={handleInputChange}
+                      error={!!formErrors.eco_activity}
+                      helperText={formErrors.eco_activity || ""}
+                    />
+                  </Grid>
+                  {/* Address Fields */}
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Street, Number"
+                      defination="ระบุถนน เลขที่"
+                      label="123 Moo 5, Industrial Zone 2, Ban Klang Subdistrict, Muang District"
+                      name="address"
+                      value={formValues.address}
+                      onChange={handleInputChange}
+                      error={!!formErrors.address}
+                      helperText={formErrors.address || ""}
+                      required
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="City"
+                      defination="ระบุเมือง/จังหวัด"
+                      label="Saraburi "
+                      name="city"
+                      value={formValues.city}
+                      onChange={handleInputChange}
+                      error={!!formErrors.city}
+                      helperText={formErrors.city || ""}
+                      required
+                    />
+                  </Grid>
+                  {/* Country and Location */}
+                  <Grid size={12}>
+                    <LabeledAutocompleteMap
+                      caption="Country"
+                      defination="เลือกประเทศ"
+                      label="Thailand"
+                      options={countries.map((c) => ({
+                        ...c,
+                        value: String(c.value),
+                      }))}
+                      value={formValues.country_id}
+                      name="country_id"
+                      required
+                      onChange={handleCountryChange}
+                      error={formErrors.country_id || ""}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="UNLOCODE"
+                      defination="รหัสประเทศ (อัตโนมัติ)"
+                      label="TH"
+                      name="unlocode"
+                      value={formValues.unlocode}
+                      readOnly
+                      onChange={() => {}}
+                      error={!!formErrors.unlocode}
+                      helperText={formErrors.unlocode || ""}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Post code"
+                      defination="ระบุรหัสไปรษณีย์"
+                      label=""
+                      type="text"
+                      name="post_code"
+                      value={formValues.post_code}
+                      onChange={handleInputChange}
+                      error={!!formErrors.post_code}
+                      helperText={formErrors.post_code || ""}
+                      required
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="P.O. Box"
+                      defination="ระบุตู้ไปรษณีย์ (ไม่บังคับ)"
+                      label=""
+                      name="po_box"
+                      value={formValues.po_box}
+                      onChange={handleInputChange}
+                      error={!!formErrors.po_box}
+                      helperText={formErrors.po_box || ""}
+                    />
+                  </Grid>
+                  {/* Coordinates */}
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Coordinates (latitude)"
+                      defination="ระบุพิกัดละติจูด เช่น 13.7563"
+                      label=""
+                      type="number"
+                      // step="any"
+                      name="latitude"
+                      value={formValues.latitude}
+                      onChange={handleInputChange}
+                      error={!!formErrors.latitude}
+                      helperText={formErrors.latitude || ""}
+                      required
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Coordinates (longitude)"
+                      defination="ระบุพิกัดลองจิจูด เช่น 100.5018"
+                      label=""
+                      type="number"
+                      // step="any"
+                      name="longitude"
+                      value={formValues.longitude}
+                      onChange={handleInputChange}
+                      error={!!formErrors.longitude}
+                      helperText={formErrors.longitude || ""}
+                      required
+                    />
+                  </Grid>
+                  {/* Representative Info */}
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="Name of authorized representative"
+                      defination="ระบุชื่อผู้มีอำนาจลงนาม"
+                      label=""
+                      name="author_represent"
+                      value={formValues.author_represent}
+                      onChange={handleInputChange}
+                      error={!!formErrors.author_represent}
+                      helperText={formErrors.author_represent || ""}
+                    />
+                  </Grid>
+                  {/* Contact Info */}
+                  <Grid size={12}>
+                    <LabeledTextField
+                      type="email"
+                      caption="Email"
+                      defination="ระบุอีเมล"
+                      label=""
+                      name="email"
+                      value={formValues.email}
+                      onChange={handleInputChange}
+                      error={!!formErrors.email}
+                      helperText={formErrors.email || ""}
+                    />
+                  </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      type="tel"
+                      caption="Telephone"
+                      defination="ระบุหมายเลขโทรศัพท์"
+                      label=""
+                      name="tel"
+                      value={formValues.tel}
+                      onChange={handleInputChange}
+                      error={!!formErrors.tel}
+                      helperText={formErrors.tel || ""}
+                    />
+                  </Grid>
                 </Grid>
-              </Grid>
-            </Section>
+              </Section>
+            </Grid>
+            {/* Submit Button */}
+            <Grid size={12}>
+              <Box display="flex" justifyContent="center" mt={2}>
+                <PGButton
+                  text={formMode === "edit" ? "Save" : "Save"}
+                  loading={isSubmitting}
+                  type="submit"
+                />
+              </Box>
+            </Grid>
           </Grid>
-
-          {/* Header Section */}
-          <Grid size={12}>
-            <Typography
-              fontSize="32px"
-              variant="h5"
-              fontWeight="bold"
-              gutterBottom
-              color="#1976d2"
-            >
-              About the installation
-            </Typography>
-            <Typography
-              fontSize="20px"
-              variant="subtitle1"
-              color="text.secondary"
-              gutterBottom
-            >
-              รายละเอียดสถานประกอบการ
-            </Typography>
-          </Grid>
-
-          {/* Installation Form Section */}
-          <Grid size={12}>
-            <Section
-              title="Installation Information"
-              subtitle="Fill in installation details"
-              hasError={Object.values(formErrors).some((e) => !!e)}
-              defaultExpanded
-            >
-              <Grid container spacing={2}>
-                {/* Name Fields */}
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Name of the installation (ENG)"
-                    defination="ระบุชื่อสถานประกอบการเป็นภาษาอังกฤษ"
-                    label=""
-                    name="name"
-                    value={formValues.name}
-                    onChange={handleInputChange}
-                    error={!!formErrors.name}
-                    helperText={formErrors.name || ""}
-                    required
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Name of the installation (TH)"
-                    defination="ระบุชื่อสถานประกอบการเป็นภาษาไทย (ไม่บังคับ)"
-                    label=""
-                    name="name_specific"
-                    value={formValues.name_specific}
-                    onChange={handleInputChange}
-                    error={!!formErrors.name_specific}
-                    helperText={formErrors.name_specific || ""}
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Economic activity"
-                    defination="ระบุกิจกรรมทางเศรษฐกิจหลัก"
-                    label=""
-                    name="eco_activity"
-                    value={formValues.eco_activity}
-                    onChange={handleInputChange}
-                    error={!!formErrors.eco_activity}
-                    helperText={formErrors.eco_activity || ""}
-                  />
-                </Grid>
-
-                {/* Address Fields */}
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Street, Number"
-                    defination="ระบุถนน เลขที่"
-                    label="123 Moo 5, Industrial Zone 2, Ban Klang Subdistrict, Muang District"
-                    name="address"
-                    value={formValues.address}
-                    onChange={handleInputChange}
-                    error={!!formErrors.address}
-                    helperText={formErrors.address || ""}
-                    required
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="City"
-                    defination="ระบุเมือง/จังหวัด"
-                    label="Saraburi "
-                    name="city"
-                    value={formValues.city}
-                    onChange={handleInputChange}
-                    error={!!formErrors.city}
-                    helperText={formErrors.city || ""}
-                    required
-                  />
-                </Grid>
-
-                {/* Country and Location */}
-                <Grid size={12}>
-                  <LabeledAutocompleteMap
-                    caption="Country"
-                    defination="เลือกประเทศ"
-                    label="Thailand"
-                    options={countries.map((c) => ({
-                      ...c,
-                      value: String(c.value),
-                    }))}
-                    value={formValues.country_id}
-                    name="country_id"
-                    required
-                    onChange={handleCountryChange}
-                    error={formErrors.country_id || ""}
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="UNLOCODE"
-                    defination="รหัสประเทศ (อัตโนมัติ)"
-                    label="TH"
-                    name="unlocode"
-                    value={formValues.unlocode}
-                    readOnly
-                    onChange={() => {}}
-                    error={!!formErrors.unlocode}
-                    helperText={formErrors.unlocode || ""}
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Post code"
-                    defination="ระบุรหัสไปรษณีย์"
-                    label=""
-                    type="text"
-                    name="post_code"
-                    value={formValues.post_code}
-                    onChange={handleInputChange}
-                    error={!!formErrors.post_code}
-                    helperText={formErrors.post_code || ""}
-                    required
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="P.O. Box"
-                    defination="ระบุตู้ไปรษณีย์ (ไม่บังคับ)"
-                    label=""
-                    name="po_box"
-                    value={formValues.po_box}
-                    onChange={handleInputChange}
-                    error={!!formErrors.po_box}
-                    helperText={formErrors.po_box || ""}
-                  />
-                </Grid>
-
-                {/* Coordinates */}
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Coordinates (latitude)"
-                    defination="ระบุพิกัดละติจูด เช่น 13.7563"
-                    label=""
-                    type="number"
-                    // step="any"
-                    name="latitude"
-                    value={formValues.latitude}
-                    onChange={handleInputChange}
-                    error={!!formErrors.latitude}
-                    helperText={formErrors.latitude || ""}
-                    required
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Coordinates (longitude)"
-                    defination="ระบุพิกัดลองจิจูด เช่น 100.5018"
-                    label=""
-                    type="number"
-                    // step="any"
-                    name="longitude"
-                    value={formValues.longitude}
-                    onChange={handleInputChange}
-                    error={!!formErrors.longitude}
-                    helperText={formErrors.longitude || ""}
-                    required
-                  />
-                </Grid>
-
-                {/* Representative Info */}
-                <Grid size={12}>
-                  <LabeledTextField
-                    caption="Name of authorized representative"
-                    defination="ระบุชื่อผู้มีอำนาจลงนาม"
-                    label=""
-                    name="author_represent"
-                    value={formValues.author_represent}
-                    onChange={handleInputChange}
-                    error={!!formErrors.author_represent}
-                    helperText={formErrors.author_represent || ""}
-                  />
-                </Grid>
-
-                {/* Contact Info */}
-                <Grid size={12}>
-                  <LabeledTextField
-                    type="email"
-                    caption="Email"
-                    defination="ระบุอีเมล"
-                    label=""
-                    name="email"
-                    value={formValues.email}
-                    onChange={handleInputChange}
-                    error={!!formErrors.email}
-                    helperText={formErrors.email || ""}
-                  />
-                </Grid>
-
-                <Grid size={12}>
-                  <LabeledTextField
-                    type="tel"
-                    caption="Telephone"
-                    defination="ระบุหมายเลขโทรศัพท์"
-                    label=""
-                    name="tel"
-                    value={formValues.tel}
-                    onChange={handleInputChange}
-                    error={!!formErrors.tel}
-                    helperText={formErrors.tel || ""}
-                  />
-                </Grid>
-              </Grid>
-            </Section>
-          </Grid>
-
-          {/* Submit Button */}
-          <Grid size={12}>
-            <Box display="flex" justifyContent="center" mt={2}>
-              <PGButton
-                text={formMode === "edit" ? "Save" : "Save"}
-                loading={isSubmitting}
-                type="submit"
-              />
-            </Box>
-          </Grid>
-        </Grid>
+        </LocalizationProvider>
       </form>
     </Container>
   );

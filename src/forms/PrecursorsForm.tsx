@@ -78,7 +78,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const reportId = localStorage.getItem("reportId");
-
+  
   // State management
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
@@ -93,12 +93,12 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   const [goodsId, setGoodsId] = useState<number | undefined>(
     formValues.goods_category
   );
-
+  
   // Add state for selected precursor
   const [selectedPrecursorIndex, setSelectedPrecursorIndex] = useState<
     number | null
   >(null);
-
+  
   // States for API responses visualization
   const [apiResponses, setApiResponses] = useState<{
     getResponse: any;
@@ -109,20 +109,21 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     postResponse: null,
     putResponse: null,
   });
-
+  
   const [precursorFieldsData, setPrecursorFieldsData] = useState<
     Array<PrecursorSubmitData>
   >([]);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const apiUrl = process.env.REACT_APP_API_URL;
-
+  
   // Initial form values
   const [localFormValues, setLocalFormValues] = useState<{
     [key: string]: string | number;
   }>(() => {
     // Initialize with all required fields to prevent undefined issues
     const initialValues: { [key: string]: string | number } = {};
+    
     // Initialize for up to 8 precursors
     for (let i = 1; i <= 8; i++) {
       initialValues[`purchased_precursors_${i}`] =
@@ -156,12 +157,15 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
           ...prev,
           getResponse: data,
         }));
+        
         // Handle both array and single object responses
         const precursorsArray = Array.isArray(data) ? data : data ? [data] : [];
+        
         // Create a new local form values object to populate with API data
         const updatedFormValues: { [key: string]: string | number } = {
           ...localFormValues,
         };
+        
         // Map the API data to our form fields
         if (precursorsArray.length > 0) {
           precursorsArray.forEach((precursor, index) => {
@@ -180,9 +184,10 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               precursor.embedded_indirection_emissions_value || 0;
             updatedFormValues[`source_embedded_indirect_emissions_${i}`] =
               precursor.source_embedded_indirect_emissions || "";
-            updatedFormValues[`justification_for_use_default_values_${i}`] =
+                        updatedFormValues[`justification_for_use_default_values_${i}`] =
               precursor.justification_for_use_default_values || "";
           });
+          
           setLocalFormValues(updatedFormValues);
           setPrecursorsCount(Math.max(precursorsCount, precursorsArray.length));
         }
@@ -224,23 +229,20 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   // Modified handleSubmit to only save the selected precursor
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (selectedPrecursorIndex === null) {
       setErrorMessage("กรุณาเลือกวัตถุดิบที่ต้องการบันทึก");
       return;
     }
-
     setIsLoading(true);
     setSuccessMessage(null);
     setErrorMessage(null);
-
     try {
       // Get current data for this report from API
       const fetchResponse = await fetch(
         `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
       );
       const existingData = fetchResponse.ok ? await fetchResponse.json() : null;
-
+      
       // Array of existing records to update
       const existingPrecursors = Array.isArray(existingData)
         ? existingData
@@ -253,15 +255,14 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         industryTypeId && goodsId
           ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
           : [];
-
+          
       const selectedPrecursor = precursorOptions[selectedPrecursorIndex - 1];
-
       if (!selectedPrecursor) {
         throw new Error(
           `ไม่พบข้อมูลวัตถุดิบที่เลือก (ลำดับที่ ${selectedPrecursorIndex})`
         );
       }
-
+      
       const precursorName = selectedPrecursor.value.toString();
       const amountValue = localFormValues[`amount_${selectedPrecursorIndex}`];
       const amount =
@@ -274,33 +275,16 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         return;
       }
 
+      // Fixed submission object with proper field names
       const submission = {
+        // Basic info
         report_id: reportId,
+        name: precursorName, // Include name field
+        precursors: precursorName, // Match precursors field in API response
+        
+        // Routes data
         route_1: precursorName,
         route_1_amounts: amount,
-        country_code:
-          localFormValues[`country_code_${selectedPrecursorIndex}`] || "TH",
-        embedded_direct_emissions_value:
-          localFormValues[
-            `embedded_direct_emissions_value_${selectedPrecursorIndex}`
-          ] || 0,
-        source_embedded_direct_emissions:
-          localFormValues[
-            `source_embedded_direct_emissions_${selectedPrecursorIndex}`
-          ] || "",
-        embedded_indirection_emissions_value:
-          localFormValues[
-            `embedded_indirection_emissions_value_${selectedPrecursorIndex}`
-          ] || 0,
-        source_embedded_indirect_emissions:
-          localFormValues[
-            `source_embedded_indirect_emissions_${selectedPrecursorIndex}`
-          ] || "",
-        justification_for_use_default_values:
-          localFormValues[
-            `justification_for_use_default_values_${selectedPrecursorIndex}`
-          ] || "",
-        // Set other route fields to empty/zero values
         route_2: "",
         route_2_amounts: 0,
         route_3: "",
@@ -315,6 +299,30 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         route_7_amounts: 0,
         route_8: "",
         route_8_amounts: 0,
+        
+        // Country data
+        country_code: localFormValues[`country_code_${selectedPrecursorIndex}`] || "TH",
+        
+        // Emissions data
+        embedded_direct_emissions_value:
+          localFormValues[`embedded_direct_emissions_value_${selectedPrecursorIndex}`] || 0,
+        source_embedded_direct_emissions:
+          localFormValues[`source_embedded_direct_emissions_${selectedPrecursorIndex}`] || "",
+          
+        // Match field name as per API response
+        embedded_indirection_emissions_value:
+          localFormValues[`embedded_indirection_emissions_value_${selectedPrecursorIndex}`] || 0,
+        source_embedded_indirect_emissions:
+          localFormValues[`source_embedded_indirect_emissions_${selectedPrecursorIndex}`] || "",
+          
+        // Additional fields needed by API
+        total_consumed_within_installation: amount, // Set to same as amount
+        consumed_in_production_amounts: 0,
+        consumed_non_cbam_goods_amounts: 0,
+        total_consumed_within_installation_amounts: amount, // Set to same as amount
+        
+        justification_for_use_default_values:
+          localFormValues[`justification_for_use_default_values_${selectedPrecursorIndex}`] || "",
       };
 
       // Track successful operations
@@ -323,7 +331,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         updated: 0,
         errors: 0,
       };
-
+      
       // Store API responses
       const postResponses: any[] = [];
       const putResponses: any[] = [];
@@ -344,11 +352,15 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               body: JSON.stringify(submission),
             }
           );
+          
           if (updateResponse.ok) {
             const responseData = await updateResponse.json();
             putResponses.push(responseData);
             results.updated++;
+            console.log("Update successful:", responseData);
           } else {
+            const errorText = await updateResponse.text();
+            console.error(`Update failed (${updateResponse.status}):`, errorText);
             results.errors++;
           }
         } else {
@@ -361,11 +373,15 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               body: JSON.stringify(submission),
             }
           );
+          
           if (createResponse.ok) {
             const responseData = await createResponse.json();
             postResponses.push(responseData);
             results.created++;
+            console.log("Create successful:", responseData);
           } else {
+            const errorText = await createResponse.text();
+            console.error(`Create failed (${createResponse.status}):`, errorText);
             results.errors++;
           }
         }
@@ -378,7 +394,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
       setApiResponses((prev) => ({
         ...prev,
         postResponse: postResponses.length > 0 ? postResponses : null,
-        putResponse: putResponses.length > 0 ? putResponses : null,
+                putResponse: putResponses.length > 0 ? putResponses : null,
       }));
 
       // Set success message
@@ -421,6 +437,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         ]);
         setCountries(countriesResult.countries);
         setGoodsData(goodsDataResult);
+
         // Initialize from localStorage or props
         const initFromData = () => {
           // Try to load from goodsFormData first (most recent)
@@ -437,6 +454,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               console.error("Error parsing goodsFormData:", error);
             }
           }
+          
           // Use props if provided
           if (formValues.industry_type) {
             setIndustryTypeId(formValues.industry_type);
@@ -445,6 +463,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
           }
           return false;
         };
+
         if (initFromData()) {
           setInitialized(true);
           // Try to load existing precursor data
@@ -456,6 +475,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         setIsLoading(false);
       }
     };
+
     initializeData();
   }, []); // Empty dependency array: run only once on mount
 
@@ -484,11 +504,14 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   useEffect(() => {
     if (!industryTypeId || !goodsId || !goodsData.length || !countries.length)
       return;
+
     const precursors =
       getPrecursorsOptions(goodsData, industryTypeId, goodsId) || [];
     const limitedPrecursors = precursors.slice(0, 8); // Limit to 8 precursors
+    
     // Set precursors count
     setPrecursorsCount(limitedPrecursors.length);
+    
     // Prepare data for precursor fields
     const precursorData = limitedPrecursors.map((precursor, index) => ({
       id: index + 1,
@@ -503,21 +526,25 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
       justification_for_use_default_values: "",
     }));
     setPrecursorFieldsData(precursorData);
+
     // Only set default values if we haven't loaded existing data
     if (!dataLoaded) {
       const updatedValues: { [key: string]: string | number } = {};
+      
       // Process each precursor
       limitedPrecursors.forEach((precursor, index) => {
         const routeField = `route_${index + 1}` as keyof typeof formValues;
         const amountField = `route_${
           index + 1
         }_amounts` as keyof typeof formValues;
+        
         // Use form values if available, otherwise use defaults
         updatedValues[`purchased_precursors_${index + 1}`] =
           formValues[routeField]?.toString() || String(precursor.value || "");
         updatedValues[`amount_${index + 1}`] =
           formValues[amountField]?.toString() || "0";
       });
+
       // Set default country to Thailand
       const defaultCountry = countries.find(
         (c) => c.abbreviation === "TH" || c.label === "Thailand"
@@ -531,6 +558,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
           }
         });
       }
+      
       // Update the form values
       setLocalFormValues((prev) => ({
         ...prev,
@@ -564,9 +592,9 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
           break;
         }
       }
-
+      
       // If none has amount > 0, select the first one
-      if (selectedPrecursorIndex === null) {
+      if (selectedPrecursorIndex === null && precursorsCount > 0) {
         setSelectedPrecursorIndex(1);
       }
     }
@@ -586,7 +614,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
         style={{ paddingTop: "2rem", textAlign: "center" }}
       >
         <CircularProgress size={40} />
-        <Typography variant="h6" sx={{ mt: 2 }}>
+                <Typography variant="h6" sx={{ mt: 2 }}>
           กำลังโหลดข้อมูลวัตถุดิบ...
         </Typography>
       </Container>
@@ -696,7 +724,6 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
                         const amount = parseFloat(
                           String(localFormValues[`amount_${index}`] || "0")
                         );
-
                         return (
                           <Paper
                             key={`precursor-option-${index}`}
@@ -735,7 +762,6 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
                                   : ""}
                               </Typography>
                             </div>
-
                             {amount > 0 && (
                               <Box
                                 sx={{
@@ -756,8 +782,8 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
                     </Box>
                   </Box>
                 </Section>
+
                 <Section
-                  defaultExpanded
                   title="List of purchased precursors"
                   subtitle="รายการวัตถุดิบ (เลือกเพียง 1 รายการ)"
                   hasError={false}
@@ -813,6 +839,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
                         })()}
                         industryTypeId={industryTypeId}
                         goodsId={goodsId}
+                                                onNextStep={onNextStep} // Pass onNextStep to PrecursorFields
                       />
                     </Box>
                   )}

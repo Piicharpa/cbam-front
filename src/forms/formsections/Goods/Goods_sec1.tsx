@@ -76,23 +76,32 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   };
 
   
-  const saveToLocalStorage = useCallback(() => {
-    if (values.industry_type || values.goods_category) {
-      const dataToSave = {
-        routes: values.routes || [],
-        amounts: values.amounts || [],
-        industry_type: values.industry_type,
-        goods_category: values.goods_category,
-        name: values.name,
-      };
-
-      const newData = JSON.stringify(dataToSave);
-
-      localStorage.setItem("goodsFormData", newData);
-      localStorage.setItem("selectedIndustry", values.industry_type);
-      localStorage.setItem("selectedGoods", values.goods_category);
+  // With this properly formatted statement inside your saveToLocalStorage function:
+const saveToLocalStorage = useCallback(() => {
+  if (values.industry_type || values.goods_category) {
+    const dataToSave = {
+      routes: values.routes || [],
+      amounts: values.amounts || [],
+      industry_type: values.industry_type,
+      goods_category: values.goods_category,
+      name: values.name,
+    };
+    const newData = JSON.stringify(dataToSave);
+    localStorage.setItem("goodsFormData", newData);
+    localStorage.setItem("selectedIndustry", values.industry_type);
+    localStorage.setItem("selectedGoods", values.goods_category);
+    
+    // Get the goods name from the options based on the selected value
+    if (values.goods_category) {
+      const selectedGoodsOption = goodsOptions.find(
+        opt => String(opt.value) === String(values.goods_category)
+      );
+      if (selectedGoodsOption) {
+        localStorage.setItem("selectedGoodsName", selectedGoodsOption.label || "");
+      }
     }
-  }, [values]);
+  }
+}, [values, goodsOptions]);
 
 
   const updateGoodsOptions = useCallback(

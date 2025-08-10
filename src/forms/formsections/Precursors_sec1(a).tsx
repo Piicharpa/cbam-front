@@ -117,7 +117,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   const [routeCount, setRouteCount] = useState<number>(1);
   const [routeCount1, setRouteCount1] = useState<number>(1);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [isDeleting, setIsDeleting] = useState<boolean>(false);
   const [fieldValues, setFieldValues] = useState<{
     [key: string]: string | number;
   }>({});
@@ -241,10 +240,25 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     );
   };
 
+  // Helper function to ensure valid numbers
+  // Enhanced helper function to ensure valid numbers
+  const ensureNumber = (value: any): number => {
+    // Handle empty string case
+    if (value === "" || value === null || value === undefined) {
+      return 0;
+    }
+
+    // Parse the value
+    const num = parseFloat(String(value));
+
+    // Handle NaN
+    return isNaN(num) ? 0 : num;
+  };
+
   // Safe calculation function to prevent infinite loops
+  // Safe calculation function to prevent infinite loops and NaN values
   const calculateDerivedValues = () => {
     if (isCalculating.current) return;
-
     isCalculating.current = true;
 
     try {
@@ -252,39 +266,36 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       let totalAmount = 0;
       for (let i = 0; i < routeCount1; i++) {
         const amountKey = `amount_${i}_${index}`;
-        const amountValue = fieldValues[amountKey];
-        if (amountValue && !isNaN(parseFloat(String(amountValue)))) {
-          totalAmount += parseFloat(String(amountValue));
-        }
+        totalAmount += ensureNumber(fieldValues[amountKey]);
       }
 
       // Calculate amount(b) - consumption in production processes
-      const amountB = parseFloat(String(fieldValues[`amount_1`] || 0));
+      const amountB = ensureNumber(
+        fieldValues[`consumed_in_production_amounts`]
+      );
 
       // Calculate amount(c) - consumed for other purposes
-      const amountC = parseFloat(
-        String(fieldValues[`total_production_amounts_1`] || 0)
+      const amountC = ensureNumber(
+        fieldValues[`consumed_non_cbam_goods_amounts`]
       );
 
       // Calculate control: Total Purchase Level - (amount(b) + amount(c))
-      const calculatedControl = totalAmount - (amountB + amountC);
+      const calculatedControl = Math.max(0, totalAmount - (amountB + amountC));
 
       // Calculate SEE (indirect): specific electricity consumption * electricity emission factor
-      const specificElectricityConsumption = parseFloat(
-        String(
-          fieldValues[`embedded_indirection_emissions_value_${index}`] || 0
-        )
+      const specificElectricityConsumption = ensureNumber(
+        fieldValues[`embedded_indirection_emissions_value_${index}`]
       );
 
       // Get the electricity emission factor
-      const electricityEmissionFactor = parseFloat(
-        String(fieldValues[`electricity_emission_factor_${index}`] || 0)
+      const electricityEmissionFactor = ensureNumber(
+        fieldValues[`value_electricity_indirect_emission_factor`]
       );
 
       const calculatedSEEIndirect =
         specificElectricityConsumption * electricityEmissionFactor;
 
-      // Update the state variables directly
+      // Update the state variables directly with guaranteed numeric values
       setTotalPurchaseLevel(totalAmount);
       setControlAmount(calculatedControl);
       setCalculatedIndirectEmissions(calculatedSEEIndirect);
@@ -387,17 +398,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       data.source_embedded_indirect_emissions || "";
     updatedValues[`justification_for_use_default_values_${index}`] =
       data.justification_for_use_default_values || "";
-    updatedValues[`total_production_amounts_${index}`] =
-      data.total_production_amounts || 0;
+    updatedValues[`control`] = data.total_production_amounts || 0;
 
     // Also set fields for section b and c
     updatedValues[`amount_1`] = data.consumed_in_production_amounts || 0;
-    updatedValues[`total_production_amounts_1`] =
-      data.consumed_non_cbam_goods_amounts || 0;
+    updatedValues[`amount_2`] = data.consumed_non_cbam_goods_amounts || 0;
 
     // Set the electricity emission factor field
-    updatedValues[`electricity_emission_factor_${index}`] =
+    updatedValues[`value_electricity_indirect_emission_factor`] =
       data.electricity_emission_factor || 0;
+    updatedValues[`source_electricity_indirect_emission_factor`] =
+      data.source_electricity_emission_factor || "";
+
+    // Set category and name values if available
+    updatedValues[`b_category`] = data.b_category || "";
+    updatedValues[`b_name`] = data.b_name || "";
 
     setFieldValues(updatedValues);
 
@@ -410,6 +425,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       if (data[`route_${i + 1}`]) maxFilledRoute = i + 1;
     }
     setRouteCount(maxFilledRoute);
+    setRouteCount1(maxFilledRoute);
   };
 
   const searchRelevantPrecursors = async (
@@ -494,11 +510,18 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     initialValues[`purchased_precursors_${index}`] = precursorValue || "";
     initialValues[`route_${index}`] = routeValue || "";
     initialValues[`amount_${index}`] = formValues[`amount_${index}`] || 0;
-    initialValues[`total_production_amounts_${index}`] =
-      formValues[`total_production_amounts_${index}`] || 0;
+    initialValues[`control`] = formValues[`control`] || 0;
+
     // Initialize the electricity emission factor field if it doesn't exist
+    initialValues[`value_electricity_indirect_emission_factor`] =
+      formValues[`value_electricity_indirect_emission_factor`] || 0;
+    initialValues[`source_electricity_indirect_emission_factor`] =
+      formValues[`source_electricity_indirect_emission_factor`] || "";
     initialValues[`electricity_emission_factor_${index}`] =
       formValues[`electricity_emission_factor_${index}`] || 0;
+    // Initialize b_category and b_name if they don't exist
+    initialValues[`b_category`] = formValues[`b_category`] || "";
+    initialValues[`b_name`] = formValues[`b_name`] || "";
 
     if (!initialValues[`country_code_${index}`] && countries.length > 0) {
       const thailandOption = countries.find(
@@ -519,7 +542,18 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     name: string,
     value: string | number | (string | number)[]
   ) => {
-    const newValue = Array.isArray(value) ? value.join(",") : value;
+    let newValue: string | number;
+
+    if (Array.isArray(value)) {
+      newValue = value.join(",");
+    } else {
+      // Handle potential NaN for numeric inputs
+      if (typeof value === "number" && isNaN(value)) {
+        newValue = "";
+      } else {
+        newValue = value;
+      }
+    }
 
     setFieldValues((prev) => ({
       ...prev,
@@ -530,7 +564,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
 
-    onChange(name, value);
+    onChange(name, newValue);
   };
 
   // Run calculations when relevant fields change
@@ -539,7 +573,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     const timer = setTimeout(() => {
       calculateDerivedValues();
     }, 0);
-
     return () => clearTimeout(timer);
   }, [
     routeCount1,
@@ -550,9 +583,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     fieldValues[`amount_4_${index}`],
     fieldValues[`amount_5_${index}`],
     fieldValues[`amount_1`],
-    fieldValues[`total_production_amounts_1`],
+    fieldValues[`amount_2`],
     fieldValues[`embedded_indirection_emissions_value_${index}`],
-    fieldValues[`electricity_emission_factor_${index}`],
+    fieldValues[`value_electricity_indirect_emission_factor`],
   ]);
 
   const validateForm = () => {
@@ -572,67 +605,112 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         errors[`amount_${index}`] = "กรุณาระบุจำนวนที่ถูกต้อง";
       }
     }
-    // Validate total production amounts
-    const totalValue = fieldValues[`total_production_amounts_${index}`];
-    if (totalValue !== undefined && totalValue !== "") {
-      const numValue = parseFloat(String(totalValue));
-      if (isNaN(numValue) || numValue < 0) {
-        errors[`total_production_amounts_${index}`] =
-          "กรุณาระบุจำนวนที่ถูกต้อง";
+
+    // Check if at least one route amount is entered
+    let hasAmount = false;
+    for (let i = 0; i < routeCount1; i++) {
+      const amountKey = `amount_${i}_${index}`;
+      const amountValue = ensureNumber(fieldValues[amountKey]);
+      if (amountValue > 0) {
+        hasAmount = true;
+        break;
       }
     }
+
+    if (!hasAmount) {
+      errors["route_amounts"] = "กรุณาระบุปริมาณวัตถุดิบอย่างน้อย 1 รายการ";
+    }
+
     setFieldErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
   const prepareDataForApi = (): Record<string, any> => {
+    // Create payload without the problematic field
     const payload: Record<string, any> = {
-      precursors: fieldValues[`purchased_precursors_${index}`] || null,
-      name: "",
-      country_code: fieldValues[`country_code_${index}`] || "",
-      embedded_direct_emissions_value: parseFloat(
-        fieldValues[`embedded_direct_emissions_value_${index}`]?.toString() ||
-          "0"
+      // Basic fields
+      report_id: reportId ? Number(reportId) : null,
+      name: String(fieldValues[`purchased_precursors_${index}`] || ""),
+      precursors: String(fieldValues[`purchased_precursors_${index}`] || ""),
+      country_code: String(fieldValues[`country_code_${index}`] || "TH"),
+
+      // Route data with proper field names from your API schema
+      route_1: String(
+        fieldValues[`route_0_${index}`] ||
+          fieldValues[`purchased_precursors_${index}`] ||
+          ""
       ),
-      source_embedded_direct_emissions:
-        fieldValues[`source_embedded_direct_emissions_${index}`] || "",
-      embedded_indirection_emissions_value: parseFloat(
-        fieldValues[
-          `embedded_indirection_emissions_value_${index}`
-        ]?.toString() || "0"
+      route_1_amounts: ensureNumber(fieldValues[`amount_0_${index}`]),
+      route_2: String(fieldValues[`route_1_${index}`] || ""),
+      route_2_amounts: ensureNumber(fieldValues[`amount_1_${index}`]),
+      route_3: String(fieldValues[`route_2_${index}`] || ""),
+      route_3_amounts: ensureNumber(fieldValues[`amount_2_${index}`]),
+      route_4: String(fieldValues[`route_3_${index}`] || ""),
+      route_4_amounts: ensureNumber(fieldValues[`amount_3_${index}`]),
+      route_5: String(fieldValues[`route_4_${index}`] || ""),
+      route_5_amounts: ensureNumber(fieldValues[`amount_4_${index}`]),
+
+      // Emissions data
+      embedded_direct_emissions_value: ensureNumber(
+        fieldValues[`embedded_direct_emissions_value_${index}`]
       ),
-      source_embedded_indirect_emissions:
-        fieldValues[`source_embedded_indirect_emissions_${index}`] || "",
-      justification_for_use_default_values:
-        fieldValues[`justification_for_use_default_values_${index}`] || "",
-      total_consumed_within_installation: totalPurchaseLevel || 0,
-      consumed_in_production_amounts: parseFloat(
-        fieldValues[`amount_1`]?.toString() || "0"
+      source_embedded_direct_emissions: String(
+        fieldValues[`source_embedded_direct_emissions_${index}`] || ""
       ),
-      consumed_non_cbam_goods_amounts: parseFloat(
-        fieldValues[`total_production_amounts_1`]?.toString() || "0"
+      embedded_indirection_emissions_value: ensureNumber(
+        fieldValues[`embedded_indirection_emissions_value_${index}`]
       ),
-      total_consumed_within_installation_amounts: totalPurchaseLevel || 0,
-      total_production_amounts: controlAmount || 0,
-      electricity_emission_factor: parseFloat(
-        fieldValues[`electricity_emission_factor_${index}`]?.toString() || "0"
+      source_embedded_indirect_emissions: String(
+        fieldValues[`source_embedded_indirect_emissions_${index}`] || ""
       ),
-      calculated_indirect_emissions: calculatedIndirectEmissions || 0,
+
+      // Consumption data
+      total_consumed_within_installation: ensureNumber(totalPurchaseLevel),
+      consumed_in_production_amounts: ensureNumber(fieldValues[`amount_1`]),
+      consumed_non_cbam_goods_amounts: ensureNumber(fieldValues[`amount_2`]),
+      total_consumed_within_installation_amounts:
+        ensureNumber(totalPurchaseLevel),
+
+      // Justification
+      justification_for_use_default_values: String(
+        fieldValues[`justification_for_use_default_values_${index}`] || ""
+      ),
+
+      // REMOVED: total_production_amounts (this field doesn't exist in the database)
+      // Instead, use control or SEE_total if those exist in your database schema
+      control: ensureNumber(controlAmount),
+
+      // If your API expects these fields (check your API schema)
+      electricity_emission_factor: ensureNumber(
+        fieldValues[`value_electricity_indirect_emission_factor`]
+      ),
+      source_electricity_emission_factor: String(
+        fieldValues[`source_electricity_indirect_emission_factor`] || ""
+      ),
+
+      // Category fields
+      b_category: String(fieldValues[`b_category`] || ""),
+      b_name: String(fieldValues[`b_name`] || ""),
     };
 
-    for (let ridx = 0; ridx < 5; ridx++) {
-      payload[`route_${ridx + 1}`] =
-        fieldValues[`route_${ridx}_${index}`] || "";
-      payload[`route_${ridx + 1}_amounts`] = parseFloat(
-        fieldValues[`amount_${ridx}_${index}`]?.toString() || "0"
-      );
-    }
-
-    if (reportId) {
-      payload.report_id = reportId;
+    // Add id for updates
+    if (existingData?.id) {
+      payload.id = existingData.id;
     }
 
     return payload;
+  };
+
+  const minimalPayload = {
+    report_id: Number(reportId),
+    name: String(fieldValues[`purchased_precursors_${index}`] || ""),
+    route_1: String(
+      fieldValues[`route_0_${index}`] ||
+        fieldValues[`purchased_precursors_${index}`] ||
+        ""
+    ),
+    route_1_amounts: ensureNumber(fieldValues[`amount_0_${index}`]),
+    country_code: String(fieldValues[`country_code_${index}`] || "TH"),
   };
 
   const handleSaveWithAlert = async () => {
@@ -663,6 +741,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
     try {
       const payload = prepareDataForApi();
+
+      // Log payload for debugging
+      console.log("Submitting payload:", payload);
+
       const isUpdate = existingData && existingData.id;
       const method = isUpdate ? "PUT" : "POST";
       const url = isUpdate
@@ -748,8 +830,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         position: "relative",
       }}
     >
-      {/* Precursor name display */}
-      {/* {renderPrecursorField()} */}
       <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
         <div style={{ flex: 1 }}>
           {/* Country selection */}
@@ -787,6 +867,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           />
         </div>
       </div>
+
+      {/* Section A */}
       <div
         style={{
           textAlign: "left",
@@ -805,6 +887,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           ปริมาณการสั่งซื้อทั้งหมด
         </p>
       </div>
+
       {/* Production routes */}
       <Box mb={3}>
         {Array.from({ length: routeCount1 }).map((_, routeIndex) => (
@@ -861,12 +944,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             </Box>
           </Box>
         ))}
+
+        {/* Error message for routes */}
+        {fieldErrors["route_amounts"] && (
+          <Box sx={{ color: "error.main", mt: -2, mb: 2, fontSize: "0.75rem" }}>
+            {fieldErrors["route_amounts"]}
+          </Box>
+        )}
+
         <Box mb={3}>
           <ADDDELButton
             routeCount={routeCount1}
             setRouteCount={setRouteCount1}
           />
         </Box>
+
         <LabeledTextField
           caption="Total purchased levels"
           defination="ปริมาณการสั่งซื้อทั้งหมด"
@@ -874,7 +966,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           label=""
           type="number"
           name={`total_purchase_level_${index}`}
-          value={totalPurchaseLevel}
+          value={isNaN(totalPurchaseLevel) ? "" : totalPurchaseLevel}
           onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           error={
             fieldErrors[`total_purchase_level_${index}`] ||
@@ -883,6 +975,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           disabled={true}
         />
       </Box>
+
+      {/* Section B */}
       <div
         style={{
           textAlign: "left",
@@ -897,7 +991,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           ปริมาณการสั่งซื้อเพื่อใช้ในโรงงาน
         </p>
       </div>
-      {/* Production routes */}
+
       <Box mb={3}>
         <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
           <div style={{ flex: 1 }}>
@@ -924,16 +1018,14 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               label=""
               type="number"
               unit="Tonne"
-              name={`consumed_non_cbam_goods_amounts`}
-              value={fieldValues[`consumed_non_cbam_goods_amounts`] || ""}
+              name={`amount_1`}
+              value={fieldValues[`amount_1`] || ""}
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`consumed_non_cbam_goods_amounts`] ||
-                formErrors[`consumed_non_cbam_goods_amounts`]
-              }
+              error={fieldErrors[`amount_1`] || formErrors[`amount_1`]}
             />
           </div>
         </Box>
+
         <Box key={`route-group-included`} display="flex" gap={3} mb={3}>
           <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
@@ -949,19 +1041,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
                 { label: selectedGoodsName, value: selectedGoodsName },
                 { label: "N.A.", value: "N.A." },
               ]}
-              value={
-                fieldValues[`b_category`] || ""
-              }
-              error={
-                fieldErrors[`b_category`] ||
-                formErrors[`b_category`]
-              }
-              onChange={(val) =>
-                handleInputChange(
-                  `b_category`,
-                  val
-                )
-              }
+              value={fieldValues[`b_category`] || ""}
+              error={fieldErrors[`b_category`] || formErrors[`b_category`]}
+              onChange={(val) => handleInputChange(`b_category`, val)}
             />
           </div>
           <div style={{ flex: 1 }}>
@@ -971,8 +1053,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               label=""
               name="b_name"
               type="text"
-              value={formValues.b_name}
-              onChange={(e) => onChange("b_name", e.target.value)}
+              value={fieldValues[`b_name`] || ""}
+              onChange={(e) => handleInputChange("b_name", e.target.value)}
               error={fieldErrors[`b_name`]}
               helperText={fieldErrors[`b_name`]}
               required
@@ -980,6 +1062,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </div>
         </Box>
       </Box>
+
+      {/* Section C */}
       <div
         style={{
           textAlign: "left",
@@ -995,32 +1079,25 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           หรือไปใช้ผลิตสินค้าที่ไม่อยู่ภายใต้ขอบเขตของ CBAM
         </p>
       </div>
-      {/* Total Production Amounts */}
       <Box mb={3}>
-        <LabeledTextField
-          type="number"
-          caption="Amount"
-          defination="ระบุปริมาณวัตถุดิบ"
-          unit="Tonne"
-          label=""
-          name={`consumed_non_cbam_goods_amounts`}
-          value={fieldValues[`consumed_non_cbam_goods_amounts`] || ""}
-          onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-          error={
-            fieldErrors[`consumed_non_cbam_goods_amounts`] ||
-            formErrors[`consumed_non_cbam_goods_amounts`]
-          }
-          helperText={
-            fieldErrors[`consumed_non_cbam_goods_amounts`] ||
-            formErrors[`consumed_non_cbam_goods_amounts`]
-          }
-          inputProps={{
-            step: "any",
-            placeholder: "",
-            className: "appearance-none",
-          }}
-        />
+        <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
+          <div style={{ flex: 1 }}>
+            <LabeledTextField
+              caption={`Amount`}
+              defination="ระบุปริมาณวัตถุดิบ"
+              label=""
+              type="number"
+              unit="Tonne"
+              name={`amount_2`}
+              value={fieldValues[`amount_2`] || ""}
+              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+              error={fieldErrors[`amount_2`] || formErrors[`amount_2`]}
+            />
+          </div>
+        </Box>
       </Box>
+
+      {/* Section D */}
       <div
         style={{
           textAlign: "left",
@@ -1033,6 +1110,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           ควบคุม
         </p>
       </div>
+
       <Box mb={3}>
         <LabeledTextField
           type="number"
@@ -1041,7 +1119,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           unit="Tonne"
           label=""
           name={`control`}
-          value={controlAmount}
+          value={isNaN(controlAmount) ? "" : controlAmount}
           onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           error={fieldErrors[`control`] || formErrors[`control`]}
           helperText={fieldErrors[`control`] || formErrors[`control`]}
@@ -1053,6 +1131,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           disabled
         />
       </Box>
+
+      {/* Section E */}
       <Box mb={3}>
         <strong
           style={{
@@ -1062,6 +1142,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         >
           (e) Emission embedded in this purchased precursor
         </strong>
+
+        {/* Direct Emissions */}
         <div
           style={{
             marginTop: "1.5rem",
@@ -1077,6 +1159,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             ค่าการปล่อยก๊าซเรือนกระจกทางตรงที่แฝงอยู่ในวัตถุดิบ
           </p>
         </div>
+
         <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
           <div style={{ flex: 1 }}>
             <LabeledTextField
@@ -1125,6 +1208,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </div>
         </div>
       </Box>
+
       {/* Indirect Emissions Section */}
       <Box mb={3}>
         <div
@@ -1190,6 +1274,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </div>
         </div>
       </Box>
+
       <Box mb={3}>
         <div
           style={{
@@ -1213,7 +1298,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               defination="ระบุเป็นค่าตัวเลขของค่าการปล่อย CO2 จากการผลิตไฟฟ้า"
               label=""
               name={`value_electricity_indirect_emission_factor`}
-              value={fieldValues[`value_electricity_indirect_emission_factor`] || ""}
+              value={
+                fieldValues[`value_electricity_indirect_emission_factor`] || ""
+              }
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
               error={
                 fieldErrors[`value_electricity_indirect_emission_factor`] ||
@@ -1227,20 +1314,26 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               caption=""
               defination="ระบุแหล่งที่มาของข้อมูล"
               label=""
-              name={`source_electricity_indirect_emission_factor'`}
+              name={`source_electricity_indirect_emission_factor`}
               options={electricitys.map((e) => e.name)}
-              value={String(fieldValues[`source_electricity_indirect_emission_factor'`] || "")}
+              value={String(
+                fieldValues[`source_electricity_indirect_emission_factor`] || ""
+              )}
               error={
-                fieldErrors[`source_electricity_indirect_emission_factor'`] ||
-                formErrors[`source_electricity_indirect_emission_factor'`]
+                fieldErrors[`source_electricity_indirect_emission_factor`] ||
+                formErrors[`source_electricity_indirect_emission_factor`]
               }
               onChange={(val) =>
-                handleInputChange(`source_electricity_indirect_emission_factor'`, val)
+                handleInputChange(
+                  `source_electricity_indirect_emission_factor`,
+                  val
+                )
               }
             />
           </div>
         </div>
       </Box>
+
       <Box mb={3}>
         <div
           style={{
@@ -1264,7 +1357,11 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               defination="ค่าการปล่อยก๊าซเรือนกระจกทางอ้อมที่แฝงอยู่ในวัตถุดิบ"
               label=""
               name={`calculated_indirect_emissions_${index}`}
-              value={calculatedIndirectEmissions}
+              value={
+                isNaN(calculatedIndirectEmissions)
+                  ? ""
+                  : calculatedIndirectEmissions
+              }
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
               error={
                 fieldErrors[`calculated_indirect_emissions_${index}`] ||
@@ -1276,6 +1373,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </div>
         </div>
       </Box>
+
       {/* Justification Section */}
       <Box mb={3}>
         <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>

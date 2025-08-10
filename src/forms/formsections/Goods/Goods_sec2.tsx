@@ -8,12 +8,14 @@ interface Props {
     consumed_in_others_amounts: string;
     produced_for_market_amount: string;
     condumed_non_cbam_goods_amounts: string;
+    control: string;
   };
   errors: {
     total_production_amounts?: string;
-    consumed_in_others_amounts?: string;
     produced_for_market_amount?: string;
+    consumed_in_others_amounts?: string;
     condumed_non_cbam_goods_amounts?: string;
+    control?: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   // onNext: () => void;
@@ -98,11 +100,11 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             defination="ระบุปริมาณการผลิตทั้งหมด"
             unit="Tonne"
             label=""
-            name="total_production_amounts"
+            name=""
             value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_production_amounts} // Pass the error for the helper text
-            helperText={errors.total_production_amounts} // Show error as helper text
+            error={errors.total_production_amounts} 
+            helperText={errors.total_production_amounts} 
             inputProps={{
               step: "any",
               placeholder: "",

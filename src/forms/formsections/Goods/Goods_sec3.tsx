@@ -213,6 +213,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           defination="ระบุตัวเลขค่าปริมาณการปล่อยก๊าซเรือนกระจกทางตรง"
           label=""
           name="direct_emissions"
+          unit="tCO2e"
           value={values.direct_emissions}
           onChange={onChange}
           error={errors.direct_emissions}

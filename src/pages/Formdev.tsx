@@ -169,6 +169,7 @@ const Formdev: React.FC = () => {
     total_consumed_within_installation: 0,
     consumed_in_others_amounts: 0,
     condumed_non_cbam_goods_amounts: 0,
+    control: 0,
     has_heat: 0,
     has_waste_gases: 0,
     direct_emissions: 0,

@@ -26,6 +26,7 @@ export interface GoodsFormProps {
     total_consumed_within_installation: number;
     consumed_in_others_amounts: number;
     condumed_non_cbam_goods_amounts: number;
+    control: number;
     has_heat: number;
     has_waste_gases: number;
     direct_emissions: number;
@@ -80,6 +81,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     consumed_in_others_amounts: formValues.consumed_in_others_amounts || 0,
     condumed_non_cbam_goods_amounts:
       formValues.condumed_non_cbam_goods_amounts || 0,
+    control: formValues.control || 0,
     has_heat: formValues.has_heat || 0,
     has_waste_gases: formValues.has_waste_gases || 0,
     direct_emissions: formValues.direct_emissions || 0,
@@ -212,6 +214,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
               condumed_non_cbam_goods_amounts: Number(
                 goodsData.condumed_non_cbam_goods_amounts ?? 0
               ),
+              control: Number(goodsData.control ?? 0),
               total_production_amounts: Number(
                 goodsData.total_production_amounts ?? 0
               ),
@@ -359,44 +362,101 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         throw new Error("No report ID available. Cannot save goods data.");
       }
 
+      const ensureNumber = (value: any, defaultValue = 0): number => {
+        const num = Number(value);
+        return isNaN(num) ? defaultValue : num;
+      };
+
       const cleanPayload = {
         report_id: localFormValues.report_id || reportId,
-        name: localFormValues.name,
-        goods_category: parseInt(localFormValues.goods_category) || 0,
-        industry_type: parseInt(localFormValues.industry_type) || 0,
+        name: localFormValues.name || "",
+        // Fix NaN issues by ensuring all numeric conversions have a fallback
+        goods_category: isNaN(parseInt(localFormValues.goods_category))
+          ? 0
+          : parseInt(localFormValues.goods_category),
+        industry_type: isNaN(parseInt(localFormValues.industry_type))
+          ? 0
+          : parseInt(localFormValues.industry_type),
         routes: JSON.stringify(localFormValues.routes || []),
         amounts: JSON.stringify(localFormValues.amounts || []),
-        total_consumed_within_installation:
-          Number(localFormValues.total_consumed_within_installation) || 0,
-        consumed_in_others_amounts:
-          Number(localFormValues.consumed_in_others_amounts) || 0,
-        condumed_non_cbam_goods_amounts:
-          Number(localFormValues.condumed_non_cbam_goods_amounts) || 0,
+        total_consumed_within_installation: isNaN(
+          Number(localFormValues.total_consumed_within_installation)
+        )
+          ? 1
+          : Number(localFormValues.total_consumed_within_installation),
+        consumed_in_others_amounts: isNaN(
+          Number(localFormValues.consumed_in_others_amounts)
+        )
+          ? 0
+          : Number(localFormValues.consumed_in_others_amounts),
+        condumed_non_cbam_goods_amounts: isNaN(
+          Number(localFormValues.condumed_non_cbam_goods_amounts)
+        )
+          ? 0
+          : Number(localFormValues.condumed_non_cbam_goods_amounts),
         has_heat: localFormValues.has_heat ? 1 : 0,
         has_waste_gases: localFormValues.has_waste_gases ? 1 : 0,
-        direct_emissions: Number(localFormValues.direct_emissions) || 0,
-        imported_heat_value: Number(localFormValues.imported_heat_value) || 0,
-        exported_heat_value: Number(localFormValues.exported_heat_value) || 0,
-        ef_imported_heat: Number(localFormValues.ef_imported_heat) || 0,
-        ef_exported_heat: Number(localFormValues.ef_exported_heat) || 0,
-        electricity_consumption_value:
-          Number(localFormValues.electricity_consumption_value) || 0,
-        ef_electricity: Number(localFormValues.ef_electricity) || 0,
-        source_of_ef_electricity: localFormValues.source_of_ef_electricity,
-        exported_electricity_value:
-          Number(localFormValues.exported_electricity_value) || 0,
-        ef_exported_electricity:
-          Number(localFormValues.ef_exported_electricity) || 0,
-        total_production_amounts:
-          Number(localFormValues.total_production_amounts) || 0,
-        produced_for_market_amount:
-          Number(localFormValues.produced_for_market_amount) || 0,
-        imported_wgases_amount:
-          Number(localFormValues.imported_wgases_amount) || 0,
-        ef_imported_wgases: Number(localFormValues.ef_imported_wgases) || 0,
-        exported_wgases_amount:
-          Number(localFormValues.exported_wgases_amount) || 0,
-        ef_exported_wgases: Number(localFormValues.ef_exported_wgases) || 0,
+        direct_emissions: isNaN(Number(localFormValues.direct_emissions))
+          ? 0
+          : Number(localFormValues.direct_emissions),
+        imported_heat_value: isNaN(Number(localFormValues.imported_heat_value))
+          ? 0
+          : Number(localFormValues.imported_heat_value),
+        exported_heat_value: isNaN(Number(localFormValues.exported_heat_value))
+          ? 0
+          : Number(localFormValues.exported_heat_value),
+        ef_imported_heat: isNaN(Number(localFormValues.ef_imported_heat))
+          ? 0
+          : Number(localFormValues.ef_imported_heat),
+        ef_exported_heat: isNaN(Number(localFormValues.ef_exported_heat))
+          ? 0
+          : Number(localFormValues.ef_exported_heat),
+        electricity_consumption_value: isNaN(
+          Number(localFormValues.electricity_consumption_value)
+        )
+          ? 0
+          : Number(localFormValues.electricity_consumption_value),
+        ef_electricity: isNaN(Number(localFormValues.ef_electricity))
+          ? 0
+          : Number(localFormValues.ef_electricity),
+        source_of_ef_electricity:
+          localFormValues.source_of_ef_electricity || "",
+        exported_electricity_value: isNaN(
+          Number(localFormValues.exported_electricity_value)
+        )
+          ? 0
+          : Number(localFormValues.exported_electricity_value),
+        ef_exported_electricity: isNaN(
+          Number(localFormValues.ef_exported_electricity)
+        )
+          ? 0
+          : Number(localFormValues.ef_exported_electricity),
+        total_production_amounts: isNaN(
+          Number(localFormValues.total_production_amounts)
+        )
+          ? 0
+          : Number(localFormValues.total_production_amounts),
+        produced_for_market_amount: isNaN(
+          Number(localFormValues.produced_for_market_amount)
+        )
+          ? 0
+          : Number(localFormValues.produced_for_market_amount),
+        imported_wgases_amount: isNaN(
+          Number(localFormValues.imported_wgases_amount)
+        )
+          ? 0
+          : Number(localFormValues.imported_wgases_amount),
+        ef_imported_wgases: isNaN(Number(localFormValues.ef_imported_wgases))
+          ? 0
+          : Number(localFormValues.ef_imported_wgases),
+        exported_wgases_amount: isNaN(
+          Number(localFormValues.exported_wgases_amount)
+        )
+          ? 0
+          : Number(localFormValues.exported_wgases_amount),
+        ef_exported_wgases: isNaN(Number(localFormValues.ef_exported_wgases))
+          ? 0
+          : Number(localFormValues.ef_exported_wgases),
       };
 
       let response, newGoodsId;
@@ -561,6 +621,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                 condumed_non_cbam_goods_amounts: String(
                   localFormValues.condumed_non_cbam_goods_amounts ?? ""
                 ),
+                control: String(localFormValues.control ?? ""),
               }}
               errors={formErrors}
               onChange={handleInputChange}

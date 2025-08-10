@@ -75,6 +75,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     }
   };
 
+  
   const saveToLocalStorage = useCallback(() => {
     if (values.industry_type || values.goods_category) {
       const dataToSave = {
@@ -85,17 +86,14 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
         name: values.name,
       };
 
-      // const currentSaved = localStorage.getItem("goodsFormData");
       const newData = JSON.stringify(dataToSave);
 
-      // if (currentSaved !== newData) {
       localStorage.setItem("goodsFormData", newData);
       localStorage.setItem("selectedIndustry", values.industry_type);
       localStorage.setItem("selectedGoods", values.goods_category);
-
-      // }
     }
   }, [values]);
+
 
   const updateGoodsOptions = useCallback(
     (industryType: string) => {
@@ -184,6 +182,8 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
     loadData();
   }, []);
+
+  
 
   useEffect(() => {
     if (!isLoading) {

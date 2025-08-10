@@ -25,7 +25,7 @@ import {
 import styled from "@emotion/styled";
 import InstallationForm ,{ InstallationFormProps }from "../forms/installationForm";
 import VerifierForm from "../forms/VerifierForm";
-import GoodsForm from "../forms/GoodsForm";
+import GoodsForm, {GoodsFormProps}from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
 import SourceForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
@@ -53,7 +53,6 @@ const fallbackSteps = [
 
 const Formdev: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [searchParams] = useSearchParams();
 
   const [activeStep, setActiveStep] = useState(0);
@@ -157,7 +156,7 @@ const Formdev: React.FC = () => {
     fax: "",
   });
 
-  const [goodsData, setGoodsData] = useState({
+  const [goodsData, setGoodsData] = useState<GoodsFormProps["formValues"]>({
     report_id: 0,
     name: "",
     goods_category: "",
@@ -249,7 +248,7 @@ const Formdev: React.FC = () => {
       setSumupData((prev) => ({ ...prev, reportId }));
       setInstallationData((prev) => ({ ...prev, reportId }));
       setVerifierData((prev) => ({ ...prev, reportId }));
-      setGoodsData((prev) => ({ ...prev, report_id: reportId }));
+      setGoodsData((prev) => ({ ...prev, reportId }));
       setPrecursorsData((prev) => ({ ...prev, reportId }));
       setSourceData((prev) => ({ ...prev, reportId }));
       setEmissionData((prev) => ({ ...prev, reportId }));
@@ -323,11 +322,9 @@ const Formdev: React.FC = () => {
         case 6:
           if (emissionFormRef.current?.submit) {
             canProceed = await emissionFormRef.current.submit();
-            // If this is the last step and submission is successful, navigate to report
             if (canProceed) {
               const currentReportId = localStorage.getItem("reportId");
               if (currentReportId) {
-                // ✅ Clear CBAM form data after successful submission
                 const cbamKeys = [
                   "reportId",
                   "cbamFormData",
@@ -345,8 +342,6 @@ const Formdev: React.FC = () => {
                 ];
 
                 cbamKeys.forEach((key) => localStorage.removeItem(key));
-
-                // Navigate to report page with the reportId
                 navigate(`/cbam/report?reportId=${currentReportId}`);
                 return;
               }

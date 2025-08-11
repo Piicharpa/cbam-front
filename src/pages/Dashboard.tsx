@@ -35,7 +35,7 @@ import WarningIcon from "@mui/icons-material/Warning";
 import { useNavigate } from "react-router-dom";
 import TableDashboard from "../dashboard/TableDashboard";
 import SumupForm from "../forms/SumupForm";
-
+import { useToken } from "../utils/localStorage";
 // Custom theme based on provided colors
 const theme = createTheme({
   palette: {
@@ -202,29 +202,29 @@ const Form: React.FC = () => {
   };
 
   // Function to handle creating a new report
- const handleCreateNewReport = () => {
-  // ✅ Clear CBAM form data เมื่อสร้าง report ใหม่
-  const cbamKeys = [
-    "reportId",
-    "cbamFormData",
-    "amountFormData", 
-    "goodsFormData",
-    "precursorData",
-    "precursorId",
-    "selectedCnCode",
-    "selectedGoods",
-    "selectedIndustry",
-    "activeTable",
-    "selectedCctvIds",
-    "selectedNodeIds",
-    "searchFilters"
-  ];
-  
-  cbamKeys.forEach((key) => localStorage.removeItem(key));
-  
-  // Navigate to form page
-  navigate("/cbam/formdev");
-};
+  const handleCreateNewReport = () => {
+    // ✅ Clear CBAM form data เมื่อสร้าง report ใหม่
+    const cbamKeys = [
+      "reportId",
+      "cbamFormData",
+      "amountFormData",
+      "goodsFormData",
+      "precursorData",
+      "precursorId",
+      "selectedCnCode",
+      "selectedGoods",
+      "selectedIndustry",
+      "activeTable",
+      "selectedCctvIds",
+      "selectedNodeIds",
+      "searchFilters",
+    ];
+
+    cbamKeys.forEach((key) => localStorage.removeItem(key));
+
+    // Navigate to form page
+    navigate("/cbam/formdev");
+  };
 
   // Function to initiate delete process
   const handleDeleteReport = (reportId: string | number) => {
@@ -264,8 +264,7 @@ const Form: React.FC = () => {
           responseData = JSON.parse(responseText);
         } else {
         }
-      } catch (parseError) {
-      }
+      } catch (parseError) {}
       // Show success message
       setSnackbarMessage(
         `Report #${reportToDelete} has been deleted successfully`
@@ -330,6 +329,8 @@ const Form: React.FC = () => {
         return <Typography>Unknown step</Typography>;
     }
   };
+  const token = useToken();
+  console.log(token.company[0]);
 
   return (
     <ThemeProvider theme={theme}>
@@ -526,7 +527,7 @@ const Form: React.FC = () => {
           >
             {snackbarMessage}
           </Alert>
-        </Snackbar>   
+        </Snackbar>
       </Container>
     </ThemeProvider>
   );

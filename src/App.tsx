@@ -15,6 +15,8 @@ import Dashboard from "./pages/Dashboard";
 import NavigationProp from "./components/NavigationProp";
 import Formdev from "./pages/Formdev"; // Make sure the import name matches the component
 import Report from "./pages/Report";
+import { useEffect } from "react";
+import { AuthProvider } from "./auth/auth.provider";
 
 // Define a custom theme based on your color palette
 const theme = createTheme({
@@ -115,220 +117,229 @@ const theme = createTheme({
 });
 
 function App() {
+  useEffect(() => {
+    window.addEventListener("message", (event) => {
+      if (event.origin !== "http://178.128.123.212:8080") return;
+      const token = event.data.token;
+
+      localStorage.setItem("user_account", JSON.stringify(token));
+    });
+  }, []);
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box
-        sx={{
-          minHeight: "100vh",
-          minWidth: "100vh",
-          pb: 6,
-          pt: 2,
-          px: { xs: 2, sm: 3, md: 4 },
-          position: "relative",
-          overflow: "hidden",
-          "&::before": {
-            content: '""',
-            position: "absolute",
-            top: -100,
-            right: -100,
-            width: 300,
-            height: 300,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${alpha(
-              "#07b8dd",
-              0.1
-            )} 0%, rgba(255,255,255,0) 70%)`,
-            zIndex: 0,
-          },
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            bottom: -80,
-            left: -80,
-            width: 250,
-            height: 250,
-            borderRadius: "50%",
-            background: `radial-gradient(circle, ${alpha(
-              "#e7f9cd",
-              0.6
-            )} 0%, rgba(255,255,255,0) 70%)`,
-            zIndex: 0,
-          },
-        }}
-      >
-        <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
-          {/* Top wave decoration */}
-          <Box
-            component="svg"
-            viewBox="0 0 1440 120"
-            sx={{
+      <AuthProvider>
+        <CssBaseline />
+        <Box
+          sx={{
+            minHeight: "100vh",
+            minWidth: "100vh",
+            pb: 6,
+            pt: 2,
+            px: { xs: 2, sm: 3, md: 4 },
+            position: "relative",
+            overflow: "hidden",
+            "&::before": {
+              content: '""',
               position: "absolute",
-              top: -20,
-              left: -20,
-              right: -20,
-              zIndex: -1,
-              opacity: 0.4,
-              pointerEvents: "none",
-            }}
-          >
-            <path
-              fill="#0190c3"
-              d="M0,32L60,42.7C120,53,240,75,360,85.3C480,96,600,96,720,80C840,64,960,32,1080,21.3C1200,11,1320,21,1380,26.7L1440,32L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
-            />
-          </Box>
-
-          {/* Header Component */}
-          <Paper
-            elevation={0}
-            sx={{
-              flexGrow: 1, // ขยายให้เต็มพื้นที่ที่เหลือ
-              p: 2,
-              mb: 4,
-              background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
-              borderLeft: "6px solid #74aa15",
-              position: "relative",
-              overflow: "hidden",
-            }}
-          >
-            <Header
-              companyName="บริษัท เอบีซี จำกัด"
-              userStatus="Welcome to CBAM System!"
-            />
-          </Paper>
-          {/* Main Content */}
-
-          {/* Content Container with glass effect */}
-          <Paper
-            elevation={2}
-            sx={{
-              borderRadius: 3,
-              minHeight: "500px",
-              background: "rgba(255, 255, 255, 0.9)",
-              backdropFilter: "blur(8px)",
-              position: "relative",
-              overflow: "hidden",
-              "&::before": {
-                content: '""',
+              top: -100,
+              right: -100,
+              width: 300,
+              height: 300,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${alpha(
+                "#07b8dd",
+                0.1
+              )} 0%, rgba(255,255,255,0) 70%)`,
+              zIndex: 0,
+            },
+            "&::after": {
+              content: '""',
+              position: "absolute",
+              bottom: -80,
+              left: -80,
+              width: 250,
+              height: 250,
+              borderRadius: "50%",
+              background: `radial-gradient(circle, ${alpha(
+                "#e7f9cd",
+                0.6
+              )} 0%, rgba(255,255,255,0) 70%)`,
+              zIndex: 0,
+            },
+          }}
+        >
+          <Container maxWidth="xl" sx={{ position: "relative", zIndex: 1 }}>
+            {/* Top wave decoration */}
+            <Box
+              component="svg"
+              viewBox="0 0 1440 120"
+              sx={{
                 position: "absolute",
-                top: 0,
-                left: 0,
-                right: 0,
-                height: "5px",
-                background: "linear-gradient(90deg, #0190c3, #07b8dd)",
-              },
-            }}
-          >
-            <NavigationProp>
-              {/* Routes Container */}
-              <Box
-                sx={{
-                  p: { xs: 2, sm: 3, md: 4 },
-                  minHeight: "500px",
-                  position: "relative",
-                  zIndex: 2,
-                }}
-              >
-                <Routes>
-                  <Route path="/" element={<Navigate to="/Home" replace />} />
-                  <Route path="/Home" element={<Dashboard />} />
+                top: -20,
+                left: -20,
+                right: -20,
+                zIndex: -1,
+                opacity: 0.4,
+                pointerEvents: "none",
+              }}
+            >
+              <path
+                fill="#0190c3"
+                d="M0,32L60,42.7C120,53,240,75,360,85.3C480,96,600,96,720,80C840,64,960,32,1080,21.3C1200,11,1320,21,1380,26.7L1440,32L1440,0L1380,0C1320,0,1200,0,1080,0C960,0,840,0,720,0C600,0,480,0,360,0C240,0,120,0,60,0L0,0Z"
+              />
+            </Box>
 
-                  {/* Fix the Form route */}
-                  <Route
-                    path="/Form"
-                    element={<Navigate to="/cbam/formdev" replace />}
-                  />
+            {/* Header Component */}
+            <Paper
+              elevation={0}
+              sx={{
+                flexGrow: 1, // ขยายให้เต็มพื้นที่ที่เหลือ
+                p: 2,
+                mb: 4,
+                background: "linear-gradient(to right, #f3f7e7, #e7f9cd)",
+                borderLeft: "6px solid #74aa15",
+                position: "relative",
+                overflow: "hidden",
+              }}
+            >
+              <Header
+                companyName="บริษัท เอบีซี จำกัด"
+                userStatus="Welcome to CBAM System!"
+              />
+            </Paper>
+            {/* Main Content */}
 
-                  {/* Add the proper CBAM form routes */}
-                  <Route path="/cbam/formdev" element={<Formdev />} />
-                  <Route
-                    path="/cbam/cbam/formdev"
-                    element={
-                      <Navigate
-                        to={`/cbam/formdev${window.location.search}`}
-                        replace
-                      />
-                    }
-                  />
+            {/* Content Container with glass effect */}
+            <Paper
+              elevation={2}
+              sx={{
+                borderRadius: 3,
+                minHeight: "500px",
+                background: "rgba(255, 255, 255, 0.9)",
+                backdropFilter: "blur(8px)",
+                position: "relative",
+                overflow: "hidden",
+                "&::before": {
+                  content: '""',
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: "5px",
+                  background: "linear-gradient(90deg, #0190c3, #07b8dd)",
+                },
+              }}
+            >
+              <NavigationProp>
+                {/* Routes Container */}
+                <Box
+                  sx={{
+                    p: { xs: 2, sm: 3, md: 4 },
+                    minHeight: "500px",
+                    position: "relative",
+                    zIndex: 2,
+                  }}
+                >
+                  <Routes>
+                    <Route path="/" element={<Navigate to="/Home" replace />} />
+                    <Route path="/Home" element={<Dashboard />} />
 
-                  <Route path="/Report" element={<Report />} />
-                  {/* Add a route for reports with IDs */}
-                  <Route path="/cbam/report" element={<Report />} />
+                    {/* Fix the Form route */}
+                    <Route
+                      path="/Form"
+                      element={<Navigate to="/cbam/formdev" replace />}
+                    />
 
-                  <Route
-                    path="*"
-                    element={
-                      <Box
-                        sx={{
-                          display: "flex",
-                          flexDirection: "column",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          minHeight: "400px",
-                          textAlign: "center",
-                        }}
-                      >
-                        <Box
-                          component="img"
-                          src="/404.svg" // Add a 404 image to your public folder
-                          alt="Page not found"
-                          sx={{
-                            width: "100%",
-                            maxWidth: "300px",
-                            mb: 3,
-                          }}
+                    {/* Add the proper CBAM form routes */}
+                    <Route path="/cbam/formdev" element={<Formdev />} />
+                    <Route
+                      path="/cbam/cbam/formdev"
+                      element={
+                        <Navigate
+                          to={`/cbam/formdev${window.location.search}`}
+                          replace
                         />
-                        <h2 style={{ color: theme.palette.text.primary }}>
-                          Page Not Found
-                        </h2>
-                        <p style={{ color: theme.palette.text.secondary }}>
-                          The page you're looking for doesn't exist or has been
-                          moved.
-                        </p>
-                      </Box>
-                    }
-                  />
-                </Routes>
-              </Box>
+                      }
+                    />
 
-              {/* Decorative elements */}
-              <Box
-                sx={{
-                  position: "absolute",
-                  bottom: -10,
-                  right: -10,
-                  width: "150px",
-                  height: "150px",
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${alpha(
-                    "#f3f7e7",
-                    0.5
-                  )} 0%, rgba(255,255,255,0) 70%)`,
-                  zIndex: 1,
-                  pointerEvents: "none",
-                }}
-              />
-              <Box
-                sx={{
-                  position: "absolute",
-                  top: "30%",
-                  left: -20,
-                  width: "100px",
-                  height: "100px",
-                  borderRadius: "50%",
-                  background: `radial-gradient(circle, ${alpha(
-                    "#0190c3",
-                    0.07
-                  )} 0%, rgba(255,255,255,0) 70%)`,
-                  zIndex: 1,
-                  pointerEvents: "none",
-                }}
-              />
-            </NavigationProp>
-          </Paper>
+                    <Route path="/Report" element={<Report />} />
+                    {/* Add a route for reports with IDs */}
+                    <Route path="/cbam/report" element={<Report />} />
 
+                    <Route
+                      path="*"
+                      element={
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            minHeight: "400px",
+                            textAlign: "center",
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src="/404.svg" // Add a 404 image to your public folder
+                            alt="Page not found"
+                            sx={{
+                              width: "100%",
+                              maxWidth: "300px",
+                              mb: 3,
+                            }}
+                          />
+                          <h2 style={{ color: theme.palette.text.primary }}>
+                            Page Not Found
+                          </h2>
+                          <p style={{ color: theme.palette.text.secondary }}>
+                            The page you're looking for doesn't exist or has
+                            been moved.
+                          </p>
+                        </Box>
+                      }
+                    />
+                  </Routes>
+                </Box>
+
+                {/* Decorative elements */}
+                <Box
+                  sx={{
+                    position: "absolute",
+                    bottom: -10,
+                    right: -10,
+                    width: "150px",
+                    height: "150px",
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${alpha(
+                      "#f3f7e7",
+                      0.5
+                    )} 0%, rgba(255,255,255,0) 70%)`,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                />
+                <Box
+                  sx={{
+                    position: "absolute",
+                    top: "30%",
+                    left: -20,
+                    width: "100px",
+                    height: "100px",
+                    borderRadius: "50%",
+                    background: `radial-gradient(circle, ${alpha(
+                      "#0190c3",
+                      0.07
+                    )} 0%, rgba(255,255,255,0) 70%)`,
+                    zIndex: 1,
+                    pointerEvents: "none",
+                  }}
+                />
+              </NavigationProp>
+            </Paper>
           </Container>
-          </Box>
+        </Box>
+      </AuthProvider>
     </ThemeProvider>
   );
 }

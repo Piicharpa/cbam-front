@@ -81,7 +81,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             type="number"
             caption="Amount production levels"
             defination="ระบุปริมาณการผลิตทั้งหมด"
-            unit="Tonne"
+            unit="t"
             label=""
             name="total_production_amounts"
             value={values.total_production_amounts}
@@ -101,7 +101,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             type="number"
             caption="Total production levels"
             defination="ระบุปริมาณการผลิตทั้งหมด"
-            unit="Tonne"
+            unit="t"
             label= ""
             name="total_consumed_within_installation"
             value={values.total_production_amounts}
@@ -143,7 +143,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         caption="Produced for the market"
         defination="ระบุปริมาณการผลิตเพื่อจำหน่าย"
         label=""
-        unit="Tonne"
+        unit="t"
         name="produced_for_market_amount"
         value={values.produced_for_market_amount}
         onChange={onChange}
@@ -228,7 +228,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         label=""
         name="consumed_in_others_amounts"
         value={values.consumed_in_others_amounts}
-        unit="Tonne"
+        unit="t"
         onChange={onChange}
         error={errors.consumed_in_others_amounts}
         helperText={errors.consumed_in_others_amounts} 
@@ -267,7 +267,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         label=""
         name="condumed_non_cbam_goods_amounts"
         value={values.condumed_non_cbam_goods_amounts}
-        unit="Tonne"
+        unit="t"
         onChange={onChange}
         error={errors.condumed_non_cbam_goods_amounts} // Pass the error for the helper text
         helperText={errors.condumed_non_cbam_goods_amounts} // Show error as helper text
@@ -305,7 +305,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         label=""
         name="control"
         value={values.control}
-        unit="Tonne"
+        unit="t"
         onChange={onChange}
         error={errors.control}
         helperText={errors.control} 

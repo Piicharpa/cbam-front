@@ -305,7 +305,7 @@ const saveToLocalStorage = useCallback(() => {
                   type="number"
                   caption="Amount"
                   defination="ระบุปริมาณผลิตภัณฑ์ที่ผลิต"
-                  unit="Tonne"
+                  unit="t"
                   label=""
                   name={`amount_${index}`}
                   value={

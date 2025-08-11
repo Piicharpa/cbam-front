@@ -36,6 +36,15 @@ interface Props {
 }
 
 const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
+  const totalAmounts = useMemo(() => {
+    return values.amounts.reduce((sum, amount) => sum + (parseFloat(amount) || 0), 0);
+  }, [values.amounts]);
+
+  // Inform parent of total amount whenever amounts change
+  useEffect(() => {
+    onChange("total_production_amounts", totalAmounts.toString()); // Convert to string
+  }, [totalAmounts, onChange]);
+
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);
   const [goodsOptions, setGoodsOptions] = useState<OptionType[]>([]);
@@ -75,34 +84,35 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
     }
   };
 
-  
   // With this properly formatted statement inside your saveToLocalStorage function:
-const saveToLocalStorage = useCallback(() => {
-  if (values.industry_type || values.goods_category) {
-    const dataToSave = {
-      routes: values.routes || [],
-      amounts: values.amounts || [],
-      industry_type: values.industry_type,
-      goods_category: values.goods_category,
-      name: values.name,
-    };
-    const newData = JSON.stringify(dataToSave);
-    localStorage.setItem("goodsFormData", newData);
-    localStorage.setItem("selectedIndustry", values.industry_type);
-    localStorage.setItem("selectedGoods", values.goods_category);
-    
-    // Get the goods name from the options based on the selected value
-    if (values.goods_category) {
-      const selectedGoodsOption = goodsOptions.find(
-        opt => String(opt.value) === String(values.goods_category)
-      );
-      if (selectedGoodsOption) {
-        localStorage.setItem("selectedGoodsName", selectedGoodsOption.label || "");
+  const saveToLocalStorage = useCallback(() => {
+    if (values.industry_type || values.goods_category) {
+      const dataToSave = {
+        routes: values.routes || [],
+        amounts: values.amounts || [],
+        industry_type: values.industry_type,
+        goods_category: values.goods_category,
+        name: values.name,
+      };
+      const newData = JSON.stringify(dataToSave);
+      localStorage.setItem("goodsFormData", newData);
+      localStorage.setItem("selectedIndustry", values.industry_type);
+      localStorage.setItem("selectedGoods", values.goods_category);
+
+      // Get the goods name from the options based on the selected value
+      if (values.goods_category) {
+        const selectedGoodsOption = goodsOptions.find(
+          (opt) => String(opt.value) === String(values.goods_category)
+        );
+        if (selectedGoodsOption) {
+          localStorage.setItem(
+            "selectedGoodsName",
+            selectedGoodsOption.label || ""
+          );
+        }
       }
     }
-  }
-}, [values, goodsOptions]);
-
+  }, [values, goodsOptions]);
 
   const updateGoodsOptions = useCallback(
     (industryType: string) => {
@@ -191,8 +201,6 @@ const saveToLocalStorage = useCallback(() => {
 
     loadData();
   }, []);
-
-  
 
   useEffect(() => {
     if (!isLoading) {
@@ -506,8 +514,6 @@ const saveToLocalStorage = useCallback(() => {
 
         {/* Production Routes Input */}
         <div style={{ marginBottom: "1rem" }}>{renderRouteInputs()}</div>
-
-        
       </div>
     </Section>
   );

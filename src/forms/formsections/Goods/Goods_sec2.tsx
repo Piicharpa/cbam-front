@@ -10,6 +10,7 @@ interface Props {
     produced_for_market_amount: string;
     condumed_non_cbam_goods_amounts: string;
     control: string;
+    total_amount?: string;
   };
   errors: {
     total_production_amounts?: string;
@@ -18,6 +19,7 @@ interface Props {
     consumed_in_others_amounts?: string;
     condumed_non_cbam_goods_amounts?: string;
     control?: string;
+    total_amount?: string;
   };
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   // onNext: () => void;
@@ -49,7 +51,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
       controlAmount: controlAmount.toFixed(2), // Format control amount
     };
   }, [
-    values.total_production_amounts,
+     values.total_production_amounts,
     values.produced_for_market_amount,
     values.condumed_non_cbam_goods_amounts,
     values.consumed_in_others_amounts

@@ -13,6 +13,7 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
+import { company_data, type CompanyType } from "../utils/company";
 
 // Define the navigation items
 const navItems = [
@@ -35,8 +36,14 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  const [companyData, setCompanyData] = useState<CompanyType | undefined>();
+
   // Handle scroll effect
+  const fetchCompanyData = async () => {
+    setCompanyData(await company_data());
+  };
   useEffect(() => {
+    fetchCompanyData();
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };
@@ -139,7 +146,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                       letterSpacing: 0.5,
                     }}
                   >
-                    Company Name : 
+                    Company Name : {companyData?.name}
                   </Typography>
                   <Typography
                     fontSize="16px"
@@ -150,7 +157,11 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                       letterSpacing: 0.5,
                     }}
                   >
-                    Address : 
+                    Address : {companyData?.address},{" "}
+                    {companyData?.subdistrict_name},{" "}
+                    {companyData?.district_name}, {companyData?.province_name},{" "}
+                    {companyData?.zipcode} เบอร์โทรศัพท์:{" "}
+                    {companyData?.contact_no}
                   </Typography>
                 </Box>
               </Box>

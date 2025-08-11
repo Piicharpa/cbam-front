@@ -19,6 +19,7 @@ export type CompanyType = {
   updated_date: Date | string;
 };
 export const fetchCompanyData = async (companyId: number): Promise<CompanyType> => {
-  const response = await axios.get(`/company/${companyId}`);
+  const apiURL = process.env.REACT_APP_API_URL;
+  const response = await axios.get(`${apiURL}/company/${companyId}`);
   return response.data;
 };

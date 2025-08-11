@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Box } from "@mui/material";
 import LabeledTextField from "../../components/LabeledTextField";
 import LabeledAutocomplete from "../../components/LabeledAutoComplete";
@@ -117,9 +117,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   const [routeCount, setRouteCount] = useState<number>(1);
   const [routeCount1, setRouteCount1] = useState<number>(1);
   const [isSaving, setIsSaving] = useState<boolean>(false);
-  const [fieldValues, setFieldValues] = useState<{
-    [key: string]: string | number;
-  }>({});
+  type FieldValues = {
+  [key: string]: string | number;
+};
+  const [fieldValues, setFieldValues] = useState<FieldValues>({});
   const [previousData, setPreviousData] = useState<PrecursorApiData | null>(
     null
   );
@@ -255,54 +256,81 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     return isNaN(num) ? 0 : num;
   };
 
-  // Safe calculation function to prevent infinite loops
-  // Safe calculation function to prevent infinite loops and NaN values
-  const calculateDerivedValues = () => {
-    if (isCalculating.current) return;
-    isCalculating.current = true;
-
-    try {
-      // Calculate total purchase level - sum of all amounts in section (a)
-      let totalAmount = 0;
-      for (let i = 0; i < routeCount1; i++) {
-        const amountKey = `amount_${i}_${index}`;
-        totalAmount += ensureNumber(fieldValues[amountKey]);
-      }
-
-      // Calculate amount(b) - consumption in production processes
-      const amountB = ensureNumber(
-        fieldValues[`consumed_in_production_amounts`]
-      );
-
-      // Calculate amount(c) - consumed for other purposes
-      const amountC = ensureNumber(
-        fieldValues[`consumed_non_cbam_goods_amounts`]
-      );
-
-      // Calculate control: Total Purchase Level - (amount(b) + amount(c))
-      const calculatedControl = Math.max(0, totalAmount - (amountB + amountC));
-
-      // Calculate SEE (indirect): specific electricity consumption * electricity emission factor
-      const specificElectricityConsumption = ensureNumber(
-        fieldValues[`embedded_indirection_emissions_value_${index}`]
-      );
-
-      // Get the electricity emission factor
-      const electricityEmissionFactor = ensureNumber(
-        fieldValues[`value_electricity_indirect_emission_factor`]
-      );
-
-      const calculatedSEEIndirect =
-        specificElectricityConsumption * electricityEmissionFactor;
-
-      // Update the state variables directly with guaranteed numeric values
-      setTotalPurchaseLevel(totalAmount);
-      setControlAmount(calculatedControl);
-      setCalculatedIndirectEmissions(calculatedSEEIndirect);
-    } finally {
-      isCalculating.current = false;
+  
+const calculateDerivedValues = useCallback(() => {
+  if (isCalculating.current) return;
+  isCalculating.current = true;
+  try {
+    // Calculate total purchase level - sum of all amounts in section (a)
+    let totalAmount = 0;
+    for (let i = 0; i < routeCount1; i++) {
+      const amountKey = `amount_${i}_${index}`;
+      totalAmount += ensureNumber(fieldValues[amountKey]);
     }
-  };
+    // Calculate amount(b) - consumption in production processes
+    const amountB = ensureNumber(fieldValues[`consumed_in_production_amounts`]);
+    // Calculate amount(c) - consumed for other purposes
+    const amountC = ensureNumber(fieldValues[`consumed_non_cbam_goods_amounts`]);
+    // Calculate control: Total Purchase Level - (amount(b) + amount(c))
+    const calculatedControl = Math.max(0, totalAmount - (amountB + amountC));
+    // Calculate SEE (indirect)
+    const specificElectricityConsumption = ensureNumber(
+      fieldValues[`embedded_indirection_emissions_value_${index}`]
+    );
+    const electricityEmissionFactor = ensureNumber(
+      fieldValues[`value_electricity_indirect_emission_factor`]
+    );
+    const calculatedSEEIndirect = specificElectricityConsumption * electricityEmissionFactor;
+
+    // Update state only if values have changed
+    if (totalAmount !== totalPurchaseLevel) {
+      setTotalPurchaseLevel(totalAmount);
+    }
+    if (calculatedControl !== controlAmount) {
+      setControlAmount(calculatedControl);
+    }
+    if (calculatedSEEIndirect !== calculatedIndirectEmissions) {
+      setCalculatedIndirectEmissions(calculatedSEEIndirect);
+    }
+  } finally {
+    isCalculating.current = false;
+  }
+}, [
+  fieldValues,
+  index,
+  routeCount1,
+  totalPurchaseLevel,
+  controlAmount,
+  calculatedIndirectEmissions
+]);
+
+// 2. Replace the existing useEffect with a more controlled one
+useEffect(() => {
+  const timer = setTimeout(calculateDerivedValues, 100);
+  return () => clearTimeout(timer);
+}, [calculateDerivedValues]);
+
+// 3. Add useMemo for computed values
+const relevantAmounts = useMemo(() => {
+  const amounts: Record<string, string | number> = {};
+  for (let i = 0; i < routeCount1; i++) {
+    const key = `amount_${i}_${index}`;
+    amounts[key] = fieldValues[key] || 0;
+  }
+  return amounts;
+}, [fieldValues, routeCount1, index]);
+
+// 4. Use useEffect with specific dependency instead of many field values
+useEffect(() => {
+  calculateDerivedValues();
+}, [
+  relevantAmounts, 
+  fieldValues[`consumed_in_production_amounts`],
+  fieldValues[`consumed_non_cbam_goods_amounts`],
+  fieldValues[`embedded_indirection_emissions_value_${index}`],
+  fieldValues[`value_electricity_indirect_emission_factor`],
+  calculateDerivedValues
+]);
 
   const getGoodsName = async () => {
     try {

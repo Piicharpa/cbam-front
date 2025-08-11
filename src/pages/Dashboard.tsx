@@ -330,7 +330,7 @@ const Form: React.FC = () => {
     }
   };
   const token = useToken();
-  console.log(token.company[0]);
+  console.log(token?.company?.[0]);
 
   return (
     <ThemeProvider theme={theme}>

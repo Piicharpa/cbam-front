@@ -48,7 +48,16 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   // Get report ID from localStorage (always exists in real situation)
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
-  const companyId = 1;
+  const companyId = (() => {
+    const data = localStorage.getItem("loginData");
+    if (!data) return null;
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.company?.[0]?.company_id || null;
+    } catch {
+      return null;
+    }
+  })();
   const apiUrl = process.env.REACT_APP_API_URL;
   const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
@@ -521,17 +530,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       // Success message
       const modeText = formMode === "edit" ? "updated" : "created";
-      alert(
-        `✅ Success!\n` +
-          `🏭 Installation ${modeText} successfully\n` +
-          `🔗 Report #${reportId} linked with installation\n` +
-          `📋 Ready for next step`
-      );
       // Move to next step
       onNextStep();
     } catch (err: any) {
       console.error("❌ Form submission error:", err);
-      alert(`❌ Error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }

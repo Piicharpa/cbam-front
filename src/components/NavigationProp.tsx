@@ -78,7 +78,6 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
     ];
 
     cbamKeys.forEach((key) => localStorage.removeItem(key));
-    // console.log("✅ CBAM data cleared for new report");
 
     // Navigate to form
     handleNavigation("/cbam/formdev");

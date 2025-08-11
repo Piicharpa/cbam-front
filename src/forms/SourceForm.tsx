@@ -39,7 +39,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  // const reportId = 54;
   const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL;
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -234,7 +233,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
       console.error(
         "❌ reportId is not provided - not found in localStorage or state"
       );
-      alert("Report ID not found. Please select a report first.");
+      
     }
   }, [reportId]);
 
@@ -449,7 +448,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
     setIsSubmitting(true);
 
     if (!reportId) {
-      alert("❌ Report ID (reportId) not found. Please create a report first.");
       setIsSubmitting(false);
       return;
     }
@@ -549,13 +547,11 @@ const SourceForm: React.FC<SourceFormProps> = ({
       }
 
       // Navigate to report page after successful submission
-      alert("Data saved successfully!");
       // Go to next step
       if (onNextStep) onNextStep();
       localStorage.removeItem("cbam_report_id");
     } catch (error: any) {
       console.error("❌ Form submission error:", error);
-      alert(`❌ Error: ${error.message || "Please try again"}`);
     } finally {
       setIsSubmitting(false);
     }

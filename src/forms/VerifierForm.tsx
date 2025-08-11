@@ -41,8 +41,17 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   const navigate = useNavigate();
   // Get reportId from localStorage (same as InstallationForm)
   const storedReportId = localStorage.getItem("reportId");
-  const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
-  const companyId = 1;
+  const reportId = storedReportId ? parseInt(storedReportId) : null;
+  const companyId = (() => {
+  const data = localStorage.getItem("loginData");
+  if (!data) return null;
+  try {
+    const parsed = JSON.parse(data);
+    return parsed.company?.[0]?.company_id || null;
+  } catch {
+    return null;
+  }
+})();
   const apiUrl = process.env.REACT_APP_API_URL;
 
   const [existingData, setExistingData] = useState<any>(null);
@@ -491,12 +500,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         if (!reportUpdateResponse.ok) {
           const errorText = await reportUpdateResponse.text();
           console.error("❌ Report update error:", errorText);
-          // Show partial success message
-          alert(
-            `✅ Verifier data saved successfully!\n` +
-              `⚠️ But could not update report: ${errorText}\n` +
-              `You may need to link the verifier manually.`
-          );
+          
         } else {
           const reportResult = await reportUpdateResponse.json();
 
@@ -510,12 +514,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
           // Success message
           const modeText = formMode === "edit" ? "updated" : "created";
-          alert(
-            `✅ Success!\n` +
-              `👨‍💼 Verifier ${modeText} successfully\n` +
-              `🔗 Report #${reportId} linked with verifier\n` +
-              `📋 Ready for next step`
-          );
+        
         }
       }
 
@@ -523,7 +522,6 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
       onNextStep();
     } catch (err: any) {
       console.error("❌ Form submission error:", err);
-      alert(`❌ Error: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }

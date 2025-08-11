@@ -137,9 +137,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         if (!res.ok) {
           if (res.status === 404) {
             console.warn(`⚠️ Report ID ${reportIdFromUrl} not found`);
-            alert(
-              `Report ID ${reportIdFromUrl} not found. Creating new report instead.`
-            );
+            
             // ล้าง URL และเปลี่ยนเป็น create mode
             navigate("/cbam/formdev", { replace: true });
             return;
@@ -171,7 +169,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         setCurrentReportId(reportIdFromUrl);
       } catch (err: any) {
         console.error("❌ Error loading existing report:", err);
-        alert(`Error loading report: ${err.message}`);
         // ในกรณีเกิดข้อผิดพลาด ให้เปลี่ยนเป็น create mode
         navigate("/cbam/formdev", { replace: true });
       } finally {
@@ -329,7 +326,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         result = await res.json();
         finalReportId = currentReportId;
 
-        alert(`✅ Report updated successfully! Report ID: ${finalReportId}`);
       } else {
         // === CREATE MODE: สร้างรายงานใหม่ ===
 
@@ -349,9 +345,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         if (finalReportId) {
           setCurrentReportId(finalReportId);
-          alert(
-            `✅ New report created successfully! Report ID: ${finalReportId}`
-          );
+         
 
           // ✅ อัปเดต URL เป็น edit mode (optional)
           // navigate(`/cbam/formdev?reportId=${finalReportId}`, { replace: true });
@@ -367,7 +361,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       onNextStep();
     } catch (error: any) {
       console.error("❌ Form submission error:", error);
-      alert(`Error: ${error.message}`);
     } finally {
       setIsSubmitting(false);
     }

@@ -149,7 +149,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         if (!reportRes.ok) throw new Error(`Failed to fetch report`);
 
         const reportArr = await reportRes.json();
-        console.log(reportArr);
         const report = reportArr[0];
 
         setExistingData(report);
@@ -183,7 +182,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
             if (!goodsData) {
               // ถ้าไม่มีข้อมูล goods ให้ใช้ค่าว่างเปล่า
-              console.log("No goods data found with ID:", report.goods_id);
               setFormMode("create");
               const defaultEmptyValues = getDefaultFormValues();
               setLocalFormValues(defaultEmptyValues);
@@ -192,7 +190,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             }
 
             // มีข้อมูลถูกต้อง ดึงค่าต่างๆ
-            console.log("Found goods data:", goodsData);
             const extractedValues = {
               report_id: goodsData.report_id || reportId,
               name: String(goodsData.name || ""),

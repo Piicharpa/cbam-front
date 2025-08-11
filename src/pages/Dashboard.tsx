@@ -311,10 +311,7 @@ const Form: React.FC = () => {
     setActiveStep((prevStep) => prevStep - 1);
   };
 
-  const handleSubmit = () => {
-    // Do submit logic here!
-    alert("Form submitted!");
-  };
+ 
 
   const renderStepContent = (step: number) => {
     switch (step) {
@@ -329,8 +326,6 @@ const Form: React.FC = () => {
         return <Typography>Unknown step</Typography>;
     }
   };
-  // const token = useToken();
-  // console.log(token?.company?.[0]);
 
   return (
     <ThemeProvider theme={theme}>

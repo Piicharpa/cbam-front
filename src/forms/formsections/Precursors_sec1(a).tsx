@@ -773,7 +773,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
   const handleSaveWithAlert = async () => {
     if (!validateForm()) {
-      alert("Please fix the validation errors before saving.");
       return;
     }
 
@@ -790,7 +789,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     );
 
     if (!confirmed) {
-      alert("❌ Save operation cancelled by user.");
       return;
     }
 
@@ -820,29 +818,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       if (onSave) await onSave(responseData);
 
       const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-      const successMessage = isUpdate
-        ? `✅ Precursor Updated Successfully!\n\n` +
-          `📊 Updated Details:\n` +
-          `• Precursor ID: ${responseData.id}\n` +
-          `• Name: ${
-            responseData.precursors || responseData.route_1 || "N/A"
-          }\n` +
-          `• Total Routes: ${routeCount}\n` +
-          `• Country: ${responseData.country_code || "N/A"}\n\n` +
-          `⏱️ Updated in ${duration} seconds\n` +
-          `🎉 Data has been updated in the database.`
-        : `✅ New Precursor Created Successfully!\n\n` +
-          `📊 Created Details:\n` +
-          `• New Precursor ID: ${responseData.id}\n` +
-          `• Name: ${
-            responseData.precursors || responseData.route_1 || "N/A"
-          }\n` +
-          `• Total Routes: ${routeCount}\n` +
-          `• Country: ${responseData.country_code || "N/A"}\n\n` +
-          `⏱️ Created in ${duration} seconds\n` +
-          `🎉 Data has been saved to the database.`;
+      
 
-      alert(successMessage);
 
       if (onNextStep) {
         const shouldContinue = window.confirm(
@@ -853,20 +830,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         }
       }
     } catch (error) {
-      const errorMessage =
-        `❌ Failed to Save Precursor ${index}!\n\n` +
-        `Error: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }\n\n` +
-        `🔧 Troubleshooting Steps:\n` +
-        `• Check your internet connection\n` +
-        `• Verify all required fields are completed\n` +
-        `• Contact support if the problem persists\n\n` +
-        `📋 Technical Details:\n` +
-        `• Method: ${existingData?.id ? "PUT (Update)" : "POST (Create)"}\n` +
-        `• Report ID: ${reportId || "N/A"}\n` +
-        `• Precursor Index: ${index}`;
-      alert(errorMessage);
+    
     } finally {
       setIsSaving(false);
     }

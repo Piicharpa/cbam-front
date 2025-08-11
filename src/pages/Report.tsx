@@ -110,8 +110,7 @@ const TabPanel = (props: TabPanelProps) => {
 
 const Report = () => {
   const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const reportId = queryParams.get("reportId");
+  const reportId = location.state?.reportId;
   const [tabValue, setTabValue] = useState(0);
 
   // Add state for summary data with API integration
@@ -238,7 +237,23 @@ const Report = () => {
             variant="h4"
             color="primary.main"
             gutterBottom
-            sx={{ position: "relative", zIndex: 1 }}
+            sx={{
+              position: "relative",
+              zIndex: 1,
+              fontWeight: "bold",
+              letterSpacing: "0.5px",
+              textTransform: "uppercase",
+              "&::after": {
+                content: '""',
+                position: "absolute",
+                bottom: -4,
+                left: 0,
+                width: "40px",
+                height: "4px",
+                backgroundColor: "primary.main",
+                borderRadius: "2px",
+              },
+            }}
           >
             CBAM Reports
           </Typography>
@@ -257,74 +272,99 @@ const Report = () => {
           ) : summaryData && summaryData.data.length > 0 ? (
             <>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                Product: <span style={{ color: "#0190c3", fontWeight: 600 }}>{summaryData.data[0].product_name || "N/A"}</span>
+                Product:{" "}
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {summaryData.data[0].product_name || "N/A"}
+                </span>
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                CN code: <span style={{ color: "#0190c3", fontWeight: 600 }}>{summaryData.data[0].cn_code || "N/A"}</span>
+                CN code:{" "}
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {summaryData.data[0].cn_code || "N/A"}
+                </span>
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                SEE (direct):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}</span>
+                SEE (direct):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_direct_sum || ""}
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                การคำนวณของค่า SEE (direct):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}</span>
+                การคำนวณของค่า SEE (direct):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_direct_sum || ""}
               </Typography>
-               <Typography
-                variant="h5"
+              <Typography
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                SEE (indirect):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) || "N/A"}{" "}</span>
+                SEE (indirect):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) ||
+                    "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_indirect_sum || ""}
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
-                การคำนวณของค่า SEE (indirect):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) || "N/A"}{" "}</span>
+                การคำนวณของค่า SEE (indirect):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) ||
+                    "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_indirect_sum || ""}
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1 }}
               >
-                SEE (total):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}</span>
+                SEE (total):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_total_sum || ""}
               </Typography>
               <Typography
-                variant="h5"
+                variant="h6"
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1 }}
               >
-                การคำนวณของค่า SEE (total):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
-                {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}</span>
+                การคำนวณของค่า SEE (total):
+                <span style={{ color: "#0190c3", fontWeight: 600 }}>
+                  {" "}
+                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}
+                </span>
                 {summaryData.unit[0]?.SEE_total_sum || ""}
               </Typography>
-              
             </>
           ) : (
             <Typography

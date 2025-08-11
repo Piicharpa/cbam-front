@@ -76,7 +76,6 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   onNextStep,
 }) => {
   const navigate = useNavigate();
-  // const reportId = 54; // Your report ID - replace with dynamic value if needed
   const reportId = localStorage.getItem("reportId");
 
   // State management

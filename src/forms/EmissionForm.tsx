@@ -33,7 +33,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
 
   // Get reportId from query parameters, localStorage or use default
 
-  // const reportId = 54 ;
   const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
 
@@ -232,7 +231,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
       })
       .then((responseData) => {
         setApiData(responseData);
-        alert(`✅ Data ${isUpdate ? "updated" : "submitted"} successfully`);
 
         // Move to next step or navigate to report page
         if (onNextStep) {
@@ -241,7 +239,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
       })
       .catch((error) => {
         console.error("❌ Error:", error);
-        alert(`❌ Error: ${error.message}`);
       })
       .finally(() => {
         setIsSubmitting(false);

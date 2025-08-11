@@ -55,8 +55,6 @@ const fallbackSteps = [
 
 const Formdev: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-
   const [activeStep, setActiveStep] = useState(0);
   const [fadeIn, setFadeIn] = useState(true);
 
@@ -67,31 +65,16 @@ const Formdev: React.FC = () => {
   // Safe steps state
   const [safeSteps, setSafeSteps] = useState(fallbackSteps);
 
-  // Check for reportId in URL query parameter and update localStorage
-  useEffect(() => {
-    // Get reportId from URL query params if present
-    const queryReportId = searchParams.get("reportId");
-
-    if (queryReportId) {
-      // If reportId is in URL, store it in localStorage
-      const parsedId = parseInt(queryReportId, 10);
-      localStorage.setItem("reportId", queryReportId);
-      setReportId(parsedId);
-      setIsEditMode(true);
-    } else {
-      // If not in URL, check localStorage
-      const storedReportId = localStorage.getItem("reportId");
-      if (storedReportId) {
-        setReportId(parseInt(storedReportId, 10));
-        setIsEditMode(true);
-      } else {
-        // No reportId available - we're in create mode
-        localStorage.removeItem("reportId"); // Clear any previous value
-        setReportId(null);
-        setIsEditMode(false);
-      }
-    }
-  }, [searchParams]);
+ useEffect(() => {
+  const storedReportId = localStorage.getItem("reportId");
+  if (storedReportId) {
+    setReportId(parseInt(storedReportId, 10));
+    setIsEditMode(true);
+  } else {
+    setReportId(null);
+    setIsEditMode(false);
+  }
+}, []);
 
   // Initialize steps
   useEffect(() => {
@@ -115,7 +98,6 @@ const Formdev: React.FC = () => {
 
   // Form data states
   const [sumupData, setSumupData] = useState({
-    // reportId: 0,
     industry_id: "",
     goods_id: "",
     cn_id: "",
@@ -291,7 +273,6 @@ const Formdev: React.FC = () => {
       // !reportId &&
       localStorage.getItem("reportId") === null
     ) {
-      alert("❌ Please create a report in the Summary step first!");
       return;
     }
     try {
@@ -349,7 +330,8 @@ const Formdev: React.FC = () => {
                 ];
 
                 cbamKeys.forEach((key) => localStorage.removeItem(key));
-                navigate(`/cbam/report?reportId=${currentReportId}`);
+               navigate("/cbam/report");
+
                 return;
               }
             }
@@ -385,7 +367,6 @@ const Formdev: React.FC = () => {
     }
     setFadeIn(false);
     setTimeout(() => {
-      alert("✅ Form submitted successfully!");
       setFadeIn(true);
       // After successful form submission, navigate to report page
       const currentReportId = localStorage.getItem("reportId");
@@ -409,7 +390,7 @@ const Formdev: React.FC = () => {
 
         cbamKeys.forEach((key) => localStorage.removeItem(key));
 
-        navigate(`/cbam/report?reportId=${currentReportId}`);
+      navigate("/cbam/report");
       }
     }, 300);
   };

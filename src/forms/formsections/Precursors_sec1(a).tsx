@@ -380,53 +380,72 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     const updatedValues: { [key: string]: string | number } = {
       ...fieldValues,
     };
+
+    // Update route data
     for (let ridx = 0; ridx < 5; ridx++) {
       updatedValues[`route_${ridx}_${index}`] = data[`route_${ridx + 1}`] || "";
       updatedValues[`amount_${ridx}_${index}`] =
         data[`route_${ridx + 1}_amounts`] || 0;
     }
+
+    // Update basic information
     updatedValues[`purchased_precursors_${index}`] =
       data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
+
+    // Update direct emissions data
     updatedValues[`embedded_direct_emissions_value_${index}`] =
       data.embedded_direct_emissions_value || 0;
     updatedValues[`source_embedded_direct_emissions_${index}`] =
       data.source_embedded_direct_emissions || "";
+
+    // Update indirect emissions data
     updatedValues[`embedded_indirection_emissions_value_${index}`] =
       data.embedded_indirection_emissions_value || 0;
     updatedValues[`source_embedded_indirect_emissions_${index}`] =
       data.source_embedded_indirect_emissions || "";
+
+    // Update justification
     updatedValues[`justification_for_use_default_values_${index}`] =
       data.justification_for_use_default_values || "";
-    updatedValues[`control`] = data.total_production_amounts || 0;
 
-    // Also set fields for section b and c
+    // Update control value - ใช้ข้อมูลที่มีอยู่จริงใน API
+    updatedValues[`control`] = data.control || 0;
+
+    // Update consumption data
     updatedValues[`amount_1`] = data.consumed_in_production_amounts || 0;
-    updatedValues[`amount_2`] = data.consumed_non_cbam_goods_amounts || 0;
+    updatedValues[`consumed_non_cbam_goods_amounts`] =
+      data.consumed_non_cbam_goods_amounts || 0;
 
-    // Set the electricity emission factor field
+    // Update electricity emission factors - ใช้ชื่อฟิลด์ที่ตรงกับ API
     updatedValues[`value_electricity_indirect_emission_factor`] =
-      data.electricity_emission_factor || 0;
+      data.value_electricity_indirect_emission_factor || 0;
     updatedValues[`source_electricity_indirect_emission_factor`] =
-      data.source_electricity_emission_factor || "";
+      data.source_electricity_indirect_emission_factor || "";
 
-    // Set category and name values if available
-    updatedValues[`b_category`] = data.b_category || "";
+    // Update b_name and b_category
     updatedValues[`b_name`] = data.b_name || "";
+    updatedValues[`b_category`] = data.b_category || "";
 
-    setFieldValues(updatedValues);
+    const totalPurchaseAmount =
+      ensureNumber(updatedValues[`amount_0_${index}`]) +
+      ensureNumber(updatedValues[`amount_1_${index}`]) +
+      ensureNumber(updatedValues[`amount_2_${index}`]) +
+      ensureNumber(updatedValues[`amount_3_${index}`]) +
+      ensureNumber(updatedValues[`amount_4_${index}`]);
 
-    Object.entries(updatedValues).forEach(([key, value]) => {
-      onChange(key, value);
-    });
+    updatedValues[`total_purchase_level_${index}`] = totalPurchaseAmount;
+    updatedValues[`total_consumed_within_installation`] =
+      data.total_consumed_within_installation || totalPurchaseAmount;
+    updatedValues[`total_consumed_within_installation_amounts`] =
+      data.total_consumed_within_installation_amounts || totalPurchaseAmount;
 
-    let maxFilledRoute = 1;
-    for (let i = 0; i < 5; i++) {
-      if (data[`route_${i + 1}`]) maxFilledRoute = i + 1;
-    }
-    setRouteCount(maxFilledRoute);
-    setRouteCount1(maxFilledRoute);
+    return updatedValues;
   };
+
+  // // ใช้งานฟังก์ชัน
+  // const updatedValues = updateFieldsFromApiData(data);
+  // setFieldValues(updatedValues);
 
   const searchRelevantPrecursors = async (
     industryTypeId?: number,
@@ -511,7 +530,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     initialValues[`route_${index}`] = routeValue || "";
     initialValues[`amount_${index}`] = formValues[`amount_${index}`] || 0;
     initialValues[`control`] = formValues[`control`] || 0;
-
+    initialValues[`total_consumed_within_installation`] =
+      formValues[`total_consumed_within_installation`] || 0;
     // Initialize the electricity emission factor field if it doesn't exist
     initialValues[`value_electricity_indirect_emission_factor`] =
       formValues[`value_electricity_indirect_emission_factor`] || 0;
@@ -542,34 +562,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     name: string,
     value: string | number | (string | number)[]
   ) => {
-    let newValue: string | number;
-
-    if (Array.isArray(value)) {
-      newValue = value.join(",");
-    } else {
-      // Handle potential NaN for numeric inputs
-      if (typeof value === "number" && isNaN(value)) {
-        newValue = "";
-      } else {
-        newValue = value;
-      }
-    }
-
+    // ลดการประมวลผลให้น้อยลง
+    const newValue = Array.isArray(value) ? value.join(",") : value;
     setFieldValues((prev) => ({
       ...prev,
       [name]: newValue,
     }));
-
     if (fieldErrors[name]) {
       setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     }
-
     onChange(name, newValue);
   };
 
-  // Run calculations when relevant fields change
+  
   useEffect(() => {
-    // Using a setTimeout to ensure the calculation runs after the current render cycle
+    
     const timer = setTimeout(() => {
       calculateDerivedValues();
     }, 0);
@@ -606,7 +613,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       }
     }
 
-    // Check if at least one route amount is entered
     let hasAmount = false;
     for (let i = 0; i < routeCount1; i++) {
       const amountKey = `amount_${i}_${index}`;
@@ -626,15 +632,15 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   };
 
   const prepareDataForApi = (): Record<string, any> => {
-    // Create payload without the problematic field
+    // สร้าง payload ให้ตรงตาม API schema อย่างแน่นอน
     const payload: Record<string, any> = {
-      // Basic fields
+      // ข้อมูลพื้นฐาน
       report_id: reportId ? Number(reportId) : null,
       name: String(fieldValues[`purchased_precursors_${index}`] || ""),
       precursors: String(fieldValues[`purchased_precursors_${index}`] || ""),
       country_code: String(fieldValues[`country_code_${index}`] || "TH"),
 
-      // Route data with proper field names from your API schema
+      // ข้อมูล routes
       route_1: String(
         fieldValues[`route_0_${index}`] ||
           fieldValues[`purchased_precursors_${index}`] ||
@@ -650,7 +656,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       route_5: String(fieldValues[`route_4_${index}`] || ""),
       route_5_amounts: ensureNumber(fieldValues[`amount_4_${index}`]),
 
-      // Emissions data
+      // ข้อมูล emissions
       embedded_direct_emissions_value: ensureNumber(
         fieldValues[`embedded_direct_emissions_value_${index}`]
       ),
@@ -664,39 +670,55 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         fieldValues[`source_embedded_indirect_emissions_${index}`] || ""
       ),
 
-      // Consumption data
+      // ข้อมูล consumption - แก้ไขชื่อฟิลด์ให้ตรงกัน
       total_consumed_within_installation: ensureNumber(totalPurchaseLevel),
       consumed_in_production_amounts: ensureNumber(fieldValues[`amount_1`]),
-      consumed_non_cbam_goods_amounts: ensureNumber(fieldValues[`amount_2`]),
+      consumed_non_cbam_goods_amounts: ensureNumber(
+        fieldValues[`consumed_non_cbam_goods_amounts`]
+      ),
       total_consumed_within_installation_amounts:
         ensureNumber(totalPurchaseLevel),
 
-      // Justification
+      // ข้อมูลอื่นๆ
       justification_for_use_default_values: String(
         fieldValues[`justification_for_use_default_values_${index}`] || ""
       ),
 
-      // REMOVED: total_production_amounts (this field doesn't exist in the database)
-      // Instead, use control or SEE_total if those exist in your database schema
-      control: ensureNumber(controlAmount),
+      // ข้อมูล SEE
+      SEE_direct: null, // ตั้งเป็น null ตามข้อมูล API
+      SEE_indirect: null,
+      SEE_total: null,
+      control: null, // ตั้งเป็น null ตามข้อมูล API
 
-      // If your API expects these fields (check your API schema)
-      electricity_emission_factor: ensureNumber(
-        fieldValues[`value_electricity_indirect_emission_factor`]
-      ),
-      source_electricity_emission_factor: String(
+      // ข้อมูลเกี่ยวกับไฟฟ้า - ใช้ชื่อที่ถูกต้อง
+      source_specific_indirect_electricity_consumption: null,
+      value_specific_indirect_electricity_consumption: null,
+      source_electricity_indirect_emission_factor: String(
         fieldValues[`source_electricity_indirect_emission_factor`] || ""
       ),
+      value_electricity_indirect_emission_factor: ensureNumber(
+        fieldValues[`value_electricity_indirect_emission_factor`]
+      ),
 
-      // Category fields
-      b_category: String(fieldValues[`b_category`] || ""),
+      // ข้อมูลเพิ่มเติม
       b_name: String(fieldValues[`b_name`] || ""),
+      b_category: String(fieldValues[`b_category`] || ""),
     };
 
-    // Add id for updates
+    // เพิ่ม ID สำหรับการอัพเดต
     if (existingData?.id) {
       payload.id = existingData.id;
     }
+
+    // ลบฟิลด์ที่มีค่า undefined หรือ NaN ออกไป
+    Object.keys(payload).forEach((key) => {
+      if (payload[key] === undefined) {
+        delete payload[key];
+      }
+      if (typeof payload[key] === "number" && isNaN(payload[key])) {
+        payload[key] = 0;
+      }
+    });
 
     return payload;
   };
@@ -718,7 +740,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       alert("Please fix the validation errors before saving.");
       return;
     }
-
+    console.log(totalPurchaseLevel);
     const confirmed = window.confirm(
       `💾 Save Precursor ${index}\n\n` +
         `Are you sure you want to save this precursor data?\n\n` +
@@ -965,12 +987,12 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           unit="Tonne"
           label=""
           type="number"
-          name={`total_purchase_level_${index}`}
+          name={`total_consumed_within_installation`}
           value={isNaN(totalPurchaseLevel) ? "" : totalPurchaseLevel}
           onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           error={
-            fieldErrors[`total_purchase_level_${index}`] ||
-            formErrors[`total_purchase_level_${index}`]
+            fieldErrors[`total_consumed_within_installation`] ||
+            formErrors[`total_consumed_within_installation`]
           }
           disabled={true}
         />
@@ -1082,16 +1104,20 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       <Box mb={3}>
         <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
           <div style={{ flex: 1 }}>
+            {/* แก้เป็น - ใช้ชื่อฟิลด์ที่ตรงกับ API */}
             <LabeledTextField
               caption={`Amount`}
               defination="ระบุปริมาณวัตถุดิบ"
               label=""
               type="number"
               unit="Tonne"
-              name={`amount_2`}
-              value={fieldValues[`amount_2`] || ""}
+              name="consumed_non_cbam_goods_amounts"
+              value={fieldValues[`consumed_non_cbam_goods_amounts`] || ""}
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={fieldErrors[`amount_2`] || formErrors[`amount_2`]}
+              error={
+                fieldErrors[`consumed_non_cbam_goods_amounts`] ||
+                formErrors[`consumed_non_cbam_goods_amounts`]
+              }
             />
           </div>
         </Box>

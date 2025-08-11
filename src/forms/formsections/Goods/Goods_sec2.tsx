@@ -5,6 +5,7 @@ import LabeledTextField from "../../../components/LabeledTextField";
 interface Props {
   values: {
     total_production_amounts: string;
+    total_consumed_within_installation: string;
     consumed_in_others_amounts: string;
     produced_for_market_amount: string;
     condumed_non_cbam_goods_amounts: string;
@@ -12,6 +13,7 @@ interface Props {
   };
   errors: {
     total_production_amounts?: string;
+    total_consumed_within_installation: string;
     produced_for_market_amount?: string;
     consumed_in_others_amounts?: string;
     condumed_non_cbam_goods_amounts?: string;
@@ -47,6 +49,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
       subtitle="ปริมาณการผลิต"
       hasError={
         !!(
+          errors.total_consumed_within_installation ||
           errors.total_production_amounts ||
           errors.consumed_in_others_amounts ||
           errors.produced_for_market_amount ||
@@ -99,12 +102,12 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             caption="Total production levels"
             defination="ระบุปริมาณการผลิตทั้งหมด"
             unit="Tonne"
-            label=""
-            name=""
+            label= ""
+            name="total_consumed_within_installation"
             value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_production_amounts} 
-            helperText={errors.total_production_amounts} 
+            error={errors.total_consumed_within_installation} 
+            helperText={errors.total_consumed_within_installation} 
             inputProps={{
               step: "any",
               placeholder: "",
@@ -300,18 +303,19 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         caption="Control"
         defination="ควบคุม"
         label=""
-        name="condumed_non_cbam_goods_amounts"
-        value={values.condumed_non_cbam_goods_amounts}
+        name="control"
+        value={values.control}
         unit="Tonne"
         onChange={onChange}
-        error={errors.condumed_non_cbam_goods_amounts} // Pass the error for the helper text
-        helperText={errors.condumed_non_cbam_goods_amounts} // Show error as helper text
+        error={errors.control}
+        helperText={errors.control} 
         inputProps={{
           step: "any",
           placeholder: "Enter amount",
           className: "appearance-none",
         }}
         required
+        disabled
       />
     </Section>
   );

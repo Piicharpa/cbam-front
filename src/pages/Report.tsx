@@ -53,7 +53,7 @@ const theme = createTheme({
       main: "#6aaa33",
     },
     text: {
-      primary: "#313837",
+      primary: "#313538ff",
       secondary: "#6f6f6f",
     },
     grey: {
@@ -339,43 +339,43 @@ const Report = () => {
             CBAM Reports
           </Typography>
           <Typography
-            variant="body1"
+            variant="h5"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            Product: 
+            Product : 
           </Typography>
 
           <Typography
-            variant="body1"
+            variant="h5"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            CN code:
+            CN code :
           </Typography>
 
           <Typography
-            variant="body1"
+            variant="h5"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            SEE (direct)Unit tCO2e/t: 
+            SEE (direct) : xxxxxx  tCO2e/t 
           </Typography>
 
           <Typography
-            variant="body1"
+            variant="h5"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            SEE (indirect)Unit tCO2e/t: 
+            SEE (indirect) : xxxxxx  tCO2e/t
           </Typography>
 
           <Typography
-            variant="body1"
+            variant="h5"
             color="text.secondary"
             sx={{ position: "relative", zIndex: 1 }}
           >
-            SEE (total)Unit tCO2e/t: 
+            SEE (total) : xxxxxx  tCO2e/t
           </Typography>
         </Paper>
         {/* Main Content Paper */}

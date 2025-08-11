@@ -139,8 +139,18 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                       letterSpacing: 0.5,
                     }}
                   >
-                    Complete the steps below to submit your carbon border
-                    adjustment mechanism declaration
+                    Company Name : 
+                  </Typography>
+                  <Typography
+                    fontSize="16px"
+                    variant="caption"
+                    component="div"
+                    sx={{
+                      opacity: 0.7,
+                      letterSpacing: 0.5,
+                    }}
+                  >
+                    Address : 
                   </Typography>
                 </Box>
               </Box>

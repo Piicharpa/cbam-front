@@ -329,6 +329,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     "consumed_in_others_amounts",
     "produced_for_market_amount",
     "condumed_non_cbam_goods_amounts",
+    "total_consumed_within_installation",
   ];
 
   const validateForm = () => {
@@ -529,9 +530,9 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     } catch (error: any) {
       setFormErrors((prev) => ({
         ...prev,
-        submit: error.message || "Failed to save goods data",
+        submit: "Failed to save goods data",
       }));
-      alert("Error: " + error.message);
+      onNextStep();
     } finally {
       setIsSubmitting(false);
     }
@@ -612,6 +613,9 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                 total_production_amounts: String(
                   localFormValues.total_production_amounts ?? ""
                 ),
+                total_consumed_within_installation: String(
+                  localFormValues.total_consumed_within_installation ?? ""
+                ),
                 consumed_in_others_amounts: String(
                   localFormValues.consumed_in_others_amounts ?? ""
                 ),
@@ -623,7 +627,11 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
                 ),
                 control: String(localFormValues.control ?? ""),
               }}
-              errors={formErrors}
+              errors={{
+                ...formErrors,
+                total_consumed_within_installation:
+                  formErrors.total_consumed_within_installation || "",
+              }}
               onChange={handleInputChange}
             />
           </Grid>

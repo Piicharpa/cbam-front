@@ -22,26 +22,38 @@ interface Props {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   // onNext: () => void;
 }
+
 const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
   const calculatedValues = useMemo(() => {
-    // แปลงค่าเป็นตัวเลขเพื่อคำนวณ
+    // Convert values to numbers for calculations
     const totalAmount = parseFloat(values.total_production_amounts) || 0;
     const marketAmount = parseFloat(values.produced_for_market_amount) || 0;
-
-    // คำนวณสัดส่วน (b/a) เป็นเปอร์เซ็นต์
+    const amountC = parseFloat(values.consumed_in_others_amounts) || 0;
+    const amountD = parseFloat(values.condumed_non_cbam_goods_amounts) || 0;
+    
+    // Calculate percentage (b/a) as a percentage
     let sharePercentage = 0;
     if (totalAmount > 0) {
       sharePercentage = (marketAmount / totalAmount) * 100;
     }
-
-    // ตรวจสอบว่าเป็น 100% หรือไม่ (ใช้ค่าใกล้เคียงเพื่อหลีกเลี่ยงปัญหาทศนิยม)
+    
+    // Check if it's 100% (use approximate value to avoid decimal issues)
     const isOnlyForMarket = Math.abs(sharePercentage - 100) < 0.01;
-
+    
+    // Calculate the control amount
+    const controlAmount = totalAmount - (marketAmount + amountC + amountD);
+    
     return {
-      sharePercentage: sharePercentage.toFixed(2), // แปลงเป็นสตริงทศนิยม 2 ตำแหน่ง
+      sharePercentage: sharePercentage.toFixed(2), // Convert to string with 2 decimal places
       isOnlyForMarket,
+      controlAmount: controlAmount.toFixed(2), // Format control amount
     };
-  }, [values.total_production_amounts, values.produced_for_market_amount]);
+  }, [
+    values.total_production_amounts,
+    values.produced_for_market_amount,
+    values.condumed_non_cbam_goods_amounts,
+    values.consumed_in_others_amounts
+  ]);
 
   return (
     <Section
@@ -86,8 +98,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             name="total_production_amounts"
             value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_production_amounts} // Pass the error for the helper text
-            helperText={errors.total_production_amounts} // Show error as helper text
+            error={errors.total_production_amounts}
+            helperText={errors.total_production_amounts}
             inputProps={{
               step: "any",
               placeholder: "Enter amount",
@@ -106,8 +118,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             name="total_consumed_within_installation"
             value={values.total_production_amounts}
             onChange={onChange}
-            error={errors.total_consumed_within_installation} 
-            helperText={errors.total_consumed_within_installation} 
+            error={errors.total_consumed_within_installation}
+            helperText={errors.total_consumed_within_installation}
             inputProps={{
               step: "any",
               placeholder: "",
@@ -118,7 +130,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           />
         </div>
       </div>
-
       <div
         style={{
           textAlign: "left",
@@ -137,7 +148,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           รายละเอียดผลิตภัณฑ์
         </p>
       </div>
-
       <LabeledTextField
         type="number"
         caption="Produced for the market"
@@ -147,8 +157,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         name="produced_for_market_amount"
         value={values.produced_for_market_amount}
         onChange={onChange}
-        error={errors.produced_for_market_amount} // Pass the error for the helper text
-        helperText={errors.produced_for_market_amount} // Show error as helper text
+        error={errors.produced_for_market_amount}
+        helperText={errors.produced_for_market_amount}
         inputProps={{
           step: "any",
           placeholder: "Enter amount",
@@ -201,7 +211,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           </span>
         </p>
       </div>
-
       <div
         style={{
           textAlign: "left",
@@ -210,7 +219,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         }}
       >
         <strong>(c) Consumed in other production processes:</strong>
-        <p
+                <p
           style={{
             marginTop: "0.25rem",
             color: "#666",
@@ -220,7 +229,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           ระบุปริมาณการผลิตเพื่อใช้ในโรงงาน
         </p>
       </div>
-
       <LabeledTextField
         type="number"
         caption="Consumed in other production processes"
@@ -239,7 +247,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         }}
         required
       />
-
       <div
         style={{
           textAlign: "left",
@@ -259,7 +266,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           CBAM
         </p>
       </div>
-
       <LabeledTextField
         type="number"
         caption="Consumed for non-CBAM goods"
@@ -269,8 +275,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         value={values.condumed_non_cbam_goods_amounts}
         unit="t"
         onChange={onChange}
-        error={errors.condumed_non_cbam_goods_amounts} // Pass the error for the helper text
-        helperText={errors.condumed_non_cbam_goods_amounts} // Show error as helper text
+        error={errors.condumed_non_cbam_goods_amounts}
+        helperText={errors.condumed_non_cbam_goods_amounts}
         inputProps={{
           step: "any",
           placeholder: "Enter amount",
@@ -278,7 +284,6 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         }}
         required
       />
-
       <div
         style={{
           textAlign: "left",
@@ -297,14 +302,13 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           ควบคุม
         </p>
       </div>
-
       <LabeledTextField
         type="number"
         caption="Control"
         defination="ควบคุม"
         label=""
         name="control"
-        value={values.control}
+        value={calculatedValues.controlAmount}
         unit="t"
         onChange={onChange}
         error={errors.control}

@@ -77,7 +77,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     routes: formValues.routes || [],
     amounts: formValues.amounts || [],
     total_consumed_within_installation:
-      formValues.total_consumed_within_installation || 0,
+      formValues.total_consumed_within_installation || 1,
     consumed_in_others_amounts: formValues.consumed_in_others_amounts || 0,
     condumed_non_cbam_goods_amounts:
       formValues.condumed_non_cbam_goods_amounts || 0,
@@ -101,7 +101,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     exported_wgases_amount: formValues.exported_wgases_amount || 0,
     ef_exported_wgases: formValues.ef_exported_wgases || 0,
     industry_type: formValues.industry_type || "",
-    total_production_amounts: formValues.total_production_amounts || 0,
+    total_production_amounts: formValues.total_production_amounts || 1,
   });
 
   const [localFormValues, setLocalFormValues] = useState<FormValues>(
@@ -141,6 +141,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         if (!reportRes.ok) throw new Error(`Failed to fetch report`);
 
         const reportArr = await reportRes.json();
+        console.log(reportArr);
         const report = reportArr[0];
 
         setExistingData(report);

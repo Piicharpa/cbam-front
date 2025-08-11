@@ -25,13 +25,15 @@ interface SourceFormProps {
     p_co2e_bio?: string;
     p_energy_content_fossil?: string;
     p_energy_content_bio?: string;
+    p_carbon_content?: string;
+    p_carbon_content_unit: string;
   };
   onChange?: (formValues: SourceFormProps["formValues"]) => void;
   onNextStep?: () => void;
 }
 
 const SourceForm: React.FC<SourceFormProps> = ({
-  formValues: externalFormValues = {},
+  formValues: externalFormValues,
   onChange,
   onNextStep,
 }) => {
@@ -43,9 +45,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Add missing formValues state
-  const [formValues, setFormValues] = useState<SourceFormProps["formValues"]>(
-    {}
-  );
+  const [formValues, setFormValues] = useState<
+    SourceFormProps["formValues"] | {}
+  >({});
 
   // Define missing formValuesRequiredFields
   const formValuesRequiredFields: string[] = [];
@@ -62,7 +64,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
   >([
     {
       id: Date.now(),
-      p_method: externalFormValues.p_method || "",
+      p_method: externalFormValues?.p_method || "",
       p_source_stream_name: externalFormValues.p_source_stream_name || "",
       p_activity_data: externalFormValues.p_activity_data || "",
       p_ad_unit: externalFormValues.p_ad_unit || "",
@@ -76,6 +78,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
       p_co2e_bio: externalFormValues.p_co2e_bio || "",
       p_energy_content_fossil: externalFormValues.p_energy_content_fossil || "",
       p_energy_content_bio: externalFormValues.p_energy_content_bio || "",
+      p_carbon_content: externalFormValues.p_carbon_content || "",
+      p_carbon_content_unit: externalFormValues.p_carbon_content_unit || "",
     },
   ]);
 
@@ -143,6 +147,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
             p_co2e_bio: String(item.CO2e_bio || ""),
             p_energy_content_fossil: String(item.energy_content_fossil || ""),
             p_energy_content_bio: String(item.energy_content_bio || ""),
+            p_carbon_content: String(item.carbon_content || ""),
+            p_carbon_content_unit: String(item.carbon_content_unit || ""),
           }));
 
           if (sections.length > 0) {
@@ -249,6 +255,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
         p_co2e_bio: section.p_co2e_bio,
         p_energy_content_fossil: section.p_energy_content_fossil,
         p_energy_content_bio: section.p_energy_content_bio,
+        p_carbon_content: section.p_carbon_content,
+        p_carbon_content_unit: section.p_carbon_content_unit,
       });
     }
   }, [processEmissionSections]);
@@ -261,7 +269,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
     "p_ad_unit",
     "p_emission_factor",
     "p_ef_unit",
-    "p_oxidation_factor",
   ];
 
   // Add new process section
@@ -284,6 +291,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
         p_co2e_bio: "",
         p_energy_content_fossil: "",
         p_energy_content_bio: "",
+        p_carbon_content: "",
+        p_carbon_content_unit: "",
       },
     ]);
   };
@@ -331,9 +340,35 @@ const SourceForm: React.FC<SourceFormProps> = ({
           const ad = parseFloat(updatedSection.p_activity_data) || 0;
           const ncv = parseFloat(updatedSection.p_net_calorific_value) || 0;
           const ef = parseFloat(updatedSection.p_emission_factor) || 0;
-          const of = parseFloat(updatedSection.p_oxidation_factor) || 0;
-          const bioC = parseFloat(updatedSection.p_biomass_content) || 0;
-          if (ad && ncv && ef && of) {
+          const con = 3.664;
+          const cb = parseFloat(updatedSection.p_carbon_content) || 1;
+          const of = parseFloat(updatedSection.p_oxidation_factor) || 1;
+          const bioC = parseFloat(updatedSection.p_biomass_content) || 1;
+
+          if (ad && ncv && of && updatedSection.p_method === "Mass Balance") {
+            updatedSection.p_co2e_fossil = (
+              ad *
+              cb *
+              con *
+              ((100 - bioC) / 100)
+            ).toFixed(4);
+            // Calculate CO2e bio
+            updatedSection.p_co2e_bio = (ad * cb * con * (bioC / 100)).toFixed(
+              4
+            );
+          }
+          if (ad && ncv) {
+            // Calculate Energy Content fossil
+            updatedSection.p_energy_content_fossil = (
+              ((ad * ncv) / 1000) *
+              ((100 - bioC) / 100)
+            ).toFixed(4);
+            // Calculate Energy Content bio
+            updatedSection.p_energy_content_bio = (
+              ((ad * ncv) / 1000) *
+              (bioC / 100)
+            ).toFixed(4);
+          } else {
             // Calculate CO2e fossil
             updatedSection.p_co2e_fossil = (
               ((ad * ncv * ef) / 1000) *
@@ -478,6 +513,8 @@ const SourceForm: React.FC<SourceFormProps> = ({
             section.p_energy_content_fossil || "0"
           ),
           energy_content_bio: parseFloat(section.p_energy_content_bio || "0"),
+          carbon_content: parseFloat(section.p_carbon_content || "0"),
+          c_content_unit: section.p_carbon_content_unit
         };
 
         // Check if this is an edit (has db_id) or new creation

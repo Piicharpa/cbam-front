@@ -284,7 +284,25 @@ const Report = () => {
                 color="text.secondary"
                 sx={{ position: "relative", zIndex: 1, mb: 1 }}
               >
+                การคำนวณของค่า SEE (direct):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
+                {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}</span>
+                {summaryData.unit[0]?.SEE_direct_sum || ""}
+              </Typography>
+               <Typography
+                variant="h5"
+                color="text.secondary"
+                sx={{ position: "relative", zIndex: 1, mb: 1 }}
+              >
                 SEE (indirect):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
+                {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) || "N/A"}{" "}</span>
+                {summaryData.unit[0]?.SEE_indirect_sum || ""}
+              </Typography>
+              <Typography
+                variant="h5"
+                color="text.secondary"
+                sx={{ position: "relative", zIndex: 1, mb: 1 }}
+              >
+                การคำนวณของค่า SEE (indirect):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
                 {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) || "N/A"}{" "}</span>
                 {summaryData.unit[0]?.SEE_indirect_sum || ""}
               </Typography>
@@ -297,6 +315,16 @@ const Report = () => {
                 {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}</span>
                 {summaryData.unit[0]?.SEE_total_sum || ""}
               </Typography>
+              <Typography
+                variant="h5"
+                color="text.secondary"
+                sx={{ position: "relative", zIndex: 1 }}
+              >
+                การคำนวณของค่า SEE (total):<span style={{ color: "#0190c3", fontWeight: 600 }}>{" "}
+                {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}</span>
+                {summaryData.unit[0]?.SEE_total_sum || ""}
+              </Typography>
+              
             </>
           ) : (
             <Typography

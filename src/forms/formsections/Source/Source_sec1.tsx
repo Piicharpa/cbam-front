@@ -28,6 +28,8 @@ export interface ProcessEmissionSection {
   p_co2e_bio: string;
   p_energy_content_fossil: string;
   p_energy_content_bio: string;
+  p_carbon_content:string;
+  p_carbon_content_unit:string;
 }
 interface SourceFormSection1Props {
   processEmissionSections: ProcessEmissionSection[];
@@ -154,6 +156,23 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                 />
                 <LabeledTextField
                   type="number"
+                  caption="Carbon content"
+                  defination="ระบุค่า Carbon content"
+                  label=""
+                  name={`p_carbon_content_${section.id}`}
+                  value={section.p_carbon_content}
+                  onChange={(e) =>
+                    handleProcessInputChange(
+                      section.id,
+                      "p_carbon_content",
+                      e.target.value
+                    )
+                  }
+                  error={formErrors[`p_${section.id}_p_emission_factor`]}
+                  required
+                />
+                <LabeledTextField
+                  type="number"
                   caption="Oxidation factor"
                   defination="ระบุค่าค่าปฏิกิริยาออกซิเดชัน (ถ้ามี)"
                   label=""
@@ -264,6 +283,19 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                   error={formErrors[`p_${section.id}_p_ef_unit`]}
                   onChange={(value: string) =>
                     handleProcessInputChange(section.id, "p_ef_unit", value)
+                  }
+                  required
+                />
+                <LabeledAutocomplete
+                  caption="Carbon content Unit"
+                  defination="เลือกหน่วยของค่า Carbon content"
+                  label=""
+                  name={`p_carbon_content_unit_${section.id}`}
+                  options={["tC/t material", "tC/1000Nm3"]}
+                  value={section.p_carbon_content_unit}
+                  error={formErrors[`p_${section.id}p_carbon_conten_unitt`]}
+                  onChange={(value: string) =>
+                    handleProcessInputChange(section.id, "p_carbon_content_unit", value)
                   }
                   required
                 />

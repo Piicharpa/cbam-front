@@ -384,34 +384,77 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   }, []);
 
   const fetchExistingData = async () => {
-    if (!reportId) return;
-    setIsLoadingData(true);
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
-      );
-      if (!response.ok) {
-        throw new Error(
-          `Failed to fetch data: ${response.status} ${response.statusText}`
-        );
+  if (!reportId) return;
+  setIsLoadingData(true);
+  
+  try {
+    // First try to fetch specific precursor data if we have an ID
+    if (existingData?.id) {
+      const response = await fetch(`${apiUrl}/api/cbam/e_precursors/${existingData.id}`);
+      if (response.ok) {
+        const precursorData = await response.json();
+        setExistingData(precursorData);
+        setPreviousData(precursorData);
+        const updatedValues = updateFieldsFromApiData(precursorData);
+        setFieldValues(updatedValues);
+        return;
       }
-      const data = await response.json();
-      const precursorItem = (
-        Array.isArray(data) ? data : data ? [data] : []
-      )[0];
-      if (precursorItem && precursorItem.id) {
-        setExistingData(precursorItem);
-        setPreviousData(precursorItem);
-        updateFieldsFromApiData(precursorItem);
-      } else {
-        setExistingData(null);
-      }
-    } catch (error) {
-      //
-    } finally {
-      setIsLoadingData(false);
     }
-  };
+    
+    // If no specific ID or the specific fetch failed, get all precursors for this report
+    const response = await fetch(`${apiUrl}/api/cbam/e_precursors/report/${reportId}`);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch data: ${response.status} ${response.statusText}`);
+    }
+    
+    const data = await response.json();
+    
+    // Handle both array and single object responses
+    const precursorsArray = Array.isArray(data) ? data : data ? [data] : [];
+    
+    // Try to find the matching precursor based on index or name
+    let matchingPrecursor = null;
+    
+    // First try to find by index if we have multiple items
+    if (precursorsArray.length > index) {
+      matchingPrecursor = precursorsArray[index];
+    } 
+    // If not found by index, try to find by precursor value/name
+    else if (precursorValue) {
+      matchingPrecursor = precursorsArray.find(
+        p => p.precursors === precursorValue || p.name === precursorValue || p.route_1 === precursorValue
+      );
+    }
+    // If still not found, just use the first item (if any)
+    else if (precursorsArray.length > 0) {
+      matchingPrecursor = precursorsArray[0];
+    }
+    
+    // If we found a matching precursor, update the state with its data
+    if (matchingPrecursor && matchingPrecursor.id) {
+      setExistingData(matchingPrecursor);
+      setPreviousData(matchingPrecursor);
+      const updatedValues = updateFieldsFromApiData(matchingPrecursor);
+      setFieldValues(updatedValues);
+      
+      // Update route count if needed
+      let maxRouteIndex = 1;
+      for (let i = 2; i <= 5; i++) {
+        if (matchingPrecursor[`route_${i}`] && matchingPrecursor[`route_${i}_amounts`] > 0) {
+          maxRouteIndex = i;
+        }
+      }
+      setRouteCount1(maxRouteIndex);
+    } else {
+      setExistingData(null);
+    }
+  } catch (error) {
+    console.error("Error fetching precursor data:", error);
+    setExistingData(null);
+  } finally {
+    setIsLoadingData(false);
+  }
+};
 
   const updateFieldsFromApiData = (data: PrecursorApiData) => {
     const updatedValues: { [key: string]: string | number } = {
@@ -424,6 +467,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     }
 
     // Update basic information
+    updatedValues[`name`] =
+      data.name || "";
     updatedValues[`purchased_precursors_${index}`] =
       data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
@@ -871,7 +916,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             name="name"
             type="text"
             value={formValues.name}
-            onChange={(e) => onChange("name", e.target.value)}
+            onChange={(e) => onChange(e.target.name, e.target.value)}
             error={fieldErrors[`name`]}
             helperText={fieldErrors[`name`]}
             required
@@ -938,7 +983,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               <LabeledTextField
                 caption={`Amount`}
                 defination="ระบุปริมาณวัตถุดิบ"
-                unit="Tonne"
+                unit="t"
                 label=""
                 type="number"
                 name={`amount_${routeIndex}_${index}`}
@@ -960,7 +1005,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
          <LabeledTextField
           caption="Total purchased levels"
           defination="ปริมาณการสั่งซื้อทั้งหมด"
-          unit="Tonne"
+          unit="t"
           label=""
           type="number"
           name={`total_consumed_within_installation`}
@@ -999,7 +1044,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               defination="เลือกหมวดหมู่ของผลิตภัณฑ์"
               label={selectedGoodsName}
               type="number"
-              unit="Tonne"
+              unit="t"
               name={`amount_1`}
              value={selectedGoodsName}
               error={fieldErrors[`amount_1`]}
@@ -1015,7 +1060,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               defination="ระบุปริมาณวัตถุดิบ"
               label=""
               type="number"
-              unit="Tonne"
+              unit="t"
               name={`amount_1`}
               value={fieldValues[`amount_1`] || ""}
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
@@ -1085,7 +1130,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           type="number"
           caption="Amount"
           defination="ระบุปริมาณวัตถุดิบ"
-          unit="Tonne"
+          unit="t"
           label=""
           name={`consumed_non_cbam_goods_amounts`}
           value={fieldValues[`consumed_non_cbam_goods_amounts`] || ""}
@@ -1125,7 +1170,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           type="number"
           caption="Control"
           defination="ควบคุม"
-          unit="Tonne"
+          unit="t"
           label=""
           name={`control`}
           value={isNaN(controlAmount) ? "" : controlAmount}

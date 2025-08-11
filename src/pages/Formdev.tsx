@@ -27,7 +27,7 @@ import InstallationForm, {
   InstallationFormProps,
 } from "../forms/installationForm";
 import VerifierForm from "../forms/VerifierForm";
-import GoodsForm, {GoodsFormProps}from "../forms/GoodsForm";
+import GoodsForm, { GoodsFormProps } from "../forms/GoodsForm";
 import PrecursorsForm from "../forms/PrecursorsForm";
 import SourceForm from "../forms/SourceForm";
 import SumupForm from "../forms/SumupForm";
@@ -231,6 +231,8 @@ const Formdev: React.FC = () => {
     p_co2e_bio: "",
     p_energy_content_fossil: "",
     p_energy_content_bio: "",
+    p_carbon_content: "",
+    p_carbon_content_unit: "",
     generatl_info_on_data_quality: "",
     justification_for_use_default_values: "",
     manual_fuel_balance: "",

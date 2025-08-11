@@ -39,6 +39,9 @@ import ClearIcon from "@mui/icons-material/Clear";
 import TuneIcon from "@mui/icons-material/Tune";
 import { Link } from "react-router-dom";
 
+import { fetchCompanyData, type CompanyType } from "../utils/company";
+import { useToken } from "../utils/localStorage";
+
 interface CBAMData {
   product: string;
   cncode: string;
@@ -49,6 +52,7 @@ interface CBAMData {
   ref: string;
   id: number;
   category?: string;
+  see: number;
 }
 
 interface TableDashboardProps {
@@ -60,6 +64,8 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
   onEditReport,
   onDeleteReport,
 }) => {
+  const token = useToken();
+
   const [data, setData] = useState<CBAMData[]>([]);
   const [filteredData, setFilteredData] = useState<CBAMData[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -70,38 +76,38 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const apiUrl = process.env.REACT_APP_API_URL;
+  const fetchData = async (company_id: number) => {
+    try {
+      const response = await axios.get(
+        `${apiUrl}/api/cbam/report/dashboard/${company_id}`
+      );
+      const raw = response.data;
+      const items = Array.isArray(raw) ? raw : [raw];
 
+      const mapped: CBAMData[] = items.map((item: any) => {
+        const rawDate = item.updated_at || new Date().toISOString();
+        return {
+          product: item.product_name || "Unknown Product",
+          category: item.goods_category_name?.trim() || "",
+          cncode: item.cncode?.trim() || item.cn_code || "N/A",
+          see: item?.SEE_total_sum,
+          date: dayjs(rawDate).format("D MMM YYYY"),
+          rawDate: rawDate, // Store raw date for filtering
+          ref: item.cn_code_name || item.name || `Report ${item.id}`,
+          id: item.id,
+        };
+      });
+
+      setData(mapped);
+      setFilteredData(mapped);
+    } catch (err) {
+      console.error("❌ Error fetching CBAM data:", err);
+      setData([]);
+      setFilteredData([]);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${apiUrl}/api/cbam/report/company/1`);
-        const raw = response.data;
-        const items = Array.isArray(raw) ? raw : [raw];
-
-        const mapped: CBAMData[] = items.map((item: any) => {
-          const rawDate =
-            item.reporting_period_start || new Date().toISOString();
-          return {
-            product: item.industry_type_name || "Unknown Product",
-            category: item.goods_category_name?.trim() || "",
-            cncode: item.cncode?.trim() || item.cn_code || "N/A",
-            date: dayjs(rawDate).format("D MMM YYYY"),
-            rawDate: rawDate, // Store raw date for filtering
-            ref: item.cn_code_name || item.name || `Report ${item.id}`,
-            id: item.id,
-          };
-        });
-
-        setData(mapped);
-        setFilteredData(mapped);
-      } catch (err) {
-        console.error("❌ Error fetching CBAM data:", err);
-        setData([]);
-        setFilteredData([]);
-      }
-    };
-
-    fetchData();
+    fetchData(token?.company?.[0].company_id);
   }, [apiUrl]);
 
   // Apply filters when search term, dates, or category changes
@@ -467,10 +473,17 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   <strong style={{ fontSize: "14px" }}>ชื่อผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
-                  <strong style={{ fontSize: "14px" }}>หมวดหมู่สินค้า</strong>
+                  <strong style={{ fontSize: "14px" }}>
+                    หมวดหมู่ผลิตภัณฑ์
+                  </strong>
                 </TableCell>
                 <TableCell>
                   <strong style={{ fontSize: "14px" }}>CN Code</strong>
+                </TableCell>
+                <TableCell>
+                  <strong style={{ fontSize: "14px" }}>
+                    SEE Total (tCO2e/t)
+                  </strong>
                 </TableCell>
                 <TableCell
                   onClick={() => {
@@ -481,7 +494,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   style={{ cursor: "pointer", userSelect: "none" }}
                 >
                   <strong style={{ fontSize: "14px" }}>
-                    วันลงทะเบียน
+                    วันที่แก้ไขล่าสุด
                     {sortDirection === "asc" ? (
                       <span style={{ marginLeft: 6 }}>▲</span>
                     ) : (
@@ -551,6 +564,15 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                       </Typography>
                     </TableCell>
                     <TableCell>
+                      <Typography
+                        variant="body2"
+                        fontFamily="monospace"
+                        fontSize="14px"
+                      >
+                        {row.see}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>
                       <Chip
                         label={row.date}
                         color="primary"
@@ -591,27 +613,26 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                             </IconButton>
                           </Tooltip>
                         )}
-                        </Box>
-                        <Box>
-                          {/* Delete Button - only show if callback exists */}
-                          {onDeleteReport && (
-                            <Tooltip title="">
-                              <IconButton
-                                onClick={() => handleDelete(row.id)}
-                                color="error"
-                                size="medium"
-                                sx={{
-                                  "&:hover": {
-                                    backgroundColor: "error.light",
-                                    color: "white",
-                                  },
-                                }}
-                              >
-                                <DeleteIcon fontSize="medium" />
-                              </IconButton>
-                            </Tooltip>
-                          )}
-                        
+                      </Box>
+                      <Box>
+                        {/* Delete Button - only show if callback exists */}
+                        {onDeleteReport && (
+                          <Tooltip title="">
+                            <IconButton
+                              onClick={() => handleDelete(row.id)}
+                              color="error"
+                              size="medium"
+                              sx={{
+                                "&:hover": {
+                                  backgroundColor: "error.light",
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              <DeleteIcon fontSize="medium" />
+                            </IconButton>
+                          </Tooltip>
+                        )}
                       </Box>
                     </TableCell>
                   </TableRow>

@@ -119,7 +119,9 @@ const theme = createTheme({
 function App() {
   useEffect(() => {
     window.addEventListener("message", (event) => {
-      if (event.origin !== "http://178.128.123.212:8080") return;
+      const origin = "http://178.128.123.212:8080";
+      // const origin = "http://localhost:5174";
+      if (event.origin !== origin) return;
       const token = event.data.token;
 
       localStorage.setItem("user_account", JSON.stringify(token));

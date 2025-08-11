@@ -329,8 +329,8 @@ const Form: React.FC = () => {
         return <Typography>Unknown step</Typography>;
     }
   };
-  const token = useToken();
-  console.log(token?.company?.[0]);
+  // const token = useToken();
+  // console.log(token?.company?.[0]);
 
   return (
     <ThemeProvider theme={theme}>

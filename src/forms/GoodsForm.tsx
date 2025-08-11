@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect } from "react";
+import { useForm, FormProvider } from "react-hook-form";
 import {
   Container,
   Typography,
@@ -68,6 +69,13 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [formMode, setFormMode] = useState<"edit" | "create">("create");
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  const methods = useForm({
+    defaultValues: {
+      amounts: [""], // array ของ amounts
+      total_production_amounts: "",
+    },
+  });
 
   // Default values for the form - updated to support null report_id
   const getDefaultFormValues = (): FormValues => ({
@@ -598,79 +606,83 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             </Grid>
           )}
 
-          {/* Section 1 - Industry Type, Goods Category, Routes */}
-          <Grid size={12}>
-            <Section1
-              values={localFormValues}
-              errors={formErrors}
-              onChange={handleSection1Change}
-            />
-          </Grid>
-
-          {/* Section 2 - Production Amounts */}
-          <Grid size={12}>
-            <Section2
-              values={{
-                total_production_amounts: String(
-                  localFormValues.total_production_amounts ?? ""
-                ),
-                total_consumed_within_installation: String(
-                  localFormValues.total_consumed_within_installation ?? ""
-                ),
-                consumed_in_others_amounts: String(
-                  localFormValues.consumed_in_others_amounts ?? ""
-                ),
-                produced_for_market_amount: String(
-                  localFormValues.produced_for_market_amount ?? ""
-                ),
-                condumed_non_cbam_goods_amounts: String(
-                  localFormValues.condumed_non_cbam_goods_amounts ?? ""
-                ),
-                control: String(localFormValues.control ?? ""),
-              }}
-              errors={{
-                ...formErrors,
-                total_consumed_within_installation:
-                  formErrors.total_consumed_within_installation || "",
-              }}
-              onChange={handleInputChange}
-            />
-          </Grid>
-
-          {/* Section 3 - Heat, Electricity, Waste Gases */}
-          <Grid size={12}>
-            <Section3
-              values={localFormValues}
-              errors={formErrors}
-              onChange={handleInputChange}
-              setValues={setLocalFormValues}
-              countries={countries}
-            />
-          </Grid>
-
-          {/* Form submission button */}
-          <Grid size={12}>
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mt={3}
-            >
-              <Box ml="auto">
-                <PGButton
-                  text={
-                    isSubmitting
-                      ? "Saving..."
-                      : formMode === "edit"
-                      ? "Save"
-                      : "Save"
-                  }
-                  loading={isSubmitting}
-                  type="submit"
+          <FormProvider {...methods}>
+            <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
+              {/* Section 1 - Industry Type, Goods Category, Routes */}
+              <Grid size={12}>
+                <Section1
+                  values={localFormValues}
+                  errors={formErrors}
+                  onChange={handleSection1Change}
                 />
-              </Box>
-            </Box>
-          </Grid>
+              </Grid>
+
+              {/* Section 2 - Production Amounts */}
+              <Grid size={12}>
+                <Section2
+                  values={{
+                    total_production_amounts: String(
+                      localFormValues.total_production_amounts ?? ""
+                    ),
+                    total_consumed_within_installation: String(
+                      localFormValues.total_consumed_within_installation ?? ""
+                    ),
+                    consumed_in_others_amounts: String(
+                      localFormValues.consumed_in_others_amounts ?? ""
+                    ),
+                    produced_for_market_amount: String(
+                      localFormValues.produced_for_market_amount ?? ""
+                    ),
+                    condumed_non_cbam_goods_amounts: String(
+                      localFormValues.condumed_non_cbam_goods_amounts ?? ""
+                    ),
+                    control: String(localFormValues.control ?? ""),
+                  }}
+                  errors={{
+                    ...formErrors,
+                    total_consumed_within_installation:
+                      formErrors.total_consumed_within_installation || "",
+                  }}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              {/* Section 3 - Heat, Electricity, Waste Gases */}
+              <Grid size={12}>
+                <Section3
+                  values={localFormValues}
+                  errors={formErrors}
+                  onChange={handleInputChange}
+                  setValues={setLocalFormValues}
+                  countries={countries}
+                />
+              </Grid>
+
+              {/* Form submission button */}
+              <Grid size={12}>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  mt={3}
+                >
+                  <Box ml="auto">
+                    <PGButton
+                      text={
+                        isSubmitting
+                          ? "Saving..."
+                          : formMode === "edit"
+                          ? "Save"
+                          : "Save"
+                      }
+                      loading={isSubmitting}
+                      type="submit"
+                    />
+                  </Box>
+                </Box>
+              </Grid>
+            </form>
+          </FormProvider>
         </Grid>
       </form>
     </Container>

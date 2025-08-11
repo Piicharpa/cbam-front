@@ -88,7 +88,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         </p>
       </div>
       <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-        <div style={{ flex: 1 }}>
+        {/* <div style={{ flex: 1 }}>
           <LabeledTextField
             type="number"
             caption="Amount production levels"
@@ -107,7 +107,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             }}
             required
           />
-        </div>
+        </div> */}
         <div style={{ flex: 1 }}>
           <LabeledTextField
             type="number"

@@ -47,6 +47,7 @@ interface SourceFormSection1Props {
   removeProcessSection: (idToRemove: number) => void;
   addNewProcessSection: () => void;
 }
+
 const Source_sec1: React.FC<SourceFormSection1Props> = ({
   processEmissionSections,
   formErrors,
@@ -55,6 +56,9 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
   removeProcessSection,
   addNewProcessSection,
 }) => {
+
+  
+
   return (
     <>
       {processEmissionSections.map((section, index) => (

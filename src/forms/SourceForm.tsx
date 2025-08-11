@@ -218,6 +218,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
             p_biomass_content:
               externalFormValues.p_biomass_content ||
               prevSections[0].p_biomass_content,
+            p_carbon_content:
+              externalFormValues.p_carbon_content ||
+              prevSections[0].p_carbon_content,
           },
           ...prevSections.slice(1),
         ]);
@@ -269,6 +272,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
     "p_ad_unit",
     "p_emission_factor",
     "p_ef_unit",
+    
   ];
 
   // Add new process section
@@ -335,6 +339,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
             "p_emission_factor",
             "p_oxidation_factor",
             "p_biomass_content",
+            "p_carbon_content",
           ].includes(field)
         ) {
           const ad = parseFloat(updatedSection.p_activity_data) || 0;
@@ -344,8 +349,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
           const cb = parseFloat(updatedSection.p_carbon_content) || 1;
           const of = parseFloat(updatedSection.p_oxidation_factor) || 1;
           const bioC = parseFloat(updatedSection.p_biomass_content) || 1;
-
-          if (ad && ncv && of && updatedSection.p_method === "Mass Balance") {
+          if (updatedSection.p_method === "Mass Balance") {
             updatedSection.p_co2e_fossil = (
               ad *
               cb *
@@ -356,8 +360,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
             updatedSection.p_co2e_bio = (ad * cb * con * (bioC / 100)).toFixed(
               4
             );
-          }
-          if (ad && ncv) {
+
             // Calculate Energy Content fossil
             updatedSection.p_energy_content_fossil = (
               ((ad * ncv) / 1000) *
@@ -368,21 +371,22 @@ const SourceForm: React.FC<SourceFormProps> = ({
               ((ad * ncv) / 1000) *
               (bioC / 100)
             ).toFixed(4);
-          } else {
-            // Calculate CO2e fossil
+          } else if (
+            updatedSection.p_method === "Combustion" ||
+            updatedSection.p_method === "Process Emission"
+          ) {
             updatedSection.p_co2e_fossil = (
               ((ad * ncv * ef) / 1000) *
               (of / 100) *
               ((100 - bioC) / 100)
             ).toFixed(4);
-            // Calculate CO2e bio
+
             updatedSection.p_co2e_bio = (
               ((ad * ncv * ef) / 1000) *
               (of / 100) *
               (bioC / 100)
             ).toFixed(4);
-          }
-          if (ad && ncv) {
+
             // Calculate Energy Content fossil
             updatedSection.p_energy_content_fossil = (
               ((ad * ncv) / 1000) *
@@ -514,7 +518,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
           ),
           energy_content_bio: parseFloat(section.p_energy_content_bio || "0"),
           carbon_content: parseFloat(section.p_carbon_content || "0"),
-          c_content_unit: section.p_carbon_content_unit
+          c_content_unit: section.p_carbon_content_unit,
         };
 
         // Check if this is an edit (has db_id) or new creation

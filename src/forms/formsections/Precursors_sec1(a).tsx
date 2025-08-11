@@ -720,7 +720,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
       // ข้อมูล consumption - แก้ไขชื่อฟิลด์ให้ตรงกัน
       total_consumed_within_installation: ensureNumber(totalPurchaseLevel),
-      consumed_in_production_amounts: ensureNumber(fieldValues[`amount_1`]),
+      consumed_in_production_amounts: ensureNumber(fieldValues[`consumed_in_production_amounts`]),
       consumed_non_cbam_goods_amounts: ensureNumber(
         fieldValues[`consumed_non_cbam_goods_amounts`]
       ),
@@ -1061,10 +1061,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               label=""
               type="number"
               unit="t"
-              name={`amount_1`}
-              value={fieldValues[`amount_1`] || ""}
+              name={`consumed_in_production_amounts`}
+              value={fieldValues[`consumed_in_production_amounts`] || ""}
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={fieldErrors[`amount_1`] || formErrors[`amount_1`]}
+              error={fieldErrors[`consumed_in_production_amounts`] || formErrors[`consumed_in_production_amounts`]}
             />
           </div>
         </Box>
@@ -1411,7 +1411,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               value={
                 isNaN(calculatedIndirectEmissions)
                   ? ""
-                  : calculatedIndirectEmissions
+                  : Number(calculatedIndirectEmissions).toFixed(4)
               }
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
               error={

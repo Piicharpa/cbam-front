@@ -1,6 +1,7 @@
 // forms/Section3.tsx
 // import React from "react";
 import React, { useState, useEffect } from "react";
+import { electricitys } from "../../../components/dropdown/electricitys";
 import { Box } from "@mui/material";
 import Section from "../../../components/Section";
 import LabeledTextField from "../../../components/LabeledTextField";
@@ -16,24 +17,6 @@ interface Props {
 }
 
 const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
-  const [electricitySources, setElectricitySources] = useState<
-    { id: number; name: string }[]
-  >([]);
-  const apiUrl = process.env.REACT_APP_API_URL;
-  useEffect(() => {
-    const fetchElectricitySources = async () => {
-      try {
-        const res = await fetch(`${apiUrl}/api/cbam/srcefelectricitys`);
-        const name = await res.json();
-        setElectricitySources(name);
-      } catch (error) {
-        console.error("โหลดข้อมูลแหล่ง EF ไฟฟ้าไม่สำเร็จ:", error);
-      }
-    };
-
-    fetchElectricitySources();
-  }, []);
-
   function onNext(): void {
     throw new Error("Function not implemented.");
   }
@@ -267,7 +250,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
               label=""
               name="source_of_ef_electricity"
-              options={electricitySources.map((item) => item.name)}
+              options={electricitys.map((item) => item.name)}
               value={values.source_of_ef_electricity}
               error={errors.source_of_ef_electricity}
               onChange={(val) =>

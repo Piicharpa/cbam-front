@@ -13,7 +13,8 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import AddIcon from "@mui/icons-material/Add";
 import { useNavigate, useLocation } from "react-router-dom";
-import { company_data, type CompanyType } from "../utils/company";
+import { useToken } from "../utils/localStorage";
+import { fetchCompanyData,type CompanyType } from "../utils/company";
 
 // Define the navigation items
 const navItems = [
@@ -32,18 +33,20 @@ interface NavigationPropProps {
 const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const token = useToken()
   const theme = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  const [companyData, setCompanyData] = useState<CompanyType | undefined>();
+  const [companyData, setCompanyData] = useState<CompanyType>();
+  
 
   // Handle scroll effect
-  const fetchCompanyData = async () => {
-    setCompanyData(await company_data());
-  };
+  
+  
   useEffect(() => {
-    fetchCompanyData();
+    if (token?.company?.[0]?.company_id) {
+    fetchCompanyData(token.company[0].company_id).then(setCompanyData);
+  }
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
     };

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useToken } from "./localStorage";
+
 export type CompanyType = {
   company_id: number;
   user_id: number;
@@ -18,19 +18,7 @@ export type CompanyType = {
   created_date: Date | string;
   updated_date: Date | string;
 };
-export const company_data = async (): Promise<CompanyType> => {
-  const token = useToken();
-
-  if (!token?.company?.[0]?.company_id) {
-    throw new Error("Company ID not found in token");
-  }
-
-  try {
-    const response = await axios.get(`/company/${token.company[0].company_id}`);
-    const { data } = response;
-    return data;
-  } catch (error) {
-    console.error("Error fetching company data:", error);
-    throw error;
-  }
+export const fetchCompanyData = async (companyId: number): Promise<CompanyType> => {
+  const response = await axios.get(`/company/${companyId}`);
+  return response.data;
 };

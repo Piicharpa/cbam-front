@@ -230,8 +230,8 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         value={values.consumed_in_others_amounts}
         unit="Tonne"
         onChange={onChange}
-        error={errors.consumed_in_others_amounts} // Pass the error for the helper text
-        helperText={errors.consumed_in_others_amounts} // Show error as helper text
+        error={errors.consumed_in_others_amounts}
+        helperText={errors.consumed_in_others_amounts} 
         inputProps={{
           step: "any",
           placeholder: "Enter amount",

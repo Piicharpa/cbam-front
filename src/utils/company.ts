@@ -18,8 +18,12 @@ export type CompanyType = {
   created_date: Date | string;
   updated_date: Date | string;
 };
-export const fetchCompanyData = async (companyId: number): Promise<CompanyType> => {
+export const fetchCompanyData = async (token:string,companyId: number): Promise<CompanyType> => {
   const apiURL = process.env.REACT_APP_API_URL;
-  const response = await axios.get(`${apiURL}/company/${companyId}`);
+   const response = await axios.get(`${apiURL}/api/v1/company/${companyId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return response.data;
 };

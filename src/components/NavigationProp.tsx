@@ -45,7 +45,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
   
   useEffect(() => {
     if (token?.company?.[0]?.company_id) {
-    fetchCompanyData(token?.company?.[0]?.company_id).then(setCompanyData);
+    fetchCompanyData(token?.token,token?.company?.[0]?.company_id).then(setCompanyData);
   }
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);

@@ -60,8 +60,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  const storedReportId = localStorage.getItem("reportId");
-  const reportId = storedReportId ? parseInt(storedReportId) : null;
+  const reportId = Number(localStorage.getItem("reportId"));
   const apiUrl = process.env.REACT_APP_API_URL;
   const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
@@ -69,7 +68,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   const [isLoading, setIsLoading] = useState(true);
   const [formMode, setFormMode] = useState<"edit" | "create">("create");
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-
   const methods = useForm({
     defaultValues: {
       amounts: [""], // array ของ amounts

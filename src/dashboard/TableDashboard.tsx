@@ -569,7 +569,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                         fontFamily="monospace"
                         fontSize="14px"
                       >
-                        {row.see}
+                        {typeof row.see === "number" ? row.see.toFixed(4) : row.see}
                       </Typography>
                     </TableCell>
                     <TableCell>

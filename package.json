@@ -22,7 +22,9 @@
     "react-hook-form": "^7.57.0",
     "react-router-dom": "^7.6.2",
     "react-scripts": "5.0.1",
+    "reactjs-popup": "^2.0.6",
     "recharts": "^2.15.3",
+    "sweetalert2": "^11.22.3",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4",
     "xlsx": "^0.18.5"

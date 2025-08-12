@@ -300,7 +300,7 @@ const Report = () => {
                 SEE (direct):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}
+                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(4) || "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_direct_sum || ""}
               </Typography>
@@ -312,7 +312,7 @@ const Report = () => {
                 การคำนวณของค่า SEE (direct):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(6) || "N/A"}{" "}
+                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(4) || "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_direct_sum || ""}
               </Typography>
@@ -324,7 +324,7 @@ const Report = () => {
                 SEE (indirect):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) ||
+                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(4) ||
                     "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_indirect_sum || ""}
@@ -337,7 +337,7 @@ const Report = () => {
                 การคำนวณของค่า SEE (indirect):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(6) ||
+                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(4) ||
                     "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_indirect_sum || ""}
@@ -350,7 +350,7 @@ const Report = () => {
                 SEE (total):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}
+                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(4) || "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_total_sum || ""}
               </Typography>
@@ -362,7 +362,7 @@ const Report = () => {
                 การคำนวณของค่า SEE (total):
                 <span style={{ color: "#0190c3", fontWeight: 600 }}>
                   {" "}
-                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(6) || "N/A"}{" "}
+                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(4) || "N/A"}{" "}
                 </span>
                 {summaryData.unit[0]?.SEE_total_sum || ""}
               </Typography>
@@ -715,49 +715,6 @@ const Report = () => {
             gap: 2,
           }}
         >
-          {/* Example of action buttons */}
-          {summaryData && !isLoading && (
-            <>
-              <button
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: theme.palette.primary.main,
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                }}
-                onClick={() => {
-                  // Example action
-                  console.log("Generate PDF for report", reportId);
-                  // Implement PDF generation or other actions
-                }}
-              >
-                Generate PDF Report
-              </button>
-
-              <button
-                style={{
-                  padding: "10px 20px",
-                  backgroundColor: "#fff",
-                  color: theme.palette.primary.main,
-                  border: `2px ${theme.palette.primary.main}`,
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontWeight: 600,
-                }}
-                onClick={() => {
-                  // Example action to export data
-                  console.log("Export data for report", reportId);
-                  // Implement export functionality
-                }}
-              >
-                Export Data
-              </button>
-            </>
-          )}
         </Box>
       </Container>
     </ThemeProvider>

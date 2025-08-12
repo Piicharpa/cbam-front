@@ -49,7 +49,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
   const companyId = (() => {
-    const data = localStorage.getItem("loginData");
+    const data = localStorage.getItem("user_account");
     if (!data) return null;
     try {
       const parsed = JSON.parse(data);

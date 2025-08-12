@@ -49,7 +49,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const [searchParams] = useSearchParams();
   const location = useLocation();
   const companyId = (() => {
-    const data = localStorage.getItem("loginData");
+    const data = localStorage.getItem("user_account");
     if (!data) return null;
     try {
       const parsed = JSON.parse(data);

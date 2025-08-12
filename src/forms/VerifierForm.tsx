@@ -43,7 +43,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId) : null;
   const companyId = (() => {
-  const data = localStorage.getItem("loginData");
+  const data = localStorage.getItem("user_account");
   if (!data) return null;
   try {
     const parsed = JSON.parse(data);

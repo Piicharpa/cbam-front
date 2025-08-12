@@ -110,7 +110,8 @@ const TabPanel = (props: TabPanelProps) => {
 
 const Report = () => {
   const location = useLocation();
-  const reportId = location.state?.reportId;
+  const queryParams = new URLSearchParams(location.search);
+  const reportId = queryParams.get("reportId");
   const [tabValue, setTabValue] = useState(0);
 
   // Add state for summary data with API integration

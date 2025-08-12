@@ -48,6 +48,16 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const { reportId: urlReportId } = useParams();
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const companyId = (() => {
+    const data = localStorage.getItem("loginData");
+    if (!data) return null;
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.company?.[0]?.company_id || null;
+    } catch {
+      return null;
+    }
+  })();
 
   // ✅ เช็ค reportId จากหลายแหล่ง
   const getReportIdFromUrl = () => {
@@ -96,7 +106,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   useEffect(() => {
     if (reportIdFromUrl) {
       localStorage.setItem("reportId", String(reportIdFromUrl));
-    // } else {
+      // } else {
       // ถ้าไม่มี reportId ให้เคลียร์ localStorage
       // localStorage.removeItem("reportId");
     }
@@ -137,7 +147,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         if (!res.ok) {
           if (res.status === 404) {
             console.warn(`⚠️ Report ID ${reportIdFromUrl} not found`);
-            
+
             // ล้าง URL และเปลี่ยนเป็น create mode
             navigate("/cbam/formdev", { replace: true });
             return;
@@ -287,7 +297,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       industry_type_id: Number(formValues.industry_id),
       goods_id: Number(formValues.goods_id),
       cn_id: Number(formValues.cn_id),
-      company_id: 1,
+      company_id: companyId,
       ...(existingReportData && {
         reporting_period_start: new Date(
           existingReportData.reporting_period_start
@@ -325,7 +335,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         result = await res.json();
         finalReportId = currentReportId;
-
       } else {
         // === CREATE MODE: สร้างรายงานใหม่ ===
 
@@ -345,7 +354,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         if (finalReportId) {
           setCurrentReportId(finalReportId);
-         
 
           // ✅ อัปเดต URL เป็น edit mode (optional)
           // navigate(`/cbam/formdev?reportId=${finalReportId}`, { replace: true });
@@ -482,9 +490,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
               style={{ display: "flex", justifyContent: "center", gap: "1rem" }}
             >
               <PGButton
-                text={
-                  isSubmitting ? "Saving..." : isEditMode ? "Save" : "Save"
-                }
+                text={isSubmitting ? "Saving..." : isEditMode ? "Save" : "Save"}
                 loading={isSubmitting}
                 type="submit"
               />

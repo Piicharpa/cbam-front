@@ -94,7 +94,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
           date: dayjs(rawDate).format("D MMM YYYY"),
           rawDate: rawDate, // Store raw date for filtering
           ref: item.cn_code_name || item.name || `Report ${item.id}`,
-          id: item.id,
+          id: item.report_id,
         };
       });
 

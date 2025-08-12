@@ -233,7 +233,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
       console.error(
         "❌ reportId is not provided - not found in localStorage or state"
       );
-      
     }
   }, [reportId]);
 
@@ -271,7 +270,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
     "p_ad_unit",
     "p_emission_factor",
     "p_ef_unit",
-    
   ];
 
   // Add new process section
@@ -336,6 +334,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
             "p_activity_data",
             "p_net_calorific_value",
             "p_emission_factor",
+            "p_ef_unit",
             "p_oxidation_factor",
             "p_biomass_content",
             "p_carbon_content",
@@ -348,54 +347,115 @@ const SourceForm: React.FC<SourceFormProps> = ({
           const cb = parseFloat(updatedSection.p_carbon_content) || 1;
           const of = parseFloat(updatedSection.p_oxidation_factor) || 1;
           const bioC = parseFloat(updatedSection.p_biomass_content) || 1;
-          if (updatedSection.p_method === "Mass Balance") {
-            updatedSection.p_co2e_fossil = (
-              ad *
-              cb *
-              con *
-              ((100 - bioC) / 100)
-            ).toFixed(4);
-            // Calculate CO2e bio
-            updatedSection.p_co2e_bio = (ad * cb * con * (bioC / 100)).toFixed(
-              4
-            );
+          const unit = updatedSection.p_ef_unit;
 
-            // Calculate Energy Content fossil
-            updatedSection.p_energy_content_fossil = (
-              ((ad * ncv) / 1000) *
-              ((100 - bioC) / 100)
-            ).toFixed(4);
-            // Calculate Energy Content bio
-            updatedSection.p_energy_content_bio = (
-              ((ad * ncv) / 1000) *
-              (bioC / 100)
-            ).toFixed(4);
+          if (updatedSection.p_method === "Mass Balance") {
+            if (!bioC) {
+              updatedSection.p_co2e_fossil = (ad * cb * con).toFixed(4);
+
+              updatedSection.p_co2e_bio = (ad * cb * con).toFixed(4);
+
+              updatedSection.p_energy_content_fossil = (
+                (ad * ncv) /
+                1000
+              ).toFixed(4);
+
+              updatedSection.p_energy_content_bio = ((ad * ncv) / 1000).toFixed(
+                4
+              );
+            } else {
+              updatedSection.p_co2e_fossil = (
+                ad *
+                cb *
+                con *
+                ((100 - bioC) / 100)
+              ).toFixed(4);
+
+              updatedSection.p_co2e_bio = (
+                ad *
+                cb *
+                con *
+                (bioC / 100)
+              ).toFixed(4);
+
+              updatedSection.p_energy_content_fossil = (
+                ((ad * ncv) / 1000) *
+                ((100 - bioC) / 100)
+              ).toFixed(4);
+
+              updatedSection.p_energy_content_bio = (
+                ((ad * ncv) / 1000) *
+                (bioC / 100)
+              ).toFixed(4);
+            }
           } else if (
             updatedSection.p_method === "Combustion" ||
             updatedSection.p_method === "Process Emission"
           ) {
-            updatedSection.p_co2e_fossil = (
-              ((ad * ncv * ef) / 1000) *
-              (of / 100) *
-              ((100 - bioC) / 100)
-            ).toFixed(4);
+            if (!bioC) {
+              if (unit == "tCO2/t") {
+                updatedSection.p_co2e_fossil = (ad * ef * (of / 100)).toFixed(
+                  4
+                );
 
-            updatedSection.p_co2e_bio = (
-              ((ad * ncv * ef) / 1000) *
-              (of / 100) *
-              (bioC / 100)
-            ).toFixed(4);
+                updatedSection.p_co2e_bio = (ad * ef * (of / 100)).toFixed(4);
+              } else {
+                updatedSection.p_co2e_fossil = (
+                  ((ad * ncv * ef) / 1000) *
+                  (of / 100)
+                ).toFixed(4);
 
-            // Calculate Energy Content fossil
-            updatedSection.p_energy_content_fossil = (
-              ((ad * ncv) / 1000) *
-              ((100 - bioC) / 100)
-            ).toFixed(4);
-            // Calculate Energy Content bio
-            updatedSection.p_energy_content_bio = (
-              ((ad * ncv) / 1000) *
-              (bioC / 100)
-            ).toFixed(4);
+                updatedSection.p_co2e_bio = (
+                  ((ad * ncv * ef) / 1000) *
+                  (of / 100)
+                ).toFixed(4);
+
+                updatedSection.p_energy_content_fossil = (
+                  (ad * ncv) /
+                  1000
+                ).toFixed(4);
+
+                updatedSection.p_energy_content_bio = (
+                  (ad * ncv) /
+                  1000
+                ).toFixed(4);
+              }
+            } else {
+              if (unit == "tCO2/t") {
+                updatedSection.p_co2e_fossil = (
+                  (ad * ef) *
+                  (of / 100) *
+                  ((100 - bioC) / 100)
+                ).toFixed(4);
+
+                updatedSection.p_co2e_bio = (
+                  (ad * ef) *
+                  (of / 100) *
+                  (bioC / 100)
+                ).toFixed(4);
+              }
+              updatedSection.p_co2e_fossil = (
+                ((ad * ncv * ef) / 1000) *
+                (of / 100) *
+                ((100 - bioC) / 100)
+              ).toFixed(4);
+
+              updatedSection.p_co2e_bio = (
+                ((ad * ncv * ef) / 1000) *
+                (of / 100) *
+                (bioC / 100)
+              ).toFixed(4);
+
+              updatedSection.p_energy_content_fossil = (
+                ((ad * ncv) / 1000) *
+                ((100 - bioC) / 100)
+              ).toFixed(4);
+
+              updatedSection.p_energy_content_bio = (
+                ((ad * ncv) / 1000) *
+                (bioC / 100)
+              ).toFixed(4);
+            }
           }
         }
         return updatedSection;

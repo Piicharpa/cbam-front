@@ -355,9 +355,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
     return Object.keys(errors).length === 0;
   };
 
-  // --- form submission ---
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (data: any) => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -375,99 +373,58 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       const cleanPayload = {
         report_id: localFormValues.report_id || reportId,
         name: localFormValues.name || "",
-        // Fix NaN issues by ensuring all numeric conversions have a fallback
-        goods_category: isNaN(parseInt(localFormValues.goods_category))
-          ? 0
-          : parseInt(localFormValues.goods_category),
-        industry_type: isNaN(parseInt(localFormValues.industry_type))
-          ? 0
-          : parseInt(localFormValues.industry_type),
+        goods_category: ensureNumber(localFormValues.goods_category, 0),
+        industry_type: ensureNumber(localFormValues.industry_type, 0),
         routes: JSON.stringify(localFormValues.routes || []),
         amounts: JSON.stringify(localFormValues.amounts || []),
-        total_consumed_within_installation: isNaN(
-          Number(localFormValues.total_consumed_within_installation)
-        )
-          ? 1
-          : Number(localFormValues.total_consumed_within_installation),
-        consumed_in_others_amounts: isNaN(
-          Number(localFormValues.consumed_in_others_amounts)
-        )
-          ? 0
-          : Number(localFormValues.consumed_in_others_amounts),
-        condumed_non_cbam_goods_amounts: isNaN(
-          Number(localFormValues.condumed_non_cbam_goods_amounts)
-        )
-          ? 0
-          : Number(localFormValues.condumed_non_cbam_goods_amounts),
+        total_consumed_within_installation: ensureNumber(
+          localFormValues.total_consumed_within_installation,
+          1
+        ),
+        consumed_in_others_amounts: ensureNumber(
+          localFormValues.consumed_in_others_amounts
+        ),
+        condumed_non_cbam_goods_amounts: ensureNumber(
+          localFormValues.condumed_non_cbam_goods_amounts
+        ),
         has_heat: localFormValues.has_heat ? 1 : 0,
         has_waste_gases: localFormValues.has_waste_gases ? 1 : 0,
-        direct_emissions: isNaN(Number(localFormValues.direct_emissions))
-          ? 0
-          : Number(localFormValues.direct_emissions),
-        imported_heat_value: isNaN(Number(localFormValues.imported_heat_value))
-          ? 0
-          : Number(localFormValues.imported_heat_value),
-        exported_heat_value: isNaN(Number(localFormValues.exported_heat_value))
-          ? 0
-          : Number(localFormValues.exported_heat_value),
-        ef_imported_heat: isNaN(Number(localFormValues.ef_imported_heat))
-          ? 0
-          : Number(localFormValues.ef_imported_heat),
-        ef_exported_heat: isNaN(Number(localFormValues.ef_exported_heat))
-          ? 0
-          : Number(localFormValues.ef_exported_heat),
-        electricity_consumption_value: isNaN(
-          Number(localFormValues.electricity_consumption_value)
-        )
-          ? 0
-          : Number(localFormValues.electricity_consumption_value),
-        ef_electricity: isNaN(Number(localFormValues.ef_electricity))
-          ? 0
-          : Number(localFormValues.ef_electricity),
+        direct_emissions: ensureNumber(localFormValues.direct_emissions),
+        imported_heat_value: ensureNumber(localFormValues.imported_heat_value),
+        exported_heat_value: ensureNumber(localFormValues.exported_heat_value),
+        ef_imported_heat: ensureNumber(localFormValues.ef_imported_heat),
+        ef_exported_heat: ensureNumber(localFormValues.ef_exported_heat),
+        electricity_consumption_value: ensureNumber(
+          localFormValues.electricity_consumption_value
+        ),
+        ef_electricity: ensureNumber(localFormValues.ef_electricity),
         source_of_ef_electricity:
           localFormValues.source_of_ef_electricity || "",
-        exported_electricity_value: isNaN(
-          Number(localFormValues.exported_electricity_value)
-        )
-          ? 0
-          : Number(localFormValues.exported_electricity_value),
-        ef_exported_electricity: isNaN(
-          Number(localFormValues.ef_exported_electricity)
-        )
-          ? 0
-          : Number(localFormValues.ef_exported_electricity),
-        total_production_amounts: isNaN(
-          Number(localFormValues.total_production_amounts)
-        )
-          ? 0
-          : Number(localFormValues.total_production_amounts),
-        produced_for_market_amount: isNaN(
-          Number(localFormValues.produced_for_market_amount)
-        )
-          ? 0
-          : Number(localFormValues.produced_for_market_amount),
-        imported_wgases_amount: isNaN(
-          Number(localFormValues.imported_wgases_amount)
-        )
-          ? 0
-          : Number(localFormValues.imported_wgases_amount),
-        ef_imported_wgases: isNaN(Number(localFormValues.ef_imported_wgases))
-          ? 0
-          : Number(localFormValues.ef_imported_wgases),
-        exported_wgases_amount: isNaN(
-          Number(localFormValues.exported_wgases_amount)
-        )
-          ? 0
-          : Number(localFormValues.exported_wgases_amount),
-        ef_exported_wgases: isNaN(Number(localFormValues.ef_exported_wgases))
-          ? 0
-          : Number(localFormValues.ef_exported_wgases),
+        exported_electricity_value: ensureNumber(
+          localFormValues.exported_electricity_value
+        ),
+        ef_exported_electricity: ensureNumber(
+          localFormValues.ef_exported_electricity
+        ),
+        total_production_amounts: ensureNumber(
+          localFormValues.total_production_amounts
+        ),
+        produced_for_market_amount: ensureNumber(
+          localFormValues.produced_for_market_amount
+        ),
+        imported_wgases_amount: ensureNumber(
+          localFormValues.imported_wgases_amount
+        ),
+        ef_imported_wgases: ensureNumber(localFormValues.ef_imported_wgases),
+        exported_wgases_amount: ensureNumber(
+          localFormValues.exported_wgases_amount
+        ),
+        ef_exported_wgases: ensureNumber(localFormValues.ef_exported_wgases),
       };
 
       let response, newGoodsId;
 
       if (formMode === "edit" && existingData?.goods_id) {
-        // UPDATE existing goods data
         console.log(
           "Updating existing goods data with ID:",
           existingData.goods_id
@@ -482,7 +439,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         );
         newGoodsId = existingData.goods_id;
       } else {
-        // CREATE new goods data
         console.log("Creating new goods data");
         response = await fetch(`${apiUrl}/api/cbam/d_goods`, {
           method: "POST",
@@ -503,7 +459,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         console.log("Created new goods with ID:", newGoodsId);
       }
 
-      // Update report with goods_id if needed
       if (reportId && newGoodsId) {
         console.log("Updating report with goods_id:", newGoodsId);
         const updateReportResponse = await fetch(
@@ -525,7 +480,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         }
       }
 
-      // Clear localStorage data
       localStorage.removeItem("goodsFormData");
       localStorage.removeItem("selectedIndustry");
       localStorage.removeItem("selectedGoods");
@@ -561,7 +515,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       maxWidth="md"
       style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
     >
-      <form onSubmit={handleSubmit} noValidate>
+      <form onSubmit={methods.handleSubmit(handleSubmit)} noValidate>
         <Grid container spacing={3}>
           {/* Header Section */}
           <Grid size={12}>
@@ -602,81 +556,66 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           )}
 
           <FormProvider {...methods}>
-            <form onSubmit={methods.handleSubmit((data) => console.log(data))}>
-              {/* Section 1 - Industry Type, Goods Category, Routes */}
-              <Grid size={12}>
-                <Section1
-                  values={localFormValues}
-                  errors={formErrors}
-                  onChange={handleSection1Change}
-                />
-              </Grid>
+            {/* Section 1 */}
+            <Grid size={12}>
+              <Section1
+                values={localFormValues}
+                errors={formErrors}
+                onChange={handleSection1Change}
+              />
+            </Grid>
 
-              {/* Section 2 - Production Amounts */}
-              <Grid size={12}>
-                <Section2
-                  values={{
-                    total_production_amounts: String(
-                      localFormValues.total_production_amounts ?? ""
-                    ),
-                    total_consumed_within_installation: String(
-                      localFormValues.total_consumed_within_installation ?? ""
-                    ),
-                    consumed_in_others_amounts: String(
-                      localFormValues.consumed_in_others_amounts ?? ""
-                    ),
-                    produced_for_market_amount: String(
-                      localFormValues.produced_for_market_amount ?? ""
-                    ),
-                    condumed_non_cbam_goods_amounts: String(
-                      localFormValues.condumed_non_cbam_goods_amounts ?? ""
-                    ),
-                    control: String(localFormValues.control ?? ""),
-                  }}
-                  errors={{
-                    ...formErrors,
-                    total_consumed_within_installation:
-                      formErrors.total_consumed_within_installation || "",
-                  }}
-                  onChange={handleInputChange}
-                />
-              </Grid>
+            {/* Section 2 */}
+            <Grid size={12}>
+              <Section2
+                values={{
+                  total_production_amounts: String(
+                    localFormValues.total_production_amounts ?? ""
+                  ),
+                  total_consumed_within_installation: String(
+                    localFormValues.total_consumed_within_installation ?? ""
+                  ),
+                  consumed_in_others_amounts: String(
+                    localFormValues.consumed_in_others_amounts ?? ""
+                  ),
+                  produced_for_market_amount: String(
+                    localFormValues.produced_for_market_amount ?? ""
+                  ),
+                  condumed_non_cbam_goods_amounts: String(
+                    localFormValues.condumed_non_cbam_goods_amounts ?? ""
+                  ),
+                  control: String(localFormValues.control ?? ""),
+                }}
+                errors={{
+                  ...formErrors,
+                  total_consumed_within_installation:
+                    formErrors.total_consumed_within_installation || "",
+                }}
+                onChange={handleInputChange}
+              />
+            </Grid>
 
-              {/* Section 3 - Heat, Electricity, Waste Gases */}
-              <Grid size={12}>
-                <Section3
-                  values={localFormValues}
-                  errors={formErrors}
-                  onChange={handleInputChange}
-                  setValues={setLocalFormValues}
-                  countries={countries}
-                />
-              </Grid>
+            {/* Section 3 */}
+            <Grid size={12}>
+              <Section3
+                values={localFormValues}
+                errors={formErrors}
+                onChange={handleInputChange}
+                setValues={setLocalFormValues}
+                countries={countries}
+              />
+            </Grid>
 
-              {/* Form submission button */}
-              <Grid size={12}>
-                <Box
-                  display="flex"
-                  justifyContent="space-between"
-                  alignItems="center"
-                  mt={3}
-                >
-                  <Box ml="auto">
-                    <PGButton
-                      text={
-                        isSubmitting
-                          ? "Saving..."
-                          : formMode === "edit"
-                          ? "Save"
-                          : "Save"
-                      }
-                      loading={isSubmitting}
-                      type="submit"
-                    />
-                  </Box>
-                </Box>
-              </Grid>
-            </form>
+            {/* Submit Button */}
+            <Grid size={12}>
+              <Box display="flex" justifyContent="flex-end" mt={3}>
+                <PGButton
+                  text={isSubmitting ? "Saving..." : "Save"}
+                  loading={isSubmitting}
+                  type="submit"
+                />
+              </Box>
+            </Grid>
           </FormProvider>
         </Grid>
       </form>

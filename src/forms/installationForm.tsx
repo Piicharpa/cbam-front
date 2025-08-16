@@ -556,7 +556,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   return (
     <Container
       maxWidth="md"
-      style={{ paddingTop: "2rem", paddingBottom: "2rem" }}
+      // style={{ paddingTop: "1rem", paddingBottom: "1rem" }}
     >
       <form onSubmit={handleSubmit} noValidate>
         <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="th">
@@ -571,7 +571,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   !!formErrors.reporting_period_end
                 }
               >
-                <Grid container spacing={2}>
+                <Grid >
                   <Grid size={12}>
                     <Box sx={{ mb: 2 }}>
                       <Typography

@@ -60,7 +60,7 @@ const LabeledTextField: React.FC<Props> = ({
           variant="caption"
           color={disabled ? "#999" : "#74aa15"}
           style={{
-            marginBottom: "0.25rem",
+            // marginBottom: "0.25rem",
             display: "block",
             fontSize: "16px",
             opacity: disabled ? 0.6 : 1,
@@ -77,7 +77,7 @@ const LabeledTextField: React.FC<Props> = ({
         value={value}
         onChange={onChange}
         fullWidth
-        margin="normal"
+        // margin="normal"
         error={!!error}
         helperText={
           error
@@ -105,7 +105,7 @@ const LabeledTextField: React.FC<Props> = ({
         FormHelperTextProps={{
           style: {
             color: error ? "#d32f2f" : "inherit",
-            marginTop: "3px",
+            // marginTop: "3px",
             fontSize: "0.75rem",
           },
         }}

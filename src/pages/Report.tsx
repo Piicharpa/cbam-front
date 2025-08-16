@@ -159,7 +159,7 @@ const Report = () => {
   const [tabCData, setTabCData] = useState<{}>({});
   const [tabDData, setTabDData] = useState<{}>({});
   const [tabEData, setTabEData] = useState<{}>({});
-  const [tabZData, setTabZData] = useState<{}>({});
+  const [tabZData, setTabZData] = useState<{}>({}); 
   
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
@@ -326,7 +326,7 @@ const Report = () => {
                   },
                   { // New tab for the sumup page
                     icon: <SummarizeIcon />,
-                    label: "Z_Sumup",
+                    label: "Summary",
                     color: "#0190c3",
                     index: 5,
                   },

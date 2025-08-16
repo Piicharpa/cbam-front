@@ -3,7 +3,7 @@ import { Box, CircularProgress, Typography, Paper, Chip } from "@mui/material";
 import DataDisplayTab from "./Report_design";
 
 interface SummaryData {
-  data: Array<{ product_name: string; cn_code: string }>;
+  data: Array<{ product_name: string; cn_code: string; cn_name: string }>;
   sum: Array<{
     SEE_direct_sum: number;
     SEE_indirect_sum: number;
@@ -81,7 +81,14 @@ const TabZ_Summary: React.FC<TabProps> = ({
         summaryData.data.length > 0 && (
           <>
             {/* Header Section with Product Information */}
-            <Box sx={{ mb: 4, pb: 3, borderBottom: "1px solid #e0e0e0" }}>
+            <Box
+              sx={{
+                color: "#0190c3",
+                mb: 4,
+                pb: 3,
+                borderBottom: "1px solid #e0e0e0",
+              }}
+            >
               <Typography
                 variant="h5"
                 color="primary.dark"
@@ -90,23 +97,24 @@ const TabZ_Summary: React.FC<TabProps> = ({
                 Product Information | ข้อมูลผลิตภัณฑ์
               </Typography>
 
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 1.5 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    p: 2,
-                    bgcolor: "rgba(1,144,195,0.05)",
-                    borderRadius: 2,
-                    border: "1px solid rgba(1,144,195,0.1)",
-                  }}
-                >
+              <Box
+                sx={{
+                  p: 2,
+                  bgcolor: "rgba(1,144,195,0.05)",
+                  borderRadius: 2,
+                  border: "1px solid rgba(1,144,195,0.1)",
+                  flexDirection: "column",
+                  gap: 1.5,
+                }}
+              >
+                <Box sx={{ display: "flex",
+                  alignItems: "center",}}>
                   <Typography
                     variant="subtitle1"
                     color="text.secondary"
-                    sx={{ minWidth: 160, fontWeight: 500 }}
+                    sx={{ minWidth: 250, fontWeight: 500, fontSize: 16 }}
                   >
-                    Product | สินค้า:
+                    Product Name | ชื่อผลิตภัณฑ์:
                   </Typography>
                   <Typography
                     variant="h6"
@@ -115,30 +123,38 @@ const TabZ_Summary: React.FC<TabProps> = ({
                     {summaryData.data[0].product_name || "N/A"}
                   </Typography>
                 </Box>
-
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    p: 2,
-                    bgcolor: "rgba(1,144,195,0.03)",
-                    borderRadius: 2,
-                    border: "1px solid rgba(1,144,195,0.08)",
-                  }}
+                <Box sx={{ display: "flex",
+                  alignItems: "center",}}>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  sx={{ minWidth: 250, fontWeight: 500, fontSize: 16 }}
                 >
-                  <Typography
-                    variant="subtitle1"
-                    color="text.secondary"
-                    sx={{ minWidth: 160, fontWeight: 500 }}
-                  >
-                    CN code | รหัส CN:
-                  </Typography>
-                  <Typography
-                    variant="h6"
-                    sx={{ color: "#0190c3", fontWeight: 600 }}
-                  >
-                    {summaryData.data[0].cn_code || "N/A"}
-                  </Typography>
+                  CN code | รหัส CN:
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#0190c3", fontWeight: 600 }}
+                >
+                  {summaryData.data[0].cn_code || "N/A"}
+                </Typography>
+                </Box>
+
+                <Box sx={{ display: "flex",
+                  alignItems: "center",}}>
+                <Typography
+                  variant="subtitle1"
+                  color="text.secondary"
+                  sx={{ minWidth: 250, fontWeight: 500, fontSize: 16 }}
+                >
+                  CN name | ชื่อรหัส CN:
+                </Typography>
+                <Typography
+                  variant="h6"
+                  sx={{ color: "#0190c3", fontWeight: 600 }}
+                >
+                  {summaryData.data[0].cn_name || "N/A"}
+                </Typography>
                 </Box>
               </Box>
             </Box>
@@ -149,7 +165,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
               color="primary.dark"
               sx={{ position: "relative", zIndex: 1, mb: 3, fontWeight: 600 }}
             >
-              Emissions Summary | สรุปการปล่อยมลพิษ
+              Specific Embedded Emissions | การปล่อยก๊าซเรือนกระจก
             </Typography>
 
             <Box
@@ -169,7 +185,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   variant="h6"
                   sx={{ color: "#0190c3", fontWeight: 600, mb: 1 }}
                 >
-                  Direct Emissions | การปล่อยมลพิษทางตรง
+                  Direct Emissions | การปล่อยก๊าซเรือนกระจกทางตรง
                 </Typography>
 
                 <Box
@@ -184,9 +200,10 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    sx={{ minWidth: 200 }}
+                    sx={{ minWidth: 250 }}
+                    fontSize={16}
                   >
-                    SEE (direct) | ค่า SEE (ทางตรง):
+                    SEE (direct):
                   </Typography>
                   <Typography
                     variant="h6"
@@ -197,7 +214,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                     summaryData.sum[0]?.SEE_direct_sum
                       ? summaryData.sum[0]?.SEE_direct_sum.toFixed(4)
                       : "N/A"}{" "}
-                    <span style={{ fontSize: "0.8em", fontWeight: 400 }}>
+                    <span style={{ fontSize: 16, fontWeight: 400 }}>
                       {(summaryData.unit &&
                         summaryData.unit[0]?.SEE_direct_sum) ||
                         ""}
@@ -212,7 +229,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   variant="h6"
                   sx={{ color: "#0190c3", fontWeight: 600, mb: 1 }}
                 >
-                  Indirect Emissions | การปล่อยมลพิษทางอ้อม
+                  Indirect Emissions | การปล่อยก๊าซเรือนกระจกทางอ้อม
                 </Typography>
 
                 <Box
@@ -227,9 +244,9 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   <Typography
                     variant="body1"
                     color="text.secondary"
-                    sx={{ minWidth: 200 }}
+                    sx={{ minWidth: 250, fontSize: 16 }}
                   >
-                    SEE (indirect) | ค่า SEE (ทางอ้อม):
+                    SEE (indirect):
                   </Typography>
                   <Typography
                     variant="h6"
@@ -240,7 +257,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                     summaryData.sum[0]?.SEE_indirect_sum
                       ? summaryData.sum[0]?.SEE_indirect_sum.toFixed(4)
                       : "N/A"}{" "}
-                    <span style={{ fontSize: "0.8em", fontWeight: 400 }}>
+                    <span style={{ fontSize: 16, fontWeight: 400 }}>
                       {(summaryData.unit &&
                         summaryData.unit[0]?.SEE_indirect_sum) ||
                         ""}
@@ -258,15 +275,15 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   mt: 1,
                   p: 3,
                   borderRadius: 2,
-                  bgcolor: "rgba(1,144,195,0.08)",
-                  borderTop: "1px dashed rgba(1,144,195,0.3)",
+                  bgcolor: "rgba(19, 198, 52, 0.08)",
+                  borderTop: "1px dashed rgba(4, 169, 62, 0.3)",
                 }}
               >
                 <Typography
                   variant="h6"
                   sx={{ color: "#0057a3", fontWeight: 600, mb: 1 }}
                 >
-                  Total Emissions | การปล่อยมลพิษรวม
+                  Total Emissions | การปล่อยก๊าซเรือนกระจกรวม
                 </Typography>
 
                 <Box
@@ -281,12 +298,13 @@ const TabZ_Summary: React.FC<TabProps> = ({
                   <Typography
                     variant="body1"
                     sx={{
-                      minWidth: 200,
+                      minWidth: 230,
                       fontWeight: 500,
                       color: "text.primary",
+                      fontSize: 16,
                     }}
                   >
-                    SEE (total) | ค่า SEE (รวม):
+                    SEE (total):
                   </Typography>
                   <Typography
                     variant="h5"
@@ -297,7 +315,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                     summaryData.sum[0]?.SEE_total_sum
                       ? summaryData.sum[0]?.SEE_total_sum.toFixed(4)
                       : "N/A"}{" "}
-                    <span style={{ fontSize: "0.8em", fontWeight: 400 }}>
+                    <span style={{ fontSize: 16, fontWeight: 400 }}>
                       {(summaryData.unit &&
                         summaryData.unit[0]?.SEE_total_sum) ||
                         ""}

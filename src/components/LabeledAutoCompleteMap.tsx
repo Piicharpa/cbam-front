@@ -69,7 +69,7 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
             variant="caption"
             color={disabled ? "#999" : "#74aa15"}
             style={{
-              marginBottom: "0.25rem",
+              // marginBottom: "0.25rem",
               display: "block",
               fontSize: "16px",
               minHeight: "53px",
@@ -104,7 +104,7 @@ const LabeledAutocompleteMap: React.FC<Props> = ({
               type={type}
               label={label}
               name={name}
-              margin="normal"
+              // margin="normal"
               fullWidth
               error={!!error}
               helperText={

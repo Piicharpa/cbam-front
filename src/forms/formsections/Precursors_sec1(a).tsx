@@ -881,7 +881,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     <div
       className="precursor-field-group"
       style={{
-        marginBottom: "20px",
+        // marginBottom: "20px",
         padding: "15px",
         border: "1px solid #e0e0e0",
         borderColor: isSaved || existingData ? "#2ecc71" : "#e0e0e0",
@@ -891,7 +891,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     >
       {/* Precursor name display */}
       {/* {renderPrecursorField()} */}
-      <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+      <div style={{ display: "flex", gap: "1.5rem",  }}>
         <div style={{ flex: 1 }}>
           {/* Country selection */}
           <LabeledAutocompleteMap
@@ -1014,7 +1014,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           <div
             style={{
               textAlign: "left",
-              marginBottom: "2rem",
               fontSize: "14px",
               backgroundColor: "#f5f5f5",
               padding: "12px 16px",
@@ -1107,58 +1106,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </p>
         </div>
 
-        {/* <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              caption="Aggregated goods category"
-              defination="เลือกหมวดหมู่ของผลิตภัณฑ์"
-              label={selectedGoodsName}
-              unit="t"
-              name={`amount_1`}
-              value={selectedGoodsName}
-              error={fieldErrors[`amount_1`]}
-              onChange={(val) => onChange("goods_category", String(val))}
-              required
-              readOnly
-              disabled={true}
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              caption="Name"
-              defination="ระบุชื่อผลิตภัณฑ์"
-              label=""
-              name="b_name"
-              type="text"
-              value={fieldValues[`b_name`] || ""}
-              onChange={(e) => handleInputChange("b_name", e.target.value)}
-              error={fieldErrors[`b_name`]}
-              helperText={fieldErrors[`b_name`]}
-              required
-            />
-          </div>
-        </Box> */}
-
         <Box key={`route-group-included`} display="flex" gap={3} mb={3}>
-          {/* <div style={{ flex: 1 }}>
-            <LabeledAutocompleteMap
-              caption="Included goods categories"
-              defination="หมวดหมู่สินค้าที่ระบุ"
-              label=""
-              name={`b_category`}
-              options={[
-                {
-                  label: "Only direct production",
-                  value: "Only direct production",
-                },
-                { label: selectedGoodsName, value: selectedGoodsName },
-                { label: "N.A.", value: "N.A." },
-              ]}
-              value={fieldValues[`b_category`] || ""}
-              error={fieldErrors[`b_category`] || formErrors[`b_category`]}
-              onChange={(val) => handleInputChange(`b_category`, val)}
-            />
-          </div> */}
           <div style={{ flex: 1 }}>
             <LabeledTextField
               caption={`Amount`}
@@ -1181,7 +1129,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       <div
         style={{
           textAlign: "left",
-          marginBottom: "1.5rem",
+          // marginBottom: "1.5rem",
           fontSize: "18px",
         }}
       >
@@ -1227,7 +1175,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       <div
         style={{
           textAlign: "left",
-          marginBottom: "1.5rem",
+          // marginBottom: "1.5rem",
           fontSize: "18px",
         }}
       >
@@ -1262,28 +1210,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           </span>
         </p>
       </div>
-      {/* <Box mb={3}>
-        <LabeledTextField
-          type="number"
-          caption="Control"
-          defination="ควบคุม"
-          unit="t"
-          label=""
-          name={`control`}
-          value={
-            isNaN(controlAmount) ? "" : controlAmount || formValues[`control`]
-          }
-          onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-          error={fieldErrors[`control`] || formErrors[`control`]}
-          helperText={fieldErrors[`control`] || formErrors[`control`]}
-          inputProps={{
-            step: "any",
-            placeholder: "Enter amount",
-            className: "appearance-none",
-          }}
-          disabled
-        />
-      </Box> */}
 
       <Box mb={3}>
         <div

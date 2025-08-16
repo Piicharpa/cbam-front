@@ -51,7 +51,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
         variant="caption"
         color="#74aa15"
         style={{
-          marginBottom: "0.25rem",
+          // marginBottom: "0.25rem",
           display: "block",
           fontSize: "16px",
           minHeight: "53px",
@@ -70,7 +70,7 @@ const LabeledAutocomplete: React.FC<Props> = ({
           type={type}
           label={label}
           name={name}
-          margin="normal"
+          // margin="normal"
           error={!!error}
           helperText={
             error

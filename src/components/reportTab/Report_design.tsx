@@ -12,10 +12,10 @@ import {
   Alert,
   Skeleton,
   Collapse,
+  Grid,
 } from "@mui/material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Grid from "@mui/material/Grid";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import BusinessIcon from "@mui/icons-material/Business";
@@ -44,6 +44,8 @@ interface DataDisplayTabProps {
     apiEndpoint: string;
     emptyMessage: string;
   };
+  children?: React.ReactNode;
+  onDataFetched?: (data: any) => void;
 }
 
 const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
@@ -51,6 +53,8 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
   formValues,
   setFormValues,
   config,
+  children, 
+  onDataFetched
 }) => {
   const [metadataGrouped, setMetadataGrouped] = useState<
     Record<string, MetadataItem[]>
@@ -59,20 +63,51 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
   const [copiedCell, setCopiedCell] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<
     Record<string, boolean>
-  >({}); // Add this
+  >({});
   const apiUrl = process.env.REACT_APP_API_URL;
 
   useEffect(() => {
     if (!reportId) return;
 
-    setLoading(true);
-    fetch(`${apiUrl}/api/cbam/excelreport/${config.apiEndpoint}/${reportId}`)
-      .then((res) => res.json())
-      .then((data) => {
-        setMetadataGrouped(data.metadataGrouped);
-      })
-      .catch((err) => console.error("Fetch error:", err))
-      .finally(() => setLoading(false));
+    const fetchData = async () => {
+      setLoading(true);
+      try {
+        let apiEndpoint;
+
+        if (config.apiEndpoint === "Summary") {
+          const baseUrl = "http://178.128.123.212:5000";
+          apiEndpoint = `${baseUrl}/api/cbam/report/sumary/${reportId}`;
+        } else {
+          const apiUrl = process.env.REACT_APP_API_URL || "";
+          apiEndpoint = `${apiUrl}/api/cbam/excelreport/${config.apiEndpoint}/${reportId}`;
+        }
+
+        console.log(`Fetching data from: ${apiEndpoint}`);
+        const response = await fetch(apiEndpoint);
+
+        if (!response.ok) {
+          throw new Error(
+            `Failed to fetch data with status: ${response.status}`
+          );
+        }
+
+        const data = await response.json();
+        console.log(`Data received for ${config.apiEndpoint}:`, data);
+        if (config.apiEndpoint === "Summary") {
+          if (typeof onDataFetched === "function") {
+            onDataFetched(data);
+          }
+        } else {
+          setMetadataGrouped(data.metadataGrouped || {});
+        }
+      } catch (err) {
+        console.error("Fetch error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, [reportId, config.apiEndpoint, apiUrl]);
 
   const handleCopy = (value: string, cell: string) => {
@@ -96,28 +131,93 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
     const textArea = document.createElement("textarea");
     textArea.value = value || "";
     textArea.style.position = "fixed";
-    textArea.style.top = "0";
-    textArea.style.left = "0";
     textArea.style.opacity = "0";
     document.body.appendChild(textArea);
     textArea.focus();
     textArea.select();
-
     try {
-      const successful = document.execCommand("copy");
-      if (successful) {
-        setCopiedCell(cell);
-        setTimeout(() => setCopiedCell(null), 2000);
-      } else {
-        console.error("Fallback: Copy command was unsuccessful");
-      }
+      document.execCommand("copy");
+      setCopiedCell(cell);
+      setTimeout(() => setCopiedCell(null), 2000);
     } catch (err) {
       console.error("Fallback: Unable to copy", err);
     }
-
     document.body.removeChild(textArea);
   };
 
+  // แสดง children ที่ได้รับผ่าน props ก่อน
+  if (children) {
+    return (
+      <Box>
+        {/* Header */}
+        <Box sx={{ mb: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+            <DescriptionIcon color="primary" sx={{ fontSize: 32 }} />
+            <Typography variant="h4" fontWeight="bold" color="primary">
+              {config.title}
+            </Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 1 }}>
+            <BusinessIcon />
+            <Typography variant="h6" color="text.secondary">
+              {config.subtitle}
+            </Typography>
+          </Box>
+          <Chip
+            label={`Sheet: ${config.sheetName}`}
+            variant="outlined"
+            size="small"
+            sx={{ borderRadius: 2 }}
+          />
+        </Box>
+
+        {/* Custom Content from Children */}
+        <Box sx={{ mb: 4, p: 3, border: "1px solid #e0e0e0", borderRadius: 2 }}>
+          {children}
+        </Box>
+
+        {/* Loading State for Regular Content */}
+        {loading ? (
+          <Box sx={{ p: 3 }}>
+            <Skeleton variant="text" width="40%" height={40} sx={{ mb: 2 }} />
+            <Skeleton variant="text" width="30%" height={30} sx={{ mb: 3 }} />
+            {[1, 2].map((i) => (
+              <Skeleton
+                key={i}
+                variant="rectangular"
+                height={100}
+                sx={{ mb: 2 }}
+              />
+            ))}
+          </Box>
+        ) : Object.keys(metadataGrouped).length === 0 ? (
+          <Alert severity="info" sx={{ borderRadius: 2 }}>
+            {config.emptyMessage}
+          </Alert>
+        ) : (
+          <Grid container spacing={3}>
+            {Object.entries(metadataGrouped).map(([title, items]) => (
+              <Grid size={12} key={title}>
+                {/* Rest of the DataDisplayTab rendering code... */}
+                <Card
+                  elevation={0}
+                  sx={{
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 3,
+                  }}
+                >
+                  {/* Card Content... */}
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        )}
+      </Box>
+    );
+  }
+
+  // Loading state for standard content
   if (loading) {
     return (
       <Box sx={{ p: 3 }}>
@@ -160,7 +260,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
           {config.emptyMessage}
         </Alert>
       ) : (
-        <Grid>
+        <Grid container spacing={3}>
           {Object.entries(metadataGrouped).map(([title, items]) => (
             <Grid size={12} key={title}>
               <Card
@@ -175,7 +275,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                     boxShadow: 4,
                     borderColor: "primary.main",
                   },
-                  mb: 3,
                 }}
               >
                 <CardContent sx={{ p: 3 }}>
@@ -247,14 +346,12 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                     >
                       <Box sx={{ minWidth: 10 }} />
                       <Box sx={{ minWidth: 130 }}># </Box>
-
                       <Box sx={{ minWidth: 130, maxWidth: 180, flexShrink: 0 }}>
                         Field Name
                       </Box>
                       <Box sx={{ minWidth: 180 }}>Excel Cell</Box>
                       <Box sx={{ flexGrow: 1 }}>Value</Box>
                     </Box>
-
                     {/* Data Fields */}
                     <Box
                       sx={{ display: "flex", flexDirection: "column", gap: 2 }}
@@ -306,7 +403,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   }}
                                 />
                               </Box>
-
                               {/* Middle - Field name */}
                               <Box
                                 sx={{
@@ -330,7 +426,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   {row.name}
                                 </Typography>
                               </Box>
-
                               <Box
                                 sx={{
                                   display: "flex",
@@ -350,7 +445,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   }}
                                 />
                               </Box>
-
                               {/* Right side - Value and actions */}
                               <Box
                                 sx={{
@@ -377,21 +471,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                                   }}
                                   variant="outlined"
                                 />
-                                {/* <Chip
-                                  label={row.value ? "Has Value" : "Empty"}
-                                  size="small"
-                                  variant="outlined"
-                                  color={row.value ? "success" : "default"}
-                                  sx={{
-                                    height: 32,
-                                    fontSize: "10px",
-                                    borderRadius: 3,
-                                    minWidth: 80,
-                                    "& .MuiChip-label": {
-                                      px: 1,
-                                    },
-                                  }}
-                                /> */}
                                 <Tooltip
                                   title={
                                     copiedCell === row.cell
@@ -433,7 +512,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
                         </Card>
                       ))}
                     </Box>
-
                     {/* Section Summary */}
                     <Box
                       sx={{

@@ -32,29 +32,29 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
     const marketAmount = parseFloat(values.produced_for_market_amount) || 0;
     const amountC = parseFloat(values.consumed_in_others_amounts) || 0;
     const amountD = parseFloat(values.condumed_non_cbam_goods_amounts) || 0;
-    
+
     // Calculate percentage (b/a) as a percentage
     let sharePercentage = 0;
     if (totalAmount > 0) {
       sharePercentage = (marketAmount / totalAmount) * 100;
     }
-    
+
     // Check if it's 100% (use approximate value to avoid decimal issues)
     const isOnlyForMarket = Math.abs(sharePercentage - 100) < 0.01;
-    
+
     // Calculate the control amount
     const controlAmount = totalAmount - (marketAmount + amountC + amountD);
-    
+
     return {
       sharePercentage: sharePercentage.toFixed(2), // Convert to string with 2 decimal places
       isOnlyForMarket,
       controlAmount: controlAmount.toFixed(2), // Format control amount
     };
   }, [
-     values.total_production_amounts,
+    values.total_production_amounts,
     values.produced_for_market_amount,
     values.condumed_non_cbam_goods_amounts,
-    values.consumed_in_others_amounts
+    values.consumed_in_others_amounts,
   ]);
 
   return (
@@ -89,27 +89,33 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
           ปริมาณการสั่งซื้อทั้งหมด
         </p>
       </div>
-      <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-        {/* <div style={{ flex: 1 }}>
-          <LabeledTextField
-            type="number"
-            caption="Amount production levels"
-            defination="ระบุปริมาณการผลิตทั้งหมด"
-            unit="t"
-            label=""
-            name="total_production_amounts"
-            value={values.total_production_amounts}
-            onChange={onChange}
-            error={errors.total_production_amounts}
-            helperText={errors.total_production_amounts}
-            inputProps={{
-              step: "any",
-              placeholder: "Enter amount",
-              className: "appearance-none",
-            }}
-            required
-          />
-        </div> */}
+
+      <div
+        style={{
+          textAlign: "left",
+          marginBottom: "2rem",
+          fontSize: "14px",
+          backgroundColor: "#f5f5f5",
+          padding: "12px 16px",
+          borderRadius: "6px",
+          border: "1px solid #e0e0e0",
+        }}
+      >
+        <p
+          style={{
+            margin: "4px 0",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>Total production levels:</span>
+          <span style={{ fontWeight: 600, color: "#0190c3" }}>
+            {values.total_production_amounts} t
+          </span>
+        </p>
+      </div>
+
+      {/* <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
         <div style={{ flex: 1 }}>
           <LabeledTextField
             type="number"
@@ -131,7 +137,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             disabled
           />
         </div>
-      </div>
+      </div> */}
       <div
         style={{
           textAlign: "left",
@@ -221,7 +227,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         }}
       >
         <strong>(c) Consumed in other production processes:</strong>
-                <p
+        <p
           style={{
             marginTop: "0.25rem",
             color: "#666",
@@ -241,7 +247,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         unit="t"
         onChange={onChange}
         error={errors.consumed_in_others_amounts}
-        helperText={errors.consumed_in_others_amounts} 
+        helperText={errors.consumed_in_others_amounts}
         inputProps={{
           step: "any",
           placeholder: "Enter amount",
@@ -303,8 +309,33 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         >
           ควบคุม
         </p>
+
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            backgroundColor: "#f5f5f5",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Total production levels:</span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {calculatedValues.controlAmount} t
+            </span>
+          </p>
+        </div>
       </div>
-      <LabeledTextField
+      {/* <LabeledTextField
         type="number"
         caption="Control"
         defination="ควบคุม"
@@ -322,7 +353,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         }}
         required
         disabled
-      />
+      /> */}
     </Section>
   );
 };

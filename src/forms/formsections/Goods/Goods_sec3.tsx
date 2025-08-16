@@ -31,6 +31,24 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
       <div
         style={{ textAlign: "left", marginBottom: "1.5rem", fontSize: "18px" }}
       >
+        <strong> Direct emissions </strong>
+        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
+          ปริมาณการปล่อยก๊าซเรือนกระจกทางตรง
+        </p>
+      </div>
+      <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #62ccd6ff",
+          }}
+        >
+      <div
+        style={{ textAlign: "left", marginBottom: "1.5rem", fontSize: "18px" }}
+      >
         <strong> Energy source for production process</strong>
         <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
           แหล่งพลังงานที่ใช้ในกระบวนการผลิต
@@ -203,6 +221,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           required
         />
       </Box>
+      </div>
 
       {/* Box 3: Indirect emissions from electricity consumption"*/}
       <div
@@ -213,6 +232,16 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           ปริมาณการปล่อยก๊าซเรือนกระจกทางอ้อมจากไฟฟ้า
         </p>
       </div>
+      <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #62ccd6ff",
+          }}
+        >
       <Box mb={3}>
         <LabeledTextField
           type="number"
@@ -250,7 +279,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               defination="เลือกแหล่งที่มาของค่า Emission factor ของไฟฟ้า"
               label=""
               name="source_of_ef_electricity"
-              options={electricitys.map((item) => item.name)}
+              options={electricitys.map((item) => item.name + item.description)}
               value={values.source_of_ef_electricity}
               error={errors.source_of_ef_electricity}
               onChange={(val) =>
@@ -263,6 +292,7 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
           </div>
         </div>
       </Box>
+      </div>
 
       {/* Box 4: Electricity exported from the production process*/}
       <div

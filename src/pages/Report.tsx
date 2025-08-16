@@ -17,13 +17,14 @@ import LocalFireDepartmentIcon from "@mui/icons-material/LocalFireDepartment";
 import BoltIcon from "@mui/icons-material/Bolt";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
+import SummarizeIcon from "@mui/icons-material/Summarize"; // New icon for the Sumup tab
 import { useMediaQuery } from "@mui/material";
 import TabAInstallationData from "../components/reportTab/TabA_InstallationData";
 import TabBEmissionInstallation from "../components/reportTab/TabB_EmissionInstallation";
 import TabCEnergyEmission from "../components/reportTab/TabC_EnergyEmissions";
 import TabDProcess from "../components/reportTab/TabD_Process";
 import TabEPurchasedPrecursors from "../components/reportTab/TabE_PurchasedPrecursors";
-import { useLocation } from "react-router-dom";
+import TabZ_Sumup from "../components/reportTab/TabZ_Sumup"; // Corrected import name
 
 // Interface definitions
 interface TabPanelProps {
@@ -69,7 +70,6 @@ interface FormFieldsData {
 
 // Custom theme based on provided colors
 const theme = createTheme({
-  // Theme configuration remains the same
   palette: {
     primary: {
       main: "#0190c3",
@@ -81,14 +81,27 @@ const theme = createTheme({
       main: "#74aa15",
       dark: "#6aaa33",
     },
-    // Rest of palette configuration...
+    success: {
+        main: "#4caf50",
+    }
   },
-  // Rest of theme configuration...
 });
 
 // Styled Tab component
 const StyledTab = styled(Tab)(({ theme }) => ({
   // Styling remains the same
+  fontSize: "14px",
+  fontWeight: 600,
+  minWidth: 100,
+  marginRight: theme.spacing(1),
+  color: alpha("#000000", 0.5),
+  "&.Mui-selected": {
+    color: theme.palette.primary.main,
+    fontWeight: 700,
+  },
+  "&.Mui-focusVisible": {
+    backgroundColor: alpha(theme.palette.primary.main, 0.2),
+  },
 }));
 
 const TabPanel = (props: TabPanelProps) => {
@@ -109,8 +122,8 @@ const TabPanel = (props: TabPanelProps) => {
 };
 
 const Report = () => {
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
+  const location = window.location.search;
+  const queryParams = new URLSearchParams(location);
   const reportId = queryParams.get("reportId");
   const [tabValue, setTabValue] = useState(0);
 
@@ -119,7 +132,7 @@ const Report = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Tab states remain the same
+  // Tab states for form data
   const [tabAData, setTabAData] = useState<{
     id: string;
     table_db: string;
@@ -142,69 +155,22 @@ const Report = () => {
     value: "",
   });
 
-  // States for other tabs remain the same
-  const [tabBData, setTabBData] = useState<{
-    /*...*/
-  }>(/*...*/);
-  const [tabCData, setTabCData] = useState<{
-    /*...*/
-  }>(/*...*/);
-  const [tabDData, setTabDData] = useState<{
-    /*...*/
-  }>(/*...*/);
-  const [tabEData, setTabEData] = useState<{
-    /*...*/
-  }>(/*...*/);
-
-  const isDesktop = useMediaQuery("(min-width:900px)");
-
-  // Fetch summary data when component mounts or reportId changes
-  useEffect(() => {
-    const fetchSummaryData = async () => {
-      if (!reportId) {
-        setError("No report ID provided");
-        setIsLoading(false);
-        return;
-      }
-
-      setIsLoading(true);
-      setError(null);
-
-      try {
-        const apiUrl = `http://178.128.123.212:5000/api/cbam/report/sumary/${reportId}`;
-        console.log(`Fetching data from: ${apiUrl}`);
-
-        const response = await fetch(apiUrl);
-
-        if (!response.ok) {
-          throw new Error(`API request failed with status ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log("Summary data received:", data);
-        setSummaryData(data);
-      } catch (err) {
-        console.error("Error fetching summary data:", err);
-        setError(err instanceof Error ? err.message : "Unknown error occurred");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchSummaryData();
-  }, [reportId]);
+  const [tabBData, setTabBData] = useState<{}>({});
+  const [tabCData, setTabCData] = useState<{}>({});
+  const [tabDData, setTabDData] = useState<{}>({});
+  const [tabEData, setTabEData] = useState<{}>({});
+  const [tabZData, setTabZData] = useState<{}>({});
+  
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  // Form change handlers remain the same
+  // Form change handlers
   const handleTabAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setTabAData((prev) => ({ ...prev, [name]: value }));
   };
-
-  // Handlers for other tabs remain the same
 
   return (
     <ThemeProvider theme={theme}>
@@ -258,123 +224,6 @@ const Report = () => {
           >
             CBAM Reports
           </Typography>
-
-          {isLoading ? (
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <CircularProgress size={24} />
-              <Typography color="text.secondary">
-                Loading summary data...
-              </Typography>
-            </Box>
-          ) : error ? (
-            <Typography color="error" sx={{ position: "relative", zIndex: 1 }}>
-              Error loading data: {error}
-            </Typography>
-          ) : summaryData && summaryData.data.length > 0 ? (
-            <>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                Product:{" "}
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {summaryData.data[0].product_name || "N/A"}
-                </span>
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                CN code:{" "}
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {summaryData.data[0].cn_code || "N/A"}
-                </span>
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                SEE (direct):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(4) || "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_direct_sum || ""}
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                การคำนวณของค่า SEE (direct):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_direct_sum?.toFixed(4) || "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_direct_sum || ""}
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                SEE (indirect):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(4) ||
-                    "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_indirect_sum || ""}
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1, mb: 1 }}
-              >
-                การคำนวณของค่า SEE (indirect):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_indirect_sum?.toFixed(4) ||
-                    "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_indirect_sum || ""}
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1 }}
-              >
-                SEE (total):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(4) || "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_total_sum || ""}
-              </Typography>
-              <Typography
-                variant="h6"
-                color="text.secondary"
-                sx={{ position: "relative", zIndex: 1 }}
-              >
-                การคำนวณของค่า SEE (total):
-                <span style={{ color: "#0190c3", fontWeight: 600 }}>
-                  {" "}
-                  {summaryData.sum[0]?.SEE_total_sum?.toFixed(4) || "N/A"}{" "}
-                </span>
-                {summaryData.unit[0]?.SEE_total_sum || ""}
-              </Typography>
-            </>
-          ) : (
-            <Typography
-              color="text.secondary"
-              sx={{ position: "relative", zIndex: 1 }}
-            >
-              No summary data available for this report.
-            </Typography>
-          )}
         </Paper>
 
         {/* Main Content Paper */}
@@ -474,6 +323,12 @@ const Report = () => {
                     label: "E_PurchPrec",
                     color: "#ab47bc",
                     index: 4,
+                  },
+                  { // New tab for the sumup page
+                    icon: <SummarizeIcon />,
+                    label: "Z_Sumup",
+                    color: "#0190c3",
+                    index: 5,
                   },
                 ].map((tab) => (
                   <Box
@@ -625,6 +480,13 @@ const Report = () => {
                     setFormValues={setTabEData}
                   />
                 </TabPanel>
+                <TabPanel value={tabValue} index={5}>
+                  <TabZ_Sumup
+                    reportId={reportId}
+                    formValues={tabZData}
+                    setFormValues={setTabZData}
+                  />
+                </TabPanel>
               </Paper>
             </Box>
           </Box>
@@ -651,7 +513,9 @@ const Report = () => {
                   ? "Emission of Energy"
                   : tabValue === 3
                   ? "Process"
-                  : "Purchased Precursors"}
+                  : tabValue === 4
+                  ? "Purchased Precursors"
+                  : "Sumup"}
               </strong>
             </Typography>
             <Box

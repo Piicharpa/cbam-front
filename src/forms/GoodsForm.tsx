@@ -7,7 +7,6 @@ import {
   Box,
   CircularProgress,
 } from "@mui/material";
-import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import {
   fetchCountries,
@@ -51,8 +50,6 @@ export interface GoodsFormProps {
   onChange: (formValues: GoodsFormProps["formValues"]) => void;
   onNextStep: () => void;
 }
-
-// Define FormValues type alias for easier use
 type FormValues = GoodsFormProps["formValues"];
 
 const GoodsForm: React.FC<GoodsFormProps> = ({

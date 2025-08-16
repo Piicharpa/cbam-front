@@ -66,6 +66,9 @@ interface PrecursorApiData {
   embedded_indirection_emissions_value?: number;
   source_embedded_indirect_emissions?: string;
   justification_for_use_default_values?: string;
+  control: number;
+  source_specific_indirect_electricity_consumption: string;
+  value_specific_indirect_electricity_consumption: number;
   created_at?: string;
   updated_at?: string;
   [key: string]: any;
@@ -98,6 +101,9 @@ export interface PrecursorSubmitData {
   embedded_indirection_emissions_value?: number;
   source_embedded_indirect_emissions?: string;
   justification_for_use_default_values?: string;
+  control: number;
+  source_specific_indirect_electricity_consumption: string;
+  value_specific_indirect_electricity_consumption: number;
   created_at?: string;
   updated_at?: string;
   route?: string;
@@ -150,6 +156,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
   // Ref to prevent infinite loop
   const isCalculating = useRef(false);
+
+  // Removed state for calculated values to calculate them right before saving
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
   const reportIdRaw = localStorage.getItem("reportId");
   const reportId = reportIdRaw ? parseInt(reportIdRaw, 10) : undefined;
@@ -394,6 +402,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         );
         if (response.ok) {
           const precursorData = await response.json();
+          console.log("precursorData: ", precursorData);
           setExistingData(precursorData);
           setPreviousData(precursorData);
           const updatedValues = updateFieldsFromApiData(precursorData);
@@ -503,15 +512,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     updatedValues[`control`] = data.control || 0;
 
     // Update consumption data
-    updatedValues[`amount_1`] = data.consumed_in_production_amounts || 0;
+    updatedValues[`consumed_in_production_amounts`] =
+      data.consumed_in_production_amounts || 0;
     updatedValues[`consumed_non_cbam_goods_amounts`] =
       data.consumed_non_cbam_goods_amounts || 0;
 
-    // Update electricity emission factors - ใช้ชื่อฟิลด์ที่ตรงกับ API
+    // Update electricity emission factors - Use correct field names
     updatedValues[`value_electricity_indirect_emission_factor`] =
       data.value_electricity_indirect_emission_factor || 0;
     updatedValues[`source_electricity_indirect_emission_factor`] =
       data.source_electricity_indirect_emission_factor || "";
+    // Fix: Add new fields to be updated from API
+    updatedValues[`source_specific_indirect_electricity_consumption`] =
+      data.source_specific_indirect_electricity_consumption || "";
+    updatedValues[`value_specific_indirect_electricity_consumption`] =
+      data.value_specific_indirect_electricity_consumption || 0;
 
     // Update b_name and b_category
     updatedValues[`b_name`] = data.b_name || "";
@@ -721,23 +736,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       source_embedded_direct_emissions: String(
         fieldValues[`source_embedded_direct_emissions_${index}`] || ""
       ),
-      embedded_indirection_emissions_value: ensureNumber(
-        fieldValues[`embedded_indirection_emissions_value_${index}`]
-      ),
+      // Use the calculated indirect emissions value
+      embedded_indirection_emissions_value: calculatedIndirectEmissions,
       source_embedded_indirect_emissions: String(
         fieldValues[`source_embedded_indirect_emissions_${index}`] || ""
       ),
 
       // ข้อมูล consumption - แก้ไขชื่อฟิลด์ให้ตรงกัน
-      total_consumed_within_installation: ensureNumber(totalPurchaseLevel),
+      total_consumed_within_installation: totalPurchaseLevel,
       consumed_in_production_amounts: ensureNumber(
         fieldValues[`consumed_in_production_amounts`]
       ),
       consumed_non_cbam_goods_amounts: ensureNumber(
         fieldValues[`consumed_non_cbam_goods_amounts`]
       ),
-      total_consumed_within_installation_amounts:
-        ensureNumber(totalPurchaseLevel),
+      total_consumed_within_installation_amounts: totalPurchaseLevel,
 
       // ข้อมูลอื่นๆ
       justification_for_use_default_values: String(
@@ -745,14 +758,18 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       ),
 
       // ข้อมูล SEE
-      SEE_direct: null, // ตั้งเป็น null ตามข้อมูล API
+      SEE_direct: null,
       SEE_indirect: null,
       SEE_total: null,
-      control: null, // ตั้งเป็น null ตามข้อมูล API
+      control: controlAmount,
 
       // ข้อมูลเกี่ยวกับไฟฟ้า - ใช้ชื่อที่ถูกต้อง
-      source_specific_indirect_electricity_consumption: null,
-      value_specific_indirect_electricity_consumption: null,
+      source_specific_indirect_electricity_consumption: String(
+        fieldValues.source_specific_indirect_electricity_consumption || ""
+      ),
+      value_specific_indirect_electricity_consumption: ensureNumber(
+        fieldValues.value_specific_indirect_electricity_consumption
+      ),
       source_electricity_indirect_emission_factor: String(
         fieldValues[`source_electricity_indirect_emission_factor`] || ""
       ),
@@ -788,16 +805,37 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       return;
     }
 
-    const { isConfirmed: firstConfirmed } = await Swal.fire({
-    title: `💾 Save Precursor ${index}`,
-    text: "หากกรอกข้อมูลเสร็จสิ้นกรุณากด Continue to Next Step เพื่อไปยังขั้นตอนถัดไป",
-    icon: "info",
-    showCancelButton: true,
-    confirmButtonText: "Save",
-    cancelButtonText: "Cancel",
-  });
+    // Step 1: Calculate control value just before saving
+    let totalPurchaseLevel = 0;
+    for (let i = 0; i < routeCount1; i++) {
+      const amountKey = `amount_${i}_${index}`;
+      totalPurchaseLevel += ensureNumber(fieldValues[amountKey]);
+    }
+    const amountB = ensureNumber(fieldValues[`consumed_in_production_amounts`]);
+    const amountC = ensureNumber(
+      fieldValues[`consumed_non_cbam_goods_amounts`]
+    );
+    const calculatedControl = Math.max(
+      0,
+      totalPurchaseLevel - (amountB + amountC)
+    );
 
-  if (!firstConfirmed) return;
+    const Swal = {
+      fire: async (options: any) => {
+        return { isConfirmed: window.confirm(options.text) };
+      },
+    };
+
+    const { isConfirmed: firstConfirmed } = await Swal.fire({
+      title: `💾 Save Precursor ${index}`,
+      text: "หากกรอกข้อมูลเสร็จสิ้นกรุณากด Continue to Next Step เพื่อไปยังขั้นตอนถัดไป",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonText: "Save",
+      cancelButtonText: "Cancel",
+    });
+
+    if (!firstConfirmed) return;
 
     setIsSaving(true);
     const startTime = Date.now();
@@ -877,7 +915,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         </div>
         <div style={{ flex: 1 }}>
           <LabeledTextField
-            caption="Name"
+            caption="Precursord Name"
             defination="ระบุชื่อผลิตภัณฑ์"
             label=""
             name="name"
@@ -972,7 +1010,32 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             routeCount={routeCount1}
             setRouteCount={setRouteCount1}
           />
-          <LabeledTextField
+
+          <div
+            style={{
+              textAlign: "left",
+              marginBottom: "2rem",
+              fontSize: "14px",
+              backgroundColor: "#f5f5f5",
+              padding: "12px 16px",
+              borderRadius: "6px",
+              border: "1px solid #e0e0e0",
+            }}
+          >
+            <p
+              style={{
+                margin: "4px 0",
+                display: "flex",
+                justifyContent: "space-between",
+              }}
+            >
+              <span style={{ fontWeight: 500 }}>Total production levels:</span>
+              <span style={{ fontWeight: 600, color: "#0190c3" }}>
+                {totalPurchaseLevel} t
+              </span>
+            </p>
+          </div>
+          {/* <LabeledTextField
             caption="Total purchased levels"
             defination="ปริมาณการสั่งซื้อทั้งหมด"
             unit="t"
@@ -986,7 +1049,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               formErrors[`total_consumed_within_installation`]
             }
             disabled={true}
-          />
+          /> */}
         </Box>
       </Box>
 
@@ -1007,42 +1070,77 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
       {/* Production routes */}
       <Box mb={3}>
-        <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            backgroundColor: "#f5f5f5",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Aggregated goods category:</span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {selectedGoodsName}
+            </span>
+          </p>
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Name:</span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {fieldValues[`b_name`] || ""}
+            </span>
+          </p>
+        </div>
+
+        {/* <Box key={`route-group-b`} display="flex" gap={3} mb={3}>
           <div style={{ flex: 1 }}>
             <LabeledTextField
               caption="Aggregated goods category"
               defination="เลือกหมวดหมู่ของผลิตภัณฑ์"
               label={selectedGoodsName}
-              type="number"
               unit="t"
               name={`amount_1`}
               value={selectedGoodsName}
               error={fieldErrors[`amount_1`]}
               onChange={(val) => onChange("goods_category", String(val))}
               required
+              readOnly
               disabled={true}
             />
           </div>
           <div style={{ flex: 1 }}>
             <LabeledTextField
-              caption={`Amount`}
-              defination="ระบุปริมาณวัตถุดิบ"
+              caption="Name"
+              defination="ระบุชื่อผลิตภัณฑ์"
               label=""
-              type="number"
-              unit="t"
-              name={`consumed_in_production_amounts`}
-              value={fieldValues[`consumed_in_production_amounts`] || ""}
-              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`consumed_in_production_amounts`] ||
-                formErrors[`consumed_in_production_amounts`]
-              }
+              name="b_name"
+              type="text"
+              value={fieldValues[`b_name`] || ""}
+              onChange={(e) => handleInputChange("b_name", e.target.value)}
+              error={fieldErrors[`b_name`]}
+              helperText={fieldErrors[`b_name`]}
+              required
             />
           </div>
-        </Box>
+        </Box> */}
 
         <Box key={`route-group-included`} display="flex" gap={3} mb={3}>
-          <div style={{ flex: 1 }}>
+          {/* <div style={{ flex: 1 }}>
             <LabeledAutocompleteMap
               caption="Included goods categories"
               defination="หมวดหมู่สินค้าที่ระบุ"
@@ -1060,19 +1158,21 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               error={fieldErrors[`b_category`] || formErrors[`b_category`]}
               onChange={(val) => handleInputChange(`b_category`, val)}
             />
-          </div>
+          </div> */}
           <div style={{ flex: 1 }}>
             <LabeledTextField
-              caption="Name"
-              defination="ระบุชื่อผลิตภัณฑ์"
+              caption={`Amount`}
+              defination="ระบุปริมาณวัตถุดิบ"
               label=""
-              name="b_name"
-              type="text"
-              value={fieldValues[`b_name`] || ""}
-              onChange={(e) => handleInputChange("b_name", e.target.value)}
-              error={fieldErrors[`b_name`]}
-              helperText={fieldErrors[`b_name`]}
-              required
+              type="number"
+              unit="t"
+              name={`consumed_in_production_amounts`}
+              value={fieldValues[`consumed_in_production_amounts`] || ""}
+              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
+              error={
+                fieldErrors[`consumed_in_production_amounts`] ||
+                formErrors[`consumed_in_production_amounts`]
+              }
             />
           </div>
         </Box>
@@ -1136,7 +1236,33 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           ควบคุม
         </p>
       </div>
-      <Box mb={3}>
+
+      <div
+        style={{
+          textAlign: "left",
+          marginBottom: "2rem",
+          fontSize: "14px",
+          backgroundColor: "#f5f5f5",
+          padding: "12px 16px",
+          borderRadius: "6px",
+          border: "1px solid #e0e0e0",
+        }}
+      >
+        <p
+          style={{
+            margin: "4px 0",
+            display: "flex",
+            justifyContent: "space-between",
+          }}
+        >
+          <span style={{ fontWeight: 500 }}>Control:</span>
+          <span style={{ fontWeight: 600, color: "#0190c3" }}>
+            {isNaN(controlAmount) ? "" : controlAmount || formValues[`control`]}{" "}
+            t
+          </span>
+        </p>
+      </div>
+      {/* <Box mb={3}>
         <LabeledTextField
           type="number"
           caption="Control"
@@ -1144,7 +1270,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           unit="t"
           label=""
           name={`control`}
-          value={isNaN(controlAmount) ? "" : controlAmount}
+          value={
+            isNaN(controlAmount) ? "" : controlAmount || formValues[`control`]
+          }
           onChange={(e) => handleInputChange(e.target.name, e.target.value)}
           error={fieldErrors[`control`] || formErrors[`control`]}
           helperText={fieldErrors[`control`] || formErrors[`control`]}
@@ -1155,208 +1283,302 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           }}
           disabled
         />
-      </Box>
+      </Box> */}
 
       <Box mb={3}>
-        <strong
-          style={{
-            textAlign: "left",
-            fontSize: "18px",
-          }}
-        >
+        <div
+        style={{
+          textAlign: "left",
+          marginBottom: "1.5rem",
+          fontSize: "18px",
+        }}
+      >
+        <strong>
           (e) Emission embedded in this purchased precursor
         </strong>
-
+        </div>
         <div
           style={{
-            marginTop: "1.5rem",
             textAlign: "left",
             marginBottom: "1.5rem",
             fontSize: "18px",
           }}
         >
-          <strong style={{ color: "#0290c4" }}>
-            Specific embedded direct emissions (SEE (direct))
-          </strong>
+          <strong> Direct emissions </strong>
           <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
-            ค่าการปล่อยก๊าซเรือนกระจกทางตรงที่แฝงอยู่ในวัตถุดิบ
+            ปริมาณการปล่อยก๊าซเรือนกระจกทางตรง
           </p>
         </div>
-        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              type="number"
-              caption=""
-              defination="ระบุเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
-              unit="tCO2e/t"
-              label=""
-              name={`embedded_direct_emissions_value_${index}`}
-              value={
-                fieldValues[`embedded_direct_emissions_value_${index}`] || ""
-              }
-              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`embedded_direct_emissions_value_${index}`] ||
-                formErrors[`embedded_direct_emissions_value_${index}`]
-              }
-            />
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #62ccd6ff",
+          }}
+        >
+          <div
+            style={{
+              textAlign: "left",
+              marginBottom: "1.5rem",
+              fontSize: "18px",
+            }}
+          >
+            <strong style={{ color: "#0290c4" }}>
+              Specific embedded direct emissions (SEE (direct))
+            </strong>
+            <p
+              style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}
+            >
+              ค่าการปล่อยก๊าซเรือนกระจกทางตรงที่แฝงอยู่ในวัตถุดิบ
+            </p>
           </div>
-          <div style={{ flex: 1 }}>
-            <LabeledAutocompleteMap
-              caption=""
-              defination="ระบุแหล่งที่มาของข้อมูล"
-              label=""
-              name={`source_embedded_direct_emissions_${index}`}
-              options={[
-                { label: "Source", value: "Source" },
-                { label: "Measured", value: "Measured" },
-                { label: "Default", value: "Default" },
-                { label: "Unknown", value: "Unknown" },
-              ]}
-              value={
-                fieldValues[`source_embedded_direct_emissions_${index}`] || ""
-              }
-              error={
-                fieldErrors[`source_embedded_direct_emissions_${index}`] ||
-                formErrors[`source_embedded_direct_emissions_${index}`]
-              }
-              onChange={(val) =>
-                handleInputChange(
-                  `source_embedded_direct_emissions_${index}`,
-                  val
-                )
-              }
-            />
+          <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+            <div style={{ flex: 1 }}>
+              <LabeledTextField
+                type="number"
+                caption=""
+                defination="ระบุเป็นตัวเลขของค่า SEE direct ของวัตถุดิบตั้งต้น"
+                unit="tCO2e/t"
+                label=""
+                name={`embedded_direct_emissions_value_${index}`}
+                value={
+                  fieldValues[`embedded_direct_emissions_value_${index}`] || ""
+                }
+                onChange={(e) =>
+                  handleInputChange(e.target.name, e.target.value)
+                }
+                error={
+                  fieldErrors[`embedded_direct_emissions_value_${index}`] ||
+                  formErrors[`embedded_direct_emissions_value_${index}`]
+                }
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <LabeledAutocompleteMap
+                caption=""
+                defination="ระบุแหล่งที่มาของข้อมูล"
+                label=""
+                name={`source_embedded_direct_emissions_${index}`}
+                options={[
+                  { label: "Measured", value: "Measured" },
+                  { label: "Default", value: "Default" },
+                  { label: "Unknown", value: "Unknown" },
+                ]}
+                value={
+                  fieldValues[`source_embedded_direct_emissions_${index}`] || ""
+                }
+                error={
+                  fieldErrors[`source_embedded_direct_emissions_${index}`] ||
+                  formErrors[`source_embedded_direct_emissions_${index}`]
+                }
+                onChange={(val) =>
+                  handleInputChange(
+                    `source_embedded_direct_emissions_${index}`,
+                    val
+                  )
+                }
+              />
+            </div>
           </div>
         </div>
       </Box>
 
       {/* Indirect Emissions Section */}
-      <Box mb={3}>
+
+      <div
+        style={{
+          textAlign: "left",
+          marginBottom: "1.5rem",
+          fontSize: "18px",
+        }}
+      >
+        <strong> Indirect emissions </strong>
+        <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
+          ปริมาณการปล่อยก๊าซเรือนกระจกทางอ้อม
+        </p>
+      </div>
+      <div
+        style={{
+          textAlign: "left",
+          marginBottom: "2rem",
+          fontSize: "14px",
+          padding: "12px 16px",
+          borderRadius: "6px",
+          border: "1px solid #62ccd6ff",
+        }}
+      >
+        <Box mb={3}>
+          <div
+            style={{
+              textAlign: "left",
+              marginBottom: "1.5rem",
+              fontSize: "18px",
+            }}
+          >
+            <strong style={{ color: "#0290c4" }}>
+              Specific electricity consumption (for SEE (indirect))
+            </strong>
+            <p
+              style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}
+            >
+              ปริมาณการใช้ไฟฟ้าที่ใช้ในการผลิตวัตถุดิบ
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+            <div style={{ flex: 1 }}>
+              <LabeledTextField
+                type="number"
+                caption=""
+                defination="ระบุเป็นค่าตัวเลขของการใช้ไฟฟ้าในการผลิตวัตถุดิบ"
+                unit="MWh/t"
+                label=""
+                name={`value_specific_indirect_electricity_consumption`}
+                value={
+                  fieldValues[
+                    `value_specific_indirect_electricity_consumption`
+                  ] || ""
+                }
+                onChange={(e) =>
+                  handleInputChange(e.target.name, e.target.value)
+                }
+                error={
+                  fieldErrors[
+                    `value_specific_indirect_electricity_consumption`
+                  ] ||
+                  formErrors[`value_specific_indirect_electricity_consumption`]
+                }
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <LabeledAutocompleteMap
+                caption=""
+                defination="ระบุแหล่งที่มาของข้อมูล"
+                label=""
+                name={`source_embedded_indirect_emissions_${index}`}
+                options={[
+                  { label: "Source", value: "Source" },
+                  { label: "Measured", value: "Measured" },
+                  { label: "Default", value: "Default" },
+                  { label: "Unknown", value: "Unknown" },
+                ]}
+                value={
+                  fieldValues[`source_embedded_indirect_emissions_${index}`] ||
+                  ""
+                }
+                error={
+                  fieldErrors[`source_embedded_indirect_emissions_${index}`] ||
+                  formErrors[`source_embedded_indirect_emissions_${index}`]
+                }
+                onChange={(val) =>
+                  handleInputChange(
+                    `source_embedded_indirect_emissions_${index}`,
+                    val
+                  )
+                }
+              />
+            </div>
+          </div>
+        </Box>
+
+        <Box mb={3}>
+          <div
+            style={{
+              textAlign: "left",
+              marginBottom: "1.5rem",
+              fontSize: "18px",
+            }}
+          >
+            <strong style={{ color: "#0290c4" }}>
+              Electricity emission factor (for SEE (indirect))
+            </strong>
+            <p
+              style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}
+            >
+              ค่าการปล่อยก๊าซเรือนกระจกจากการผลิตไฟฟ้า
+            </p>
+          </div>
+          <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
+            <div style={{ flex: 1 }}>
+              <LabeledTextField
+                type="number"
+                caption=""
+                defination="ระบุเป็นค่าตัวเลขของค่าการปล่อย CO2 จากการผลิตไฟฟ้า"
+                label=""
+                name={`value_electricity_indirect_emission_factor`}
+                value={
+                  fieldValues[`value_electricity_indirect_emission_factor`] ||
+                  ""
+                }
+                onChange={(e) =>
+                  handleInputChange(e.target.name, e.target.value)
+                }
+                error={
+                  fieldErrors[`value_electricity_indirect_emission_factor`] ||
+                  formErrors[`value_electricity_indirect_emission_factor`]
+                }
+                unit="tCO2e/MWh"
+              />
+            </div>
+            <div style={{ flex: 1 }}>
+              <LabeledAutocomplete
+                caption=""
+                defination="ระบุแหล่งที่มาของข้อมูล"
+                label=""
+                name={`source_electricity_indirect_emission_factor`}
+                options={electricitys.map((e) => e.name + e.description)}
+                value={String(
+                  fieldValues[`source_electricity_indirect_emission_factor`] ||
+                    ""
+                )}
+                error={
+                  fieldErrors[`source_electricity_indirect_emission_factor`] ||
+                  formErrors[`source_electricity_indirect_emission_factor`]
+                }
+                onChange={(val) =>
+                  handleInputChange(
+                    `source_electricity_indirect_emission_factor`,
+                    val
+                  )
+                }
+              />
+            </div>
+          </div>
+        </Box>
+
         <div
           style={{
             textAlign: "left",
-            marginBottom: "1.5rem",
-            fontSize: "18px",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            backgroundColor: "#f5f5f5",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #e0e0e0",
           }}
         >
-          <strong style={{ color: "#0290c4" }}>
-            Specific electricity consumption (for SEE (indirect))
-          </strong>
-          <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
-            ปริมาณการใช้ไฟฟ้าที่ใช้ในการผลิตวัตถุดิบ
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>
+              Specific embedded indirect emissions (SEE (indirect)):
+            </span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {isNaN(calculatedIndirectEmissions)
+                ? ""
+                : Number(calculatedIndirectEmissions).toFixed(4)}{" "}
+              tCO2e/t
+            </span>
           </p>
         </div>
-        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              type="number"
-              caption=""
-              defination="ระบุเป็นค่าตัวเลขของการใช้ไฟฟ้าในการผลิตวัตถุดิบ"
-              unit="MWh/t"
-              label=""
-              name={`embedded_indirection_emissions_value_${index}`}
-              value={
-                fieldValues[`embedded_indirection_emissions_value_${index}`] ||
-                ""
-              }
-              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`embedded_indirection_emissions_value_${index}`] ||
-                formErrors[`embedded_indirection_emissions_value_${index}`]
-              }
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <LabeledAutocompleteMap
-              caption=""
-              defination="ระบุแหล่งที่มาของข้อมูล"
-              label=""
-              name={`source_embedded_indirect_emissions_${index}`}
-              options={[
-                { label: "Source", value: "Source" },
-                { label: "Measured", value: "Measured" },
-                { label: "Default", value: "Default" },
-                { label: "Unknown", value: "Unknown" },
-              ]}
-              value={
-                fieldValues[`source_embedded_indirect_emissions_${index}`] || ""
-              }
-              error={
-                fieldErrors[`source_embedded_indirect_emissions_${index}`] ||
-                formErrors[`source_embedded_indirect_emissions_${index}`]
-              }
-              onChange={(val) =>
-                handleInputChange(
-                  `source_embedded_indirect_emissions_${index}`,
-                  val
-                )
-              }
-            />
-          </div>
-        </div>
-      </Box>
 
-      <Box mb={3}>
-        <div
-          style={{
-            textAlign: "left",
-            marginBottom: "1.5rem",
-            fontSize: "18px",
-          }}
-        >
-          <strong style={{ color: "#0290c4" }}>
-            Electricity emission factor (for SEE (indirect))
-          </strong>
-          <p style={{ marginTop: "0.25rem", color: "#666", fontSize: "14px" }}>
-            ค่าการปล่อยก๊าซเรือนกระจกจากการผลิตไฟฟ้า
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              type="number"
-              caption=""
-              defination="ระบุเป็นค่าตัวเลขของค่าการปล่อย CO2 จากการผลิตไฟฟ้า"
-              label=""
-              name={`value_electricity_indirect_emission_factor`}
-              value={
-                fieldValues[`value_electricity_indirect_emission_factor`] || ""
-              }
-              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`value_electricity_indirect_emission_factor`] ||
-                formErrors[`value_electricity_indirect_emission_factor`]
-              }
-              unit="tCO2e/MWh"
-            />
-          </div>
-          <div style={{ flex: 1 }}>
-            <LabeledAutocomplete
-              caption=""
-              defination="ระบุแหล่งที่มาของข้อมูล"
-              label=""
-              name={`source_electricity_indirect_emission_factor`}
-              options={electricitys.map((e) => e.name)}
-              value={String(
-                fieldValues[`source_electricity_indirect_emission_factor`] || ""
-              )}
-              error={
-                fieldErrors[`source_electricity_indirect_emission_factor`] ||
-                formErrors[`source_electricity_indirect_emission_factor`]
-              }
-              onChange={(val) =>
-                handleInputChange(
-                  `source_electricity_indirect_emission_factor`,
-                  val
-                )
-              }
-            />
-          </div>
-        </div>
-      </Box>
-
-      <Box mb={3}>
+        {/* <Box mb={3}>
         <div
           style={{
             textAlign: "left",
@@ -1378,7 +1600,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               caption=""
               defination="ค่าการปล่อยก๊าซเรือนกระจกทางอ้อมที่แฝงอยู่ในวัตถุดิบ"
               label=""
-              name={`calculated_indirect_emissions_${index}`}
+              name={`embedded_indirection_emissions_value`}
               value={
                 isNaN(calculatedIndirectEmissions)
                   ? ""
@@ -1386,15 +1608,16 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               }
               onChange={(e) => handleInputChange(e.target.name, e.target.value)}
               error={
-                fieldErrors[`calculated_indirect_emissions_${index}`] ||
-                formErrors[`calculated_indirect_emissions_${index}`]
+                fieldErrors[`embedded_indirection_emissions_value`] ||
+                formErrors[`embedded_indirection_emissions_value`]
               }
               unit="tCO2e/t"
               disabled={true}
             />
           </div>
         </div>
-      </Box>
+      </Box> */}
+      </div>
 
       {/* Justification Section */}
       <Box mb={3}>

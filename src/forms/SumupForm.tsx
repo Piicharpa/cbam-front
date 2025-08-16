@@ -41,7 +41,6 @@ interface CncodeItem {
 const SumupForm: React.FC<CNcodeFormProps> = ({
   data,
   onChange,
-  onSave, // ✅ รับ onSave prop
   onNextStep,
 }) => {
   const navigate = useNavigate();

@@ -146,7 +146,44 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         >
           <strong> GHG emissions and energy consumption </strong>
         </div>
-        <LabeledTextField
+
+        <div
+          style={{
+            textAlign: "left",
+            marginBottom: "2rem",
+            fontSize: "14px",
+            backgroundColor: "#f5f5f5",
+            padding: "12px 16px",
+            borderRadius: "6px",
+            border: "1px solid #e0e0e0",
+          }}
+        >
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Fuel balance:</span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {formValues.manual_fuel_balance} TJ
+            </span>
+          </p>
+          <p
+            style={{
+              margin: "4px 0",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span style={{ fontWeight: 500 }}>Greenhouse gas emissions balance & information on data quality:</span>
+            <span style={{ fontWeight: 600, color: "#0190c3" }}>
+              {formValues.manual_GHG_emissions_balance} t
+            </span>
+          </p>
+        </div>
+        {/* <LabeledTextField
           type="number"
           caption="Fuel balance"
           defination="ปริมาณเชื้อเพลิง"
@@ -166,8 +203,8 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           }}
           required
           disabled
-        />
-        <LabeledTextField
+        /> */}
+        {/* <LabeledTextField
           type="number"
           caption="Greenhouse gas emissions balance & information on data quality"
           defination="สรุปผลการปล่อยก๊าซเรือนกระจก"
@@ -189,7 +226,7 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
           }}
           required
           disabled
-        />
+        /> */}
       </Box>
       {/* Box2: Information on the data quality and quality assurance  */}
       <Box mb={3}>

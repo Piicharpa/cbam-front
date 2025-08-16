@@ -157,11 +157,6 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
     }
   };
 
-  // Function to refresh data from API
-  const handleRefreshData = async () => {
-    await fetchEmissionData();
-  };
-
   // จัดการ submit ฟอร์ม
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -293,7 +288,7 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
           <Section
             title="Installation-level GHG emissions and energy consumption"
             subtitle="สรุปผลการปล่อยก๊าซเรือนกระจกและการใช้พลังงานของสถานประกอบการ"
-            defaultExpanded
+           
           >
             <Source_sec2
               formValues={formValues}

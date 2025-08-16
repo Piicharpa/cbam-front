@@ -588,7 +588,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
           <Section
             title="Source stream and emission source"
             subtitle="แหล่งปล่อยก๊าซเรือนกระจก"
-            defaultExpanded={true}
           >
             <Source_sec1
               processEmissionSections={processEmissionSections}

@@ -434,7 +434,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   if (isLoading) {
     return (
       <Section
-        defaultExpanded={true}
+        
         title="List of aggregated goods categories and corresponding production routes"
         subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
         hasError={false}
@@ -448,7 +448,7 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
 
   return (
     <Section
-      defaultExpanded={true}
+      
       title="List of aggregated goods categories and corresponding production routes"
       subtitle="ระบุรายละเอียดของกลุ่มผลิตภัณฑ์และกระบวนการผลิต"
       hasError={

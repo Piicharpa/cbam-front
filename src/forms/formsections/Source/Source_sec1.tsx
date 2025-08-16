@@ -1,4 +1,4 @@
-import React,{useEffect,useMemo} from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   Box,
   Button,
@@ -56,9 +56,6 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
   removeProcessSection,
   addNewProcessSection,
 }) => {
-
-
-
   return (
     <>
       {processEmissionSections.map((section, index) => (
@@ -69,7 +66,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               border: "1px solid #e0e0e0",
               borderRadius: "8px",
               boxShadow: "none",
-              backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+              backgroundColor: "#e3f5f884",
               "&:before": { display: "none" },
             }}
           >
@@ -77,7 +74,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               expandIcon={<ExpandMoreIcon />}
               sx={{ padding: "8px 16px" }}
             >
-              <Typography fontWeight="medium">
+              <Typography fontWeight="medium" fontSize={16}>
                 แหล่งปล่อยมลพิษ: {section.p_source_stream_name || ""}
                 {section.p_method && ` - ${section.p_method}`}
               </Typography>
@@ -91,7 +88,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                   border: "1px solid #e0e0e0",
                   borderRadius: "8px",
                   position: "relative",
-                  backgroundColor: index % 2 === 0 ? "#f9f9f9" : "white",
+                  backgroundColor: "white",
                 }}
               >
                 <div
@@ -201,33 +198,6 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                       }
                       error={formErrors[`p_${section.id}_p_oxidation_factor`]}
                     />
-
-                    <LabeledTextField
-                      type="text"
-                      caption="CO2e fossil"
-                      defination="ค่า CO2e fossil"
-                      unit="t"
-                      label=""
-                      name={`p_co2e_fossil_${section.id}`}
-                      value={section.p_co2e_fossil}
-                      onChange={() => {}}
-                      readOnly
-                      disabled
-                      error={formErrors[`p_${section.id}_p_co2e_fossil`]}
-                    />
-                    <LabeledTextField
-                      type="text"
-                      caption="CO2e bio"
-                      defination="ค่า CO2e bio"
-                      unit="t"
-                      label=""
-                      name={`p_co2e_bio_${section.id}`}
-                      value={section.p_co2e_bio}
-                      onChange={() => {}}
-                      disabled
-                      readOnly
-                      error={formErrors[`p_${section.id}_p_co2e_bio`]}
-                    />
                   </div>
                   <div style={{ flex: 1 }}>
                     <LabeledTextField
@@ -335,36 +305,74 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                       }
                       error={formErrors[`p_${section.id}_p_biomass_content`]}
                     />
-
-                    <LabeledTextField
-                      type="text"
-                      caption="Energy content (fossil)"
-                      defination="ค่า Energy content (fossil)"
-                      unit="TJ"
-                      label=""
-                      name={`p_energy_content_fossil_${section.id}`}
-                      value={section.p_energy_content_fossil}
-                      onChange={() => {}}
-                      readOnly
-                      disabled
-                      error={
-                        formErrors[`p_${section.id}_p_energy_content_fossil`]
-                      }
-                    />
-                    <LabeledTextField
-                      type="text"
-                      caption="Energy content (bio)"
-                      defination="ค่า Energy content (bio)"
-                      unit="TJ"
-                      label=""
-                      name={`p_energy_content_bio_${section.id}`}
-                      value={section.p_energy_content_bio}
-                      onChange={() => {}}
-                      readOnly
-                      disabled
-                      error={formErrors[`p_${section.id}_p_energy_content_bio`]}
-                    />
                   </div>
+                </div>
+                <div
+                  style={{
+                    textAlign: "left",
+                    marginBottom: "2rem",
+                    fontSize: "14px",
+                    backgroundColor: "#f5f5f5",
+                    padding: "12px 16px",
+                    borderRadius: "6px",
+                    border: "1px solid #e0e0e0",
+                  }}
+                >
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>CO2e fossil:</span>
+                    <span style={{ fontWeight: 600, color: "#0190c3" }}>
+                      {section.p_co2e_fossil} t
+                    </span>
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>
+                      Energy content (fossil):
+                    </span>
+                    <span style={{ fontWeight: 600, color: "#0190c3" }}>
+                      {section.p_energy_content_fossil} TJ
+                    </span>
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>CO2e bio:</span>
+                    <span style={{ fontWeight: 600, color: "#0190c3" }}>
+                      {section.p_co2e_bio} t
+                    </span>
+                  </p>
+
+                  <p
+                    style={{
+                      margin: "4px 0",
+                      display: "flex",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span style={{ fontWeight: 500 }}>
+                      Energy content (bio):
+                    </span>
+                    <span style={{ fontWeight: 600, color: "#0190c3" }}>
+                      {section.p_energy_content_bio} TJ
+                    </span>
+                  </p>
                 </div>
                 <Box display="flex" width="100%" justifyContent="flex-end">
                   <Button

@@ -659,7 +659,6 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                 title="Installation Information"
                 subtitle="Fill in installation details"
                 hasError={Object.values(formErrors).some((e) => !!e)}
-                defaultExpanded
               >
                 <Grid container spacing={2}>
                   {/* Name Fields */}

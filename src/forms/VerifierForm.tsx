@@ -575,7 +575,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               title="Verifier Info"
               subtitle="ชื่อและที่อยู่ผู้ทวนสอบ"
               hasError={Object.values(formErrors).some((e) => !!e)}
-              defaultExpanded={true}
+              
             >
               <Grid container spacing={2}>
                 <Grid size={12}>
@@ -651,7 +651,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               title="Authorised Representative"
               subtitle="ผู้มีอำนาจลงนามของบริษัททวนสอบ"
               hasError={false}
-              defaultExpanded={true}
+              
             >
               <Grid container spacing={2}>
                 <Grid size={12}>
@@ -714,7 +714,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               title="Accreditation Info"
               subtitle="ข้อมูลการรับรอง"
               hasError={false}
-              defaultExpanded={true}
+              
             >
               <Grid container spacing={2}>
                 <Grid size={12}>

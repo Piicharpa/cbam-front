@@ -206,7 +206,6 @@ function App() {
             >
               <Header
                 companyName="บริษัท เอบีซี จำกัด"
-                userStatus="Welcome to CBAM System!"
               />
             </Paper>
             {/* Main Content */}

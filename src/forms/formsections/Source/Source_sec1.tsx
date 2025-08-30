@@ -75,7 +75,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               sx={{ padding: "8px 16px" }}
             >
               <Typography fontWeight="medium" fontSize={16}>
-                แหล่งปล่อยมลพิษ: {section.p_source_stream_name || ""}
+                แหล่งปล่อยก๊าซเรือนกระจก: {section.p_source_stream_name || ""}
                 {section.p_method && ` - ${section.p_method}`}
               </Typography>
             </AccordionSummary>
@@ -387,7 +387,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
                       fontWeight: "bold",
                     }}
                   >
-                    ลบแหล่งปล่อยมลพิษกระบวนการ
+                    ลบแหล่งปล่อยก๊าซเรือนกระจกกระบวนการ
                   </Button>
                 </Box>
               </Box>
@@ -411,7 +411,7 @@ const Source_sec1: React.FC<SourceFormSection1Props> = ({
               fontWeight: "bold",
             }}
           >
-            เพิ่มแหล่งปล่อยมลพิษกระบวนการ
+            เพิ่มแหล่งปล่อยก๊าซเรือนกระจกกระบวนการ
           </Button>
         </Stack>
       </Box>

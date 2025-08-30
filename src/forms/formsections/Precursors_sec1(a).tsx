@@ -291,13 +291,13 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       const calculatedControl = Math.max(0, totalAmount - (amountB + amountC));
       // Calculate SEE (indirect)
       const specificElectricityConsumption = ensureNumber(
-        fieldValues[`embedded_indirection_emissions_value_${index}`]
+        fieldValues[`value_specific_indirect_electricity_consumption`]
       );
       const electricityEmissionFactor = ensureNumber(
         fieldValues[`value_electricity_indirect_emission_factor`]
       );
       const calculatedSEEIndirect =
-        specificElectricityConsumption * electricityEmissionFactor;
+        (specificElectricityConsumption * electricityEmissionFactor ) ;
 
       // Update state only if values have changed
       if (totalAmount !== totalPurchaseLevel) {
@@ -306,9 +306,11 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       if (calculatedControl !== controlAmount) {
         setControlAmount(calculatedControl);
       }
-      if (calculatedSEEIndirect !== calculatedIndirectEmissions) {
+      // if (calculatedSEEIndirect !== calculatedIndirectEmissions) {
+      //   setCalculatedIndirectEmissions(calculatedSEEIndirect);
+      // }
         setCalculatedIndirectEmissions(calculatedSEEIndirect);
-      }
+
     } finally {
       isCalculating.current = false;
     }
@@ -1205,7 +1207,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         >
           <span style={{ fontWeight: 500 }}>Control:</span>
           <span style={{ fontWeight: 600, color: "#0190c3" }}>
-            {isNaN(controlAmount) ? "" : controlAmount || formValues[`control`]}{" "}
+            { controlAmount || formValues[`control`]}{" "}
             t
           </span>
         </p>

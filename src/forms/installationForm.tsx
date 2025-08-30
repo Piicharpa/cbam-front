@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { Container, Typography, Grid, Box } from "@mui/material";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import Section from "../components/Section";
 import PGButton from "../components/FormButton";
 import LabeledTextField from "../components/LabeledTextField";
@@ -565,7 +564,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             <Grid size={12}>
               <Section
                 title="Reporting Period"
-                subtitle="Set reporting dates"
+                subtitle="ระบุระยะเวลาการรายงาน"
                 hasError={
                   !!formErrors.reporting_period_start ||
                   !!formErrors.reporting_period_end
@@ -657,7 +656,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             <Grid size={12}>
               <Section
                 title="Installation Information"
-                subtitle="Fill in installation details"
+                subtitle="ระบุรายละเอียดสถานประกอบการ"
                 hasError={Object.values(formErrors).some((e) => !!e)}
               >
                 <Grid container spacing={2}>
@@ -713,20 +712,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       required
                     />
                   </Grid>
-                  <Grid size={12}>
-                    <LabeledTextField
-                      caption="City"
-                      defination="ระบุเมือง/จังหวัด"
-                      label="Saraburi "
-                      name="city"
-                      value={formValues.city}
-                      onChange={handleInputChange}
-                      error={!!formErrors.city}
-                      helperText={formErrors.city || ""}
-                      required
-                    />
-                  </Grid>
-                  {/* Country and Location */}
+                   {/* Country and Location */}
                   <Grid size={12}>
                     <LabeledAutocompleteMap
                       caption="Country"
@@ -743,6 +729,19 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       error={formErrors.country_id || ""}
                     />
                   </Grid>
+                  <Grid size={12}>
+                    <LabeledTextField
+                      caption="City"
+                      defination="ระบุเมือง/จังหวัด"
+                      label="Saraburi "
+                      name="city"
+                      value={formValues.city}
+                      onChange={handleInputChange}
+                      error={!!formErrors.city}
+                      helperText={formErrors.city || ""}
+                      required
+                    />
+                  </Grid>               
                   <Grid size={12}>
                     <LabeledTextField
                       caption="UNLOCODE"

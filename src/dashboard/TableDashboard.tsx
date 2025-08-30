@@ -482,7 +482,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 </TableCell>
                 <TableCell>
                   <strong style={{ fontSize: "14px" }}>
-                    SEE Total (tCO2e/t)
+                    Total SEE(tCO2e/t)
                   </strong>
                 </TableCell>
                 <TableCell

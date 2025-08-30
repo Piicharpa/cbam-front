@@ -19,7 +19,7 @@ import { fetchCompanyData,type CompanyType } from "../utils/company";
 // Define the navigation items
 const navItems = [
   {
-    label: "หน้าหลัก",
+    label: "Home",
     path: "/Home",
     icon: <HomeIcon fontSize="medium" />,
     tooltip: "Dashboard",
@@ -137,7 +137,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                       WebkitTextFillColor: "transparent",
                     }}
                   >
-                    CBAM Declaration
+                    CBAM Reports
                   </Typography>
                   <Typography
                     fontSize="16px"
@@ -150,21 +150,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
                   >
                     Company Name : {companyData?.name}
                   </Typography>
-                  <Typography
-                    fontSize="16px"
-                    variant="caption"
-                    component="div"
-                    sx={{
-                      opacity: 0.7,
-                      letterSpacing: 0.5,
-                    }}
-                  >
-                    Address : {companyData?.address},{" "}
-                    {companyData?.subdistrict_name},{" "}
-                    {companyData?.district_name}, {companyData?.province_name},{" "}
-                    {companyData?.zipcode} เบอร์โทรศัพท์:{" "}
-                    {companyData?.contact_no}
-                  </Typography>
+
                 </Box>
               </Box>
 

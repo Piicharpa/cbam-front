@@ -3,7 +3,6 @@ import { Container, Grid } from "@mui/material";
 import {
   useNavigate,
   useParams,
-  useLocation,
   useSearchParams,
 } from "react-router-dom";
 import Section from "../components/Section";
@@ -17,7 +16,7 @@ interface CNcodeFormProps {
     cn_id: string;
   };
   onChange: (data: CNcodeFormProps["data"]) => void;
-  onSave?: () => void; // ✅ เพิ่ม onSave callback
+  onSave?: () => void;
   onNextStep: () => void;
 }
 
@@ -46,7 +45,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   const navigate = useNavigate();
   const { reportId: urlReportId } = useParams();
   const [searchParams] = useSearchParams();
-  const location = useLocation();
   const companyId = (() => {
     const data = localStorage.getItem("user_account");
     if (!data) return null;
@@ -57,15 +55,11 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       return null;
     }
   })();
-
-  // ✅ เช็ค reportId จากหลายแหล่ง
   const getReportIdFromUrl = () => {
-    // 1. จาก URL params เช่น /report/:reportId
     if (urlReportId) {
       return parseInt(urlReportId, 10);
     }
 
-    // 2. จาก query string เช่น ?reportId=123
     const queryReportId = searchParams.get("reportId");
     if (queryReportId) {
       return parseInt(queryReportId, 10);
@@ -105,9 +99,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   useEffect(() => {
     if (reportIdFromUrl) {
       localStorage.setItem("reportId", String(reportIdFromUrl));
-      // } else {
-      // ถ้าไม่มี reportId ให้เคลียร์ localStorage
-      // localStorage.removeItem("reportId");
     }
   }, [reportIdFromUrl, isEditMode]);
 
@@ -354,8 +345,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
         if (finalReportId) {
           setCurrentReportId(finalReportId);
 
-          // ✅ อัปเดต URL เป็น edit mode (optional)
-          // navigate(`/cbam/formdev?reportId=${finalReportId}`, { replace: true });
         } else {
           console.warn("⚠️ No ID returned from create API");
           throw new Error("No report ID returned from server");
@@ -395,11 +384,11 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
           <Grid size={12}>
             <Section
               defaultExpanded={true}
-              title="CN Code Selection"
+              title="CN Code Information"
               subtitle={
                 isEditMode
                   ? `Editing Report #${currentReportId}`
-                  : "Create New Report - Select CN Code Information"
+                  : "ระบุ CN Code"
               }
               hasError={
                 !!formErrors.industry_id ||
@@ -414,19 +403,6 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
                   gap: "1.5rem",
                 }}
               >
-                {/* Installation Name (if available) */}
-                {/* {installationName && (
-                  <div
-                    style={{
-                      padding: "0.75rem",
-                      backgroundColor: "#e3f2fd",
-                      borderRadius: "4px",
-                      border: "1px solid #bbdefb",
-                    }}
-                  >
-                    <strong>🏭 Installation:</strong> {installationName}
-                  </div>
-                )} */}
 
                 {/* Industry Type Selection */}
                 <LabeledAutocompleteMap

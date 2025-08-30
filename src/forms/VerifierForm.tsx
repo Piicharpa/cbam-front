@@ -565,7 +565,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
               color="text.secondary"
               gutterBottom
             >
-              Only if available and not required during transitional period
+              รายละเอียดของผู้ทวนสอบ
             </Typography>
           </Grid>
 

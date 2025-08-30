@@ -10,7 +10,6 @@ interface HeaderProps {
 
 const Header: React.FC<HeaderProps> = ({
   companyName = "",
-  userStatus = "ยืนยันแล้ว",
 }) => {
   const token = useToken();
   const [companyData, setCompanyData] = useState<CompanyType>();
@@ -64,7 +63,7 @@ const Header: React.FC<HeaderProps> = ({
                 fontSize: "24px",
               }}
             >
-              CBAM Carbon Footprint Platform
+              CBAM Platform
             </Typography>
             <Typography
               sx={{
@@ -96,7 +95,7 @@ const Header: React.FC<HeaderProps> = ({
                 fontSize: "0.75rem",
               }}
             >
-              สถานะ: {userStatus}
+            
             </Typography>
           </Box>
           <Button

@@ -570,17 +570,29 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   !!formErrors.reporting_period_end
                 }
               >
-                <Grid >
+                <Grid>
                   <Grid size={12}>
                     <Box sx={{ mb: 2 }}>
                       <Typography
-                        variant="subtitle1"
-                        fontWeight="medium"
-                        mb={1}
+                        variant="caption"
+                        color={"#0290c4"}
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "18px",
+                        }}
                       >
                         Start Time
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
+                      <Typography
+                        variant="caption"
+                        color={"#74aa15"}
+                        style={{
+                          // marginBottom: "0.25rem",
+                          display: "block",
+                          fontSize: "16px",
+                          minHeight: "53px",
+                        }}
+                      >
                         ระบุวันที่เริ่มต้นรายงาน
                       </Typography>
                       <DatePicker
@@ -602,13 +614,25 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                   <Grid size={12}>
                     <Box sx={{ mb: 2 }}>
                       <Typography
-                        variant="subtitle1"
-                        fontWeight="medium"
-                        mb={1}
+                        variant="caption"
+                        color={"#0290c4"}
+                        style={{
+                          fontWeight: 600,
+                          fontSize: "18px",
+                        }}
                       >
                         End Time
                       </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={1}>
+                      <Typography
+                        variant="caption"
+                        color={"#74aa15"}
+                        style={{
+                          // marginBottom: "0.25rem",
+                          display: "block",
+                          fontSize: "16px",
+                          minHeight: "53px",
+                        }}
+                      >
                         ระบุวันที่สิ้นสุดรายงาน
                       </Typography>
                       <DatePicker
@@ -712,7 +736,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       required
                     />
                   </Grid>
-                   {/* Country and Location */}
+                  {/* Country and Location */}
                   <Grid size={12}>
                     <LabeledAutocompleteMap
                       caption="Country"
@@ -741,7 +765,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
                       helperText={formErrors.city || ""}
                       required
                     />
-                  </Grid>               
+                  </Grid>
                   <Grid size={12}>
                     <LabeledTextField
                       caption="UNLOCODE"

@@ -288,7 +288,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         fieldValues[`consumed_non_cbam_goods_amounts`]
       );
       // Calculate control: Total Purchase Level - (amount(b) + amount(c))
-      const calculatedControl = Math.max(0, totalAmount - (amountB + amountC));
+      const calculatedControl = Math.max( totalAmount - (amountB + amountC));
       // Calculate SEE (indirect)
       const specificElectricityConsumption = ensureNumber(
         fieldValues[`value_specific_indirect_electricity_consumption`]
@@ -1177,7 +1177,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       <div
         style={{
           textAlign: "left",
-          // marginBottom: "1.5rem",
           fontSize: "18px",
         }}
       >
@@ -1207,7 +1206,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         >
           <span style={{ fontWeight: 500 }}>Control:</span>
           <span style={{ fontWeight: 600, color: "#0190c3" }}>
-            { controlAmount || formValues[`control`]}{" "}
+            {/* { controlAmount || formValues[`control`]}{" "} */}
+            { controlAmount}
+
             t
           </span>
         </p>

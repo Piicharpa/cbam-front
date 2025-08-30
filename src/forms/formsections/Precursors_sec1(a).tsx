@@ -543,7 +543,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
     updatedValues[`total_purchase_level_${index}`] = totalPurchaseAmount;
     updatedValues[`total_consumed_within_installation`] =
-      data.total_consumed_within_installation || totalPurchaseAmount;
+      data.total_consumed_within_installation || 0;
     updatedValues[`total_consumed_within_installation_amounts`] =
       data.total_consumed_within_installation_amounts || totalPurchaseAmount;
 
@@ -635,14 +635,12 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     initialValues[`control`] = formValues[`control`] || 0;
     initialValues[`total_consumed_within_installation`] =
       formValues[`total_consumed_within_installation`] || 0;
-    // Initialize the electricity emission factor field if it doesn't exist
     initialValues[`value_electricity_indirect_emission_factor`] =
       formValues[`value_electricity_indirect_emission_factor`] || 0;
     initialValues[`source_electricity_indirect_emission_factor`] =
       formValues[`source_electricity_indirect_emission_factor`] || "";
     initialValues[`electricity_emission_factor_${index}`] =
       formValues[`electricity_emission_factor_${index}`] || 0;
-    // Initialize b_category and b_name if they don't exist
     initialValues[`b_category`] = formValues[`b_category`] || "";
     initialValues[`b_name`] = formValues[`b_name`] || "";
 
@@ -692,8 +690,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         errors[`amount_${index}`] = "กรุณาระบุจำนวนที่ถูกต้อง";
       }
     }
-
-    // Validate total production amounts
     const totalValue = fieldValues[`total_production_amounts_${index}`];
     if (totalValue !== undefined && totalValue !== "") {
       const numValue = parseFloat(String(totalValue));
@@ -807,20 +803,19 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       return;
     }
 
-    // Step 1: Calculate control value just before saving
-    let totalPurchaseLevel = 0;
-    for (let i = 0; i < routeCount1; i++) {
-      const amountKey = `amount_${i}_${index}`;
-      totalPurchaseLevel += ensureNumber(fieldValues[amountKey]);
-    }
-    const amountB = ensureNumber(fieldValues[`consumed_in_production_amounts`]);
-    const amountC = ensureNumber(
-      fieldValues[`consumed_non_cbam_goods_amounts`]
-    );
-    const calculatedControl = Math.max(
-      0,
-      totalPurchaseLevel - (amountB + amountC)
-    );
+    // // Step 1: Calculate control value just before saving
+    // let totalPurchaseLevel = 0;
+    // for (let i = 0; i < routeCount1; i++) {
+    //   const amountKey = `amount_${i}_${index}`;
+    //   totalPurchaseLevel += ensureNumber(fieldValues[amountKey]);
+    // }
+    // const amountB = ensureNumber(fieldValues[`consumed_in_production_amounts`]);
+    // const amountC = ensureNumber(
+    //   fieldValues[`consumed_non_cbam_goods_amounts`]
+    // );
+    // const calculatedControl = Math.max(
+    //   totalPurchaseLevel - (amountB + amountC)
+    // );
 
     const Swal = {
       fire: async (options: any) => {

@@ -82,7 +82,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
           apiEndpoint = `${apiUrl}/api/cbam/excelreport/${config.apiEndpoint}/${reportId}`;
         }
 
-        console.log(`Fetching data from: ${apiEndpoint}`);
         const response = await fetch(apiEndpoint);
 
         if (!response.ok) {
@@ -92,7 +91,6 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
         }
 
         const data = await response.json();
-        console.log(`Data received for ${config.apiEndpoint}:`, data);
         if (config.apiEndpoint === "Summary") {
           if (typeof onDataFetched === "function") {
             onDataFetched(data);

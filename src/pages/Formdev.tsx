@@ -244,8 +244,6 @@ const Formdev: React.FC = () => {
     }
   }, [reportId]);
 
-  // console.log(localStorage);
-
   const isContinueDisabled = () => {
     // Case 0: Step แรก (Summary) และไม่มี reportId
     if (activeStep === 0 && !localStorage.getItem("reportId")) {

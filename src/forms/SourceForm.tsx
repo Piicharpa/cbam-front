@@ -392,7 +392,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
               bioCf
             ).toFixed(4);
 
-            console.log(ad, ncv);
 
             updatedSection.p_energy_content_bio = (
               ((ad * ncv) / 1000) *

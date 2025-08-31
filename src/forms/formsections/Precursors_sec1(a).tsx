@@ -405,7 +405,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
       const data = await response.json();
 
-      console.log("All precursors data: ", data);
 
       // Handle both array and single object responses
       const precursorsArray = Array.isArray(data) ? data : data ? [data] : [];
@@ -808,7 +807,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     try {
       const payloadObj = prepareDataForApi();
       const payload = prepareDataForApi();
-console.log('Payload:', payload);
       const payloadArray = Array.isArray(payloadObj)
         ? payloadObj
         : [payloadObj];
@@ -820,7 +818,6 @@ console.log('Payload:', payload);
           ? `${apiUrl}/api/cbam/e_precursors/${precursor.id}`
           : `${apiUrl}/api/cbam/e_precursors`;
 
-        console.log(`${method} request to:`, url, "Payload:", precursor);
 
         const response = await fetch(url, {
           method,
@@ -835,7 +832,6 @@ console.log('Payload:', payload);
         }
 
         const responseData = await response.json();
-        console.log("Save response:", responseData);
       }
 
       window.alert(`✅ All precursors saved successfully!`);

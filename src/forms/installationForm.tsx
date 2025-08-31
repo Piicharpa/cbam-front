@@ -147,9 +147,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       const companyReports = await companyReportsResponse.json();
       const currentReportData = await currentReportResponse.json();
 
-      console.log("Installation data:", installationDataArray);
-      console.log("Company reports:", companyReports);
-      console.log("Current report:", currentReportData);
+      
 
       // ค้นหารายงานที่ตรงกับ reportId ที่กำลังแก้ไข - รูปแบบที่ 1
       let reportDateInfo = null;
@@ -200,10 +198,7 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
             : getTodayDate(),
         };
 
-        console.log("Setting form with dates:", {
-          start: updatedFormValues.reporting_period_start,
-          end: updatedFormValues.reporting_period_end,
-        });
+       
 
         setFormValues(updatedFormValues);
         onChange(updatedFormValues);

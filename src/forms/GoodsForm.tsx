@@ -274,7 +274,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           }
         } else {
           // ไม่มี goods_id ให้ใช้ค่าว่างเปล่า
-          console.log("No goods_id found in report, using empty values");
           setFormMode("create");
           setLocalFormValues({
             ...localFormValues,
@@ -419,10 +418,7 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       let response, newGoodsId;
 
       if (formMode === "edit" && existingData?.d_processes_id) {
-        console.log(
-          "Updating existing goods data with ID:",
-          existingData.d_processes_id
-        );
+        
         response = await fetch(
           `${apiUrl}/api/cbam/d_goods/${existingData.d_processes_id}`,
           {
@@ -433,7 +429,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         );
         newGoodsId = existingData.d_processes_id;
       } else {
-        console.log("Creating new goods data");
         response = await fetch(`${apiUrl}/api/cbam/d_goods`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -450,11 +445,10 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       const result = await response.json();
       if (formMode !== "edit") {
         newGoodsId = result.id;
-        console.log("Created new goods with ID:", newGoodsId);
+        
       }
 
       if (reportId && newGoodsId) {
-        console.log("Updating report with goods_id:", newGoodsId);
         const updateReportResponse = await fetch(
           `${apiUrl}/api/cbam/report/${reportId}`,
           {
@@ -470,7 +464,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
             await updateReportResponse.text()
           );
         } else {
-          console.log("Successfully updated report with goods_id");
         }
       }
 

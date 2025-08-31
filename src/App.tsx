@@ -252,9 +252,9 @@ function App() {
                     />
 
                     {/* Add the proper CBAM form routes */}
-                    <Route path="/cbam/formdev" element={<Formdev />} />
+                    <Route path="/formdev" element={<Formdev />} />
                     <Route
-                      path="/cbam/cbam/formdev"
+                      path="/cbam/formdev"
                       element={
                         <Navigate
                           to={`/cbam/formdev${window.location.search}`}

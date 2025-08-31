@@ -699,7 +699,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       // ข้อมูล routes
       route_1: String(
         fieldValues[`route_0_${index}`] ||
-          fieldValues[`purchased_precursors_${index}`] ||
           ""
       ),
       route_1_amounts: ensureNumber(fieldValues[`amount_0_${index}`]),
@@ -886,10 +885,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             label=""
             name={`name_${index}`}
             type="text"
-            value={fieldValues[`purchased_precursors_${index}`] || ""}
-            onChange={e => handleInputChange(`purchased_precursors_${index}`, e.target.value)}
-            error={fieldErrors[`purchased_precursors_${index}`]}
-            helperText={fieldErrors[`purchased_precursors_${index}`] ? "กรุณากรอกข้อมูล" : ""}
+            value={fieldValues[`name_${index}`] || ""}
+            onChange={e => handleInputChange(`name_${index}`, e.target.value)}
+            error={fieldErrors[`name_${index}`]}
+            helperText={fieldErrors[`name_${index}`] ? "กรุณากรอกข้อมูล" : ""}
             required
           />
         </div>

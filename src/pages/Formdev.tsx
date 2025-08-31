@@ -643,8 +643,6 @@ const Formdev: React.FC = () => {
               ];
 
               cbamKeys.forEach((key) => localStorage.removeItem(key));
-
-              // Navigate and refresh
               navigate("/Home");
               setTimeout(() => window.location.reload(), 50);
             }}

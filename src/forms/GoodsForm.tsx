@@ -448,25 +448,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         
       }
 
-      if (reportId && newGoodsId) {
-        const updateReportResponse = await fetch(
-          `${apiUrl}/api/cbam/report/${reportId}`,
-          {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ goods_id: newGoodsId }),
-          }
-        );
-
-        if (!updateReportResponse.ok) {
-          console.warn(
-            "Failed to update report with goods_id:",
-            await updateReportResponse.text()
-          );
-        } else {
-        }
-      }
-
       localStorage.removeItem("goodsFormData");
       localStorage.removeItem("selectedIndustry");
       localStorage.removeItem("selectedGoods");

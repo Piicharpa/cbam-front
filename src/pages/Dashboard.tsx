@@ -198,7 +198,7 @@ const Form: React.FC = () => {
 
   // Function to handle editing a specific report
   const handleEditReport = (reportId: string | number) => {
-    navigate(`/cbam/formdev?reportId=${reportId}`);
+    navigate(`/formdev?reportId=${reportId}`);
   };
 
   // Function to handle creating a new report
@@ -223,7 +223,7 @@ const Form: React.FC = () => {
     cbamKeys.forEach((key) => localStorage.removeItem(key));
 
     // Navigate to form page
-    navigate("/cbam/formdev");
+    navigate(`/formdev`);
   };
 
   // Function to initiate delete process

@@ -80,7 +80,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
     cbamKeys.forEach((key) => localStorage.removeItem(key));
 
     // Navigate to form
-    handleNavigation("/cbam/formdev");
+    handleNavigation("/formdev");
   };
 
   return (

@@ -80,6 +80,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
     try {
       const response = await axios.get(
         `${apiUrl}/api/cbam/report/dashboard/${company_id}`
+
       );
       const raw = response.data;
       const items = Array.isArray(raw) ? raw : [raw];
@@ -473,9 +474,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   <strong style={{ fontSize: "14px" }}>ชื่อผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
-                  <strong style={{ fontSize: "14px" }}>
-                    หมวดหมู่ผลิตภัณฑ์
-                  </strong>
+                  <strong style={{ fontSize: "14px" }}>หมวดหมู่ผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
                   <strong style={{ fontSize: "14px" }}>CN Code</strong>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Section from "../../../components/Section";
 import {
   fetchGoodsData,
@@ -41,9 +41,14 @@ const Section1: React.FC<Props> = ({ values, errors, onChange }) => {
   }, [values.amounts]);
 
   // Inform parent of total amount whenever amounts change
-  useEffect(() => {
-    onChange("total_production_amounts", totalAmounts.toString()); // Convert to string
-  }, [totalAmounts, onChange]);
+  const prevTotalRef = useRef(totalAmounts);
+
+useEffect(() => {
+  if (totalAmounts !== prevTotalRef.current) {
+    onChange("total_production_amounts", totalAmounts.toString());
+    prevTotalRef.current = totalAmounts;
+  }
+}, [totalAmounts, onChange]);
 
   const [goodsData, setGoodsData] = useState<IndustryGroup[]>([]);
   const [industryOptions, setIndustryOptions] = useState<OptionType[]>([]);

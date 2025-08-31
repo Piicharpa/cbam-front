@@ -121,11 +121,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   onChange,
   precursorValue = "",
   routeValue = "",
-  onSave,
-  onDelete,
   onNextStep,
   isSaved = false,
-  precursorId,
+
 }) => {
   const [routeOptions, setRouteOptions] = useState<OptionType[]>([]);
   const [isLoadingRoutes, setIsLoadingRoutes] = useState<boolean>(false);
@@ -167,7 +165,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   const selectedGoods = localStorage.getItem("selectedGoods")
     ? parseInt(localStorage.getItem("selectedGoods") as string, 10)
     : undefined;
-  const storedName = localStorage.getItem("selectedGoodsName");
   const [selectedGoodsName, setSelectedGoodsName] = useState<string>("");
   const ADDDELButton: React.FC<{
     routeCount: number;
@@ -288,7 +285,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         fieldValues[`consumed_non_cbam_goods_amounts`]
       );
       // Calculate control: Total Purchase Level - (amount(b) + amount(c))
-      const calculatedControl = Math.max( totalAmount - (amountB + amountC));
+      const calculatedControl = Math.max(totalAmount - (amountB + amountC));
       // Calculate SEE (indirect)
       const specificElectricityConsumption = ensureNumber(
         fieldValues[`value_specific_indirect_electricity_consumption`]
@@ -297,7 +294,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         fieldValues[`value_electricity_indirect_emission_factor`]
       );
       const calculatedSEEIndirect =
-        (specificElectricityConsumption * electricityEmissionFactor ) ;
+        specificElectricityConsumption * electricityEmissionFactor;
 
       // Update state only if values have changed
       if (totalAmount !== totalPurchaseLevel) {
@@ -309,8 +306,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       // if (calculatedSEEIndirect !== calculatedIndirectEmissions) {
       //   setCalculatedIndirectEmissions(calculatedSEEIndirect);
       // }
-        setCalculatedIndirectEmissions(calculatedSEEIndirect);
-
+      setCalculatedIndirectEmissions(calculatedSEEIndirect);
     } finally {
       isCalculating.current = false;
     }
@@ -397,22 +393,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     setIsLoadingData(true);
 
     try {
-      // First try to fetch specific precursor data if we have an ID
-      if (existingData?.id) {
-        const response = await fetch(
-          `${apiUrl}/api/cbam/e_precursors/${existingData.id}`
-        );
-        if (response.ok) {
-          const precursorData = await response.json();
-          console.log("precursorData: ", precursorData);
-          setExistingData(precursorData);
-          setPreviousData(precursorData);
-          const updatedValues = updateFieldsFromApiData(precursorData);
-          setFieldValues(updatedValues);
-          return;
-        }
-      }
-
       // If no specific ID or the specific fetch failed, get all precursors for this report
       const response = await fetch(
         `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
@@ -424,6 +404,8 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
       }
 
       const data = await response.json();
+
+      console.log("All precursors data: ", data);
 
       // Handle both array and single object responses
       const precursorsArray = Array.isArray(data) ? data : data ? [data] : [];
@@ -489,7 +471,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     }
 
     // Update basic information
-    updatedValues[`name`] = data.name || "";
+    updatedValues[`name_${index}`] = data.name || "";
     updatedValues[`purchased_precursors_${index}`] =
       data.route_1 || data.precursors || precursorValue || "";
     updatedValues[`country_code_${index}`] = data.country_code || "";
@@ -629,6 +611,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         initialValues[key] = formValues[key] ?? "";
       }
     });
+    initialValues[`name_${index}`] = formValues[`name_${index}`] || "";
     initialValues[`purchased_precursors_${index}`] = precursorValue || "";
     initialValues[`route_${index}`] = routeValue || "";
     initialValues[`amount_${index}`] = formValues[`amount_${index}`] || 0;
@@ -675,6 +658,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
+    if (!fieldValues[`name_${index}`]) {
+      errors[`name_${index}`] = "กรุณากรอกข้อมูล";
+    }
     if (!fieldValues[`purchased_precursors_${index}`]) {
       errors[`purchased_precursors_${index}`] = "กรุณากรอกข้อมูล";
     }
@@ -707,7 +693,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     const payload: Record<string, any> = {
       // ข้อมูลพื้นฐาน
       report_id: reportId ? Number(reportId) : null,
-      name: String(fieldValues[`purchased_precursors_${index}`] || ""),
+      name: String(fieldValues[`name_${index}`] || ""),
       precursors: String(fieldValues[`purchased_precursors_${index}`] || ""),
       country_code: String(fieldValues[`country_code_${index}`] || "TH"),
 
@@ -799,76 +785,63 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
   };
 
   const handleSaveWithAlert = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    // // Step 1: Calculate control value just before saving
-    // let totalPurchaseLevel = 0;
-    // for (let i = 0; i < routeCount1; i++) {
-    //   const amountKey = `amount_${i}_${index}`;
-    //   totalPurchaseLevel += ensureNumber(fieldValues[amountKey]);
-    // }
-    // const amountB = ensureNumber(fieldValues[`consumed_in_production_amounts`]);
-    // const amountC = ensureNumber(
-    //   fieldValues[`consumed_non_cbam_goods_amounts`]
-    // );
-    // const calculatedControl = Math.max(
-    //   totalPurchaseLevel - (amountB + amountC)
-    // );
+    // if (!validateForm()) return;
 
     const Swal = {
-      fire: async (options: any) => {
-        return { isConfirmed: window.confirm(options.text) };
-      },
+      fire: async (options: any) => ({
+        isConfirmed: window.confirm(options.text),
+      }),
     };
 
-    const { isConfirmed: firstConfirmed } = await Swal.fire({
-      title: `💾 Save Precursor ${index}`,
-      text: "หากกรอกข้อมูลเสร็จสิ้นกรุณากด Continue to Next Step เพื่อไปยังขั้นตอนถัดไป",
+    const { isConfirmed } = await Swal.fire({
+      title: `💾 Save Precursor ${index + 1}`,
+      text: "กรอกข้อมูลเสร็จแล้วกด Continue to Next Step",
       icon: "info",
       showCancelButton: true,
       confirmButtonText: "Save",
       cancelButtonText: "Cancel",
     });
-
-    if (!firstConfirmed) return;
+    if (!isConfirmed) return;
 
     setIsSaving(true);
-    const startTime = Date.now();
+
     try {
+      const payloadObj = prepareDataForApi();
       const payload = prepareDataForApi();
-      const isUpdate = existingData && existingData.id;
-      const method = isUpdate ? "PUT" : "POST";
-      const url = isUpdate
-        ? `${apiUrl}/api/cbam/e_precursors/${existingData.id}`
-        : `${apiUrl}/api/cbam/e_precursors`;
+console.log('Payload:', payload);
+      const payloadArray = Array.isArray(payloadObj)
+        ? payloadObj
+        : [payloadObj];
 
-      const response = await fetch(url, {
-        method,
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      for (const precursor of payloadArray) {
+        const isUpdate = !!precursor.id;
+        const method = isUpdate ? "PUT" : "POST";
+        const url = isUpdate
+          ? `${apiUrl}/api/cbam/e_precursors/${precursor.id}`
+          : `${apiUrl}/api/cbam/e_precursors`;
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`API Error (${response.status}): ${errorText}`);
-      }
+        console.log(`${method} request to:`, url, "Payload:", precursor);
 
-      const responseData = await response.json();
-      if (onSave) await onSave(responseData);
+        const response = await fetch(url, {
+          method,
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(precursor),
+        });
 
-      const duration = ((Date.now() - startTime) / 1000).toFixed(1);
-
-      if (onNextStep) {
-        const shouldContinue = window.confirm(
-          "🚀 Would you like to continue to the next step?"
-        );
-        if (shouldContinue) {
-          onNextStep();
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`API Error (${response.status}):`, errorText);
+          throw new Error(`API Error (${response.status}): ${errorText}`);
         }
+
+        const responseData = await response.json();
+        console.log("Save response:", responseData);
       }
+
+      window.alert(`✅ All precursors saved successfully!`);
+      if (onNextStep) onNextStep();
     } catch (error) {
+      console.error("Save error:", error);
     } finally {
       setIsSaving(false);
     }
@@ -888,7 +861,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     >
       {/* Precursor name display */}
       {/* {renderPrecursorField()} */}
-      <div style={{ display: "flex", gap: "1.5rem",  }}>
+      <div style={{ display: "flex", gap: "1.5rem" }}>
         <div style={{ flex: 1 }}>
           {/* Country selection */}
           <LabeledAutocompleteMap
@@ -915,12 +888,12 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             caption="Precursord Name"
             defination="ระบุชื่อผลิตภัณฑ์"
             label=""
-            name="name"
+            name={`name_${index}`}
             type="text"
-            value={formValues.name}
-            onChange={(e) => onChange(e.target.name, e.target.value)}
-            error={fieldErrors[`name`]}
-            helperText={fieldErrors[`name`]}
+            value={fieldValues[`purchased_precursors_${index}`] || ""}
+            onChange={e => handleInputChange(`purchased_precursors_${index}`, e.target.value)}
+            error={fieldErrors[`purchased_precursors_${index}`]}
+            helperText={fieldErrors[`purchased_precursors_${index}`] ? "กรุณากรอกข้อมูล" : ""}
             required
           />
         </div>
@@ -1031,21 +1004,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
               </span>
             </p>
           </div>
-          {/* <LabeledTextField
-            caption="Total purchased levels"
-            defination="ปริมาณการสั่งซื้อทั้งหมด"
-            unit="t"
-            label=""
-            type="number"
-            name={`total_consumed_within_installation`}
-            value={isNaN(totalPurchaseLevel) ? "" : totalPurchaseLevel}
-            onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-            error={
-              fieldErrors[`total_consumed_within_installation`] ||
-              formErrors[`total_consumed_within_installation`]
-            }
-            disabled={true}
-          /> */}
         </Box>
       </Box>
 
@@ -1202,24 +1160,20 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
           <span style={{ fontWeight: 500 }}>Control:</span>
           <span style={{ fontWeight: 600, color: "#0190c3" }}>
             {/* { controlAmount || formValues[`control`]}{" "} */}
-            { controlAmount}
-
-            t
+            {controlAmount}t
           </span>
         </p>
       </div>
 
       <Box mb={3}>
         <div
-        style={{
-          textAlign: "left",
-          marginBottom: "1.5rem",
-          fontSize: "18px",
-        }}
-      >
-        <strong>
-          (e) Emission embedded in this purchased precursor
-        </strong>
+          style={{
+            textAlign: "left",
+            marginBottom: "1.5rem",
+            fontSize: "18px",
+          }}
+        >
+          <strong>(e) Emission embedded in this purchased precursor</strong>
         </div>
         <div
           style={{
@@ -1501,46 +1455,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             </span>
           </p>
         </div>
-
-        {/* <Box mb={3}>
-        <div
-          style={{
-            textAlign: "left",
-            marginBottom: "1.5rem",
-            fontSize: "18px",
-          }}
-        >
-          <strong style={{ color: "#999" }}>
-            Specific embedded indirect emissions (SEE (indirect))
-          </strong>
-          <p style={{ marginTop: "0.25rem", color: "#999", fontSize: "14px" }}>
-            ปริมาณการปล่อยก๊าซเรือนกระจกทางอ้อมที่แฝงอยู่ในวัตถุดิบ
-          </p>
-        </div>
-        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-          <div style={{ flex: 1 }}>
-            <LabeledTextField
-              type="number"
-              caption=""
-              defination="ค่าการปล่อยก๊าซเรือนกระจกทางอ้อมที่แฝงอยู่ในวัตถุดิบ"
-              label=""
-              name={`embedded_indirection_emissions_value`}
-              value={
-                isNaN(calculatedIndirectEmissions)
-                  ? ""
-                  : Number(calculatedIndirectEmissions).toFixed(4)
-              }
-              onChange={(e) => handleInputChange(e.target.name, e.target.value)}
-              error={
-                fieldErrors[`embedded_indirection_emissions_value`] ||
-                formErrors[`embedded_indirection_emissions_value`]
-              }
-              unit="tCO2e/t"
-              disabled={true}
-            />
-          </div>
-        </div>
-      </Box> */}
       </div>
 
       {/* Justification Section */}
@@ -1602,7 +1516,7 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
             outline: "none",
           }}
           onClick={handleSaveWithAlert}
-          disabled={isSaving || isLoadingData}
+          // disabled={isSaving || isLoadingData}
           onMouseOver={(e) => {
             if (!isSaving && !isLoadingData) {
               e.currentTarget.style.backgroundColor = "#0190c3";

@@ -265,10 +265,10 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               defination="ระบุค่า Emission factor ของไฟฟ้า"
               unit="tCO2/MWh"
               label=""
-              name="ef_exported_electricity"
-              value={values.ef_exported_electricity}
+              name="ef_electricity"
+              value={values.ef_electricity}
               onChange={onChange}
-              error={errors.ef_exported_electricity}
+              error={errors.ef_electricity}
               required
             />
           </div>
@@ -314,10 +314,10 @@ const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
               defination="ระบุค่า Emission factor ของไฟฟ้าที่ส่งออกไปใช้นอกกระบวนการ"
               unit="tCO2/MWh"
               label=""
-              name="ef_electricity"
-              value={values.ef_electricity}
+              name="ef_exported_electricity"
+              value={values.ef_exported_electricity}
               onChange={onChange}
-              error={errors.ef_electricity}
+              error={errors.ef_exported_electricity}
               required
             />
           </div>

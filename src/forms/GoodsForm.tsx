@@ -298,19 +298,16 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   }, [apiUrl, reportId]);
 
   // -- Sync local to parent --
-  useEffect(() => {
-    onChange(localFormValues);
-  }, [localFormValues, onChange]);
-
-  // --- handle changes ---
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setLocalFormValues((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-    setFormErrors((prev) => ({ ...prev, [name]: "" }));
-  };
+  const { name, value } = e.target;
+  setLocalFormValues((prev) => {
+    const updated = { ...prev, [name]: value };
+    onChange(updated); // เรียกตรงนี้เลย
+    return updated;
+  });
+  setFormErrors((prev) => ({ ...prev, [name]: "" }));
+};
+
 
   const handleSection1Change = (field: string, value: any) => {
     setLocalFormValues((prev) => {
@@ -421,20 +418,20 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
       let response, newGoodsId;
 
-      if (formMode === "edit" && existingData?.goods_id) {
+      if (formMode === "edit" && existingData?.d_processes_id) {
         console.log(
           "Updating existing goods data with ID:",
-          existingData.goods_id
+          existingData.d_processes_id
         );
         response = await fetch(
-          `${apiUrl}/api/cbam/d_goods/${existingData.goods_id}`,
+          `${apiUrl}/api/cbam/d_goods/${existingData.d_processes_id}`,
           {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(cleanPayload),
           }
         );
-        newGoodsId = existingData.goods_id;
+        newGoodsId = existingData.d_processes_id;
       } else {
         console.log("Creating new goods data");
         response = await fetch(`${apiUrl}/api/cbam/d_goods`, {

@@ -173,6 +173,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
             updatedFormValues[`purchased_precursors_${i}`] =
               precursor.route_1 || "";
             updatedFormValues[`amount_${i}`] = precursor.route_1_amounts || 0;
+            updatedFormValues[`name_${i}`] = precursor.name || "";
             updatedFormValues[`country_code_${i}`] =
               precursor.country_code || "TH"; // Default to Thailand
             updatedFormValues[`embedded_direct_emissions_value_${i}`] =

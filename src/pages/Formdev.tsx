@@ -65,16 +65,16 @@ const Formdev: React.FC = () => {
   // Safe steps state
   const [safeSteps, setSafeSteps] = useState(fallbackSteps);
 
- useEffect(() => {
-  const storedReportId = localStorage.getItem("reportId");
-  if (storedReportId) {
-    setReportId(parseInt(storedReportId, 10));
-    setIsEditMode(true);
-  } else {
-    setReportId(null);
-    setIsEditMode(false);
-  }
-}, []);
+  useEffect(() => {
+    const storedReportId = localStorage.getItem("reportId");
+    if (storedReportId) {
+      setReportId(parseInt(storedReportId, 10));
+      setIsEditMode(true);
+    } else {
+      setReportId(null);
+      setIsEditMode(false);
+    }
+  }, []);
 
   // Initialize steps
   useEffect(() => {
@@ -330,7 +330,7 @@ const Formdev: React.FC = () => {
                 ];
 
                 cbamKeys.forEach((key) => localStorage.removeItem(key));
-               navigate("/cbam/report");
+                navigate("/cbam/report");
 
                 return;
               }
@@ -390,7 +390,7 @@ const Formdev: React.FC = () => {
 
         cbamKeys.forEach((key) => localStorage.removeItem(key));
 
-      navigate("/cbam/report");
+        navigate("/cbam/report");
       }
     }, 300);
   };
@@ -648,7 +648,7 @@ const Formdev: React.FC = () => {
 
               // Navigate and refresh
               navigate("/Home");
-              window.location.reload();
+              setTimeout(() => window.location.reload(), 50);
             }}
             sx={{ fontSize: "0.8rem" }}
           >

@@ -854,8 +854,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
         position: "relative",
       }}
     >
-      {/* Precursor name display */}
-      {/* {renderPrecursorField()} */}
       <div style={{ display: "flex", gap: "1.5rem" }}>
         <div style={{ flex: 1 }}>
           {/* Country selection */}
@@ -1332,7 +1330,6 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
                 label=""
                 name={`source_embedded_indirect_emissions_${index}`}
                 options={[
-                  { label: "Source", value: "Source" },
                   { label: "Measured", value: "Measured" },
                   { label: "Default", value: "Default" },
                   { label: "Unknown", value: "Unknown" },

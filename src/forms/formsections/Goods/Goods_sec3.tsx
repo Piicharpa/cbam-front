@@ -16,10 +16,7 @@ interface Props {
   countries: any[]; // options for autocomplete
 }
 
-const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {
-  function onNext(): void {
-    throw new Error("Function not implemented.");
-  }
+const Section3: React.FC<Props> = ({ values, errors, onChange, setValues }) => {  
 
   return (
     <Section

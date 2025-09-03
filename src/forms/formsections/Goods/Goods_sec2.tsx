@@ -86,7 +86,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             fontSize: "14px",
           }}
         >
-          ปริมาณการสั่งซื้อทั้งหมด
+           ประมาณการผลิตทั้งหมด
         </p>
       </div>
 
@@ -115,29 +115,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
         </p>
       </div>
 
-      {/* <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem" }}>
-        <div style={{ flex: 1 }}>
-          <LabeledTextField
-            type="number"
-            caption="Total production levels"
-            defination="ระบุปริมาณการผลิตทั้งหมด"
-            unit="t"
-            label= ""
-            name="total_consumed_within_installation"
-            value={values.total_production_amounts}
-            onChange={onChange}
-            error={errors.total_consumed_within_installation}
-            helperText={errors.total_consumed_within_installation}
-            inputProps={{
-              step: "any",
-              placeholder: "",
-              className: "appearance-none",
-            }}
-            readOnly
-            disabled
-          />
-        </div>
-      </div> */}
+      
       <div
         style={{
           textAlign: "left",

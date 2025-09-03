@@ -207,11 +207,11 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     // Create an array of precursor objects to submit
     const precursorSubmissions: Array<any> = [];
 
-    // Get available precursor options
-    const precursorOptions =
-      industryTypeId && goodsId
-        ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
-        : [];
+    // // Get available precursor options
+    // const precursorOptions =
+    //   industryTypeId && goodsId
+    //     ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
+    //     : [];
 
     // Process each precursor field
     for (let i = 1; i <= precursorsCount; i++) {
@@ -264,66 +264,66 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
   };
 
   // Add this function to PrecursorsForm component right before the return statement
-  const renderPrecursorField = (index: number) => {
-    // Find the appropriate precursor from our data
-    const precursorOptions =
-      industryTypeId && goodsId
-        ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
-        : [];
+  // const renderPrecursorField = (index: number) => {
+  //   // Find the appropriate precursor from our data
+  //   const precursorOptions =
+  //     industryTypeId && goodsId
+  //       ? getPrecursorsOptions(goodsData, industryTypeId, goodsId) || []
+  //       : [];
 
-    // Get the precursor for this index
-    const precursor = precursorOptions[index - 1];
+  //   // Get the precursor for this index
+  //   const precursor = precursorOptions[index - 1];
 
-    if (isLoading) {
-      return (
-        <div
-          style={{ padding: "20px", textAlign: "center", marginBottom: "15px" }}
-        >
-          <CircularProgress size={24} />
-          <span style={{ marginLeft: "10px", color: "#666" }}>
-            Loading precursor data...
-          </span>
-        </div>
-      );
-    }
+  //   if (isLoading) {
+  //     return (
+  //       <div
+  //         style={{ padding: "20px", textAlign: "center", marginBottom: "15px" }}
+  //       >
+  //         <CircularProgress size={24} />
+  //         <span style={{ marginLeft: "10px", color: "#666" }}>
+  //           Loading precursor data...
+  //         </span>
+  //       </div>
+  //     );
+  //   }
 
-    if (!precursor) {
-      return (
-        <div
-          style={{
-            padding: "15px",
-            backgroundColor: "#fff3cd",
-            border: "1px solid #ffeaa7",
-            borderRadius: "4px",
-            marginBottom: "15px",
-          }}
-        >
-          <span style={{ color: "#856404", fontSize: "18px" }}>
-            ℹ️ No precursor information available for position {index}
-          </span>
-        </div>
-      );
-    }
+  //   if (!precursor) {
+  //     return (
+  //       <div
+  //         style={{
+  //           padding: "15px",
+  //           backgroundColor: "#fff3cd",
+  //           border: "1px solid #ffeaa7",
+  //           borderRadius: "4px",
+  //           marginBottom: "15px",
+  //         }}
+  //       >
+  //         <span style={{ color: "#856404", fontSize: "18px" }}>
+  //           ℹ️ No precursor information available for position {index}
+  //         </span>
+  //       </div>
+  //     );
+  //   }
 
-    return (
-      <div
-        style={{
-          marginBottom: "20px",
-          padding: "15px",
-          backgroundColor: "#f8f9fa",
-          borderRadius: "8px",
-          borderLeft: "6px solid #0190c3",
-        }}
-      >
-        <div style={{ fontSize: "24px", fontWeight: "600", color: "#0190c3" }}>
-          Precursor {index}: {precursor.label}
-        </div>
-        <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
-          Value: {precursor.value}
-        </div>
-      </div>
-    );
-  };
+  //   return (
+  //     <div
+  //       style={{
+  //         marginBottom: "20px",
+  //         padding: "15px",
+  //         backgroundColor: "#f8f9fa",
+  //         borderRadius: "8px",
+  //         borderLeft: "6px solid #0190c3",
+  //       }}
+  //     >
+  //       <div style={{ fontSize: "24px", fontWeight: "600", color: "#0190c3" }}>
+  //         Precursor {index}: {precursor.label}
+  //       </div>
+  //       <div style={{ fontSize: "14px", color: "#666", marginTop: "5px" }}>
+  //         Value: {precursor.value}
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   // Handle form submission - save all precursors at once
   const handleSubmit = async (e: React.FormEvent) => {

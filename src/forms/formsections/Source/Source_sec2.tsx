@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { Box } from "@mui/material";
-import LabeledTextField from "../../../components/LabeledTextField";
 import LabeledAutocomplete from "../../../components/LabeledAutoComplete";
 import { generalinfo } from "../../../components/dropdown/generalinfo";
 import { justification } from "../../../components/dropdown/justification";
@@ -49,15 +48,10 @@ interface SourceFormSection2Props {
 const Source_sec2: React.FC<SourceFormSection2Props> = ({
   formValues,
   formErrors,
-  handleInputChange,
+  // handleInputChange,
   setFormValues,
   setFormErrors,
 }) => {
-  const [emissionsData, setEmissionsData] = useState<EmissionData[]>([]);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-
-  // สร้าง dropdown options
   const generalInfoOptions = generalinfo?.map((item) => item?.name || "") || [];
   const justificationOptions =
     justification?.map((item) => item?.name || "") || [];
@@ -72,12 +66,8 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
 
       if (!reportId) {
         console.error("Report ID not found");
-        setError("Report ID not found");
         return;
       }
-
-      setIsLoading(true);
-      setError(null);
 
       try {
         const apiUrl =
@@ -93,15 +83,10 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         }
 
         const data = await response.json();
-        setEmissionsData(Array.isArray(data) ? data : [data]);
-
-        // Calculate the values
         calculateBalances(Array.isArray(data) ? data : [data]);
       } catch (err) {
         console.error("Error fetching emissions data:", err);
-        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
-        setIsLoading(false);
       }
     };
 
@@ -117,12 +102,11 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
       // Sum energy content values
       const energyContentFossil = Number(item.energy_content_fossil) || 0;
       const energyContentBio = Number(item.energy_content_bio) || 0;
-      totalFuelBalance += energyContentFossil + energyContentBio;
+      totalFuelBalance += energyContentFossil;
 
       // Sum CO2e values
       const co2eFossil = Number(item.CO2e_fossil) || 0;
-      const co2eBio = Number(item.CO2e_bio) || 0;
-      totalGHGEmissionsBalance += co2eFossil + co2eBio;
+      totalGHGEmissionsBalance += co2eFossil 
     });
 
     // Update form values with calculated totals
@@ -183,50 +167,6 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
             </span>
           </p>
         </div>
-        {/* <LabeledTextField
-          type="number"
-          caption="Fuel balance"
-          defination="ปริมาณเชื้อเพลิง"
-          unit="TJ"
-          label=""
-          name="manual_fuel_balance"
-          value={formValues.manual_fuel_balance || ""}
-          onChange={handleInputChange}
-          error={formErrors.manual_fuel_balance}
-          helperText={
-            isLoading ? "Loading..." : error || formErrors.manual_fuel_balance
-          }
-          inputProps={{
-            step: "any",
-            placeholder: "",
-            className: "appearance-none",
-          }}
-          required
-          disabled
-        /> */}
-        {/* <LabeledTextField
-          type="number"
-          caption="Greenhouse gas emissions balance & information on data quality"
-          defination="สรุปผลการปล่อยก๊าซเรือนกระจก"
-          unit="t"
-          label=""
-          name="manual_GHG_emissions_balance"
-          value={formValues.manual_GHG_emissions_balance || ""}
-          onChange={handleInputChange}
-          error={formErrors.manual_GHG_emissions_balance}
-          helperText={
-            isLoading
-              ? "Loading..."
-              : error || formErrors.manual_GHG_emissions_balance
-          }
-          inputProps={{
-            step: "any",
-            placeholder: "",
-            className: "appearance-none",
-          }}
-          required
-          disabled
-        /> */}
       </Box>
       {/* Box2: Information on the data quality and quality assurance  */}
       <Box mb={3}>

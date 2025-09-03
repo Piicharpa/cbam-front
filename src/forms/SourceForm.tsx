@@ -6,7 +6,6 @@ import PGButton from "../components/FormButton";
 import Source_sec1, {
   ProcessEmissionSection,
 } from "./formsections/Source/Source_sec1";
-import Source_sec2 from "./formsections/Source/Source_sec2";
 
 // Interface for props
 interface SourceFormProps {
@@ -37,7 +36,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  const navigate = useNavigate();
   const location = useLocation();
   const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -105,73 +103,59 @@ const SourceForm: React.FC<SourceFormProps> = ({
     }
   };
 
+
   // Function to fetch existing emission data
-  const fetchExistingEmissions = async () => {
-    if (!reportId) return;
+const fetchExistingEmissions = async () => {
+  if (!reportId) return;
 
-    try {
-      const response = await fetch(
-        `${apiUrl}/api/cbam/b_emission/report/${reportId}`
-      );
+  try {
+    const response = await fetch(
+      `${apiUrl}/api/cbam/b_emission/report/${reportId}`
+    );
 
-      if (response.ok) {
-        const data = await response.json();
+    if (response.ok) {
+      const data = await response.json();
 
-        if (data && data.length > 0) {
-          // Save the original db_ids
-          const dbIds = data.map((item: any) => item.id);
-          setOriginalRecords(dbIds);
+      if (data && data.length > 0) {
+        // Save the original db_ids
+        const dbIds = data.map((item: any) => item.id);
+        setOriginalRecords(dbIds);
 
-          // Transform server data to our component format
-          const sections = data.map((item: any) => ({
-            id: Date.now() + Math.random(), // Client-side ID for React
-            db_id: item.id, // Save the database ID
-            p_method: item.method || "",
-            p_source_stream_name: item.source_stream_name || "",
-            p_activity_data: String(item.activity_data || ""),
-            p_ad_unit: item.AD_Unit || "",
-            p_net_calorific_value:
-              item.net_calorific_value !== null
-                ? String(item.net_calorific_value)
-                : "",
-            p_ncv_unit: item.NCV_unit || "",
-            p_emission_factor: String(item.ef || ""),
-            p_ef_unit: item.ef_unit || "",
-            p_oxidation_factor: String(item.oxidation_factor_percentage || ""),
-            p_biomass_content:
-              item.biomass_content_percentage !== null
-                ? String(item.biomass_content_percentage)
-                : "",
-            p_co2e_fossil: String(item.CO2e_fossil || ""),
-            p_co2e_bio: String(item.CO2e_bio || ""),
-            p_energy_content_fossil: String(item.energy_content_fossil || ""),
-            p_energy_content_bio: String(item.energy_content_bio || ""),
-            p_carbon_content: String(item.carbon_content || ""),
-            p_carbon_content_unit: String(item.carbon_content_unit || ""),
-          }));
+        // Transform ALL server data to our component format
+        const sections = data.map((item: any) => ({
+          id: Date.now() + Math.random(), // Client-side ID for React
+          db_id: item.id, // Save the database ID
+          p_method: item.method || "",
+          p_source_stream_name: item.source_stream_name || "",
+          p_activity_data: String(item.activity_data || ""),
+          p_ad_unit: item.AD_Unit || "",
+          p_net_calorific_value:
+            item.net_calorific_value !== null
+              ? String(item.net_calorific_value)
+              : "",
+          p_ncv_unit: item.NCV_unit || "",
+          p_emission_factor: String(item.ef || ""),
+          p_ef_unit: item.ef_unit || "",
+          p_oxidation_factor: String(item.oxidation_factor_percentage || ""),
+          p_biomass_content:
+            item.biomass_content_percentage !== null
+              ? String(item.biomass_content_percentage)
+              : "",
+          p_co2e_fossil: String(item.CO2e_fossil || ""),
+          p_co2e_bio: String(item.CO2e_bio || ""),
+          p_energy_content_fossil: String(item.energy_content_fossil || ""),
+          p_energy_content_bio: String(item.energy_content_bio || ""),
+          p_carbon_content: String(item.carbon_content || ""),
+          p_carbon_content_unit: String(item.carbon_content_unit || ""),
+        }));
 
-          if (sections.length > 0) {
-            // If you want to limit to exactly 2 sections
-            const limitedSections = sections.slice(0, 2);
-            setProcessEmissionSections(limitedSections);
-
-            // Track any records that were not included (if more than 2 existed)
-            if (sections.length > 2) {
-              const extraRecordIds = sections
-                .slice(2)
-                .map((s: any) => s.db_id)
-                .filter(
-                  (id: number | undefined): id is number => id !== undefined
-                );
-              setRemovedRecordIds(extraRecordIds);
-            }
-          }
-        }
+        setProcessEmissionSections(sections);
       }
-    } catch (error) {
-      console.error("Error fetching existing emissions data:", error);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching existing emissions data:", error);
+  }
+};
 
   // Fetch existing data when component mounts
   useEffect(() => {
@@ -180,16 +164,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
 
   useEffect(() => {
     if (externalFormValues) {
-      // Update formValues with external values if needed
       setFormValues(externalFormValues);
-
-      const hasExternalValuesChanged = Object.keys(externalFormValues).some(
-        (key) =>
-          externalFormValues[key as keyof typeof externalFormValues] !==
-          formValues[key as keyof typeof formValues]
-      );
-
-      // Update processEmissionSections if there's data and no existing data was loaded
       if (
         (externalFormValues.p_method ||
           externalFormValues.p_source_stream_name ||
@@ -348,9 +323,9 @@ const SourceForm: React.FC<SourceFormProps> = ({
           const of = parseFloat(updatedSection.p_oxidation_factor);
           const bioC = parseFloat(updatedSection.p_biomass_content);
           const unit = updatedSection.p_ef_unit;
-          const ofp = of / 100 || 1;
+          const ofp = of ? of / 100 : 1;
           const bioCp = bioC / 100 || 0;
-          const bioCf = (100 - bioC) / 100 || 1;
+          const bioCf = bioC ? (100 - bioC) / 100 : 1;
 
           if (updatedSection.p_method === "Mass Balance") {
             updatedSection.p_co2e_fossil = (ad * cb * con * bioCf).toFixed(4);
@@ -392,7 +367,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
               bioCf
             ).toFixed(4);
 
-
             updatedSection.p_energy_content_bio = (
               ((ad * ncv) / 1000) *
               bioCp
@@ -432,15 +406,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
     }
   };
 
-  // Update input in form values (for other parts)
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormValues((prev) => ({ ...prev, [name]: value }));
-    // Clear errors when user edits data
-    if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: "" }));
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -522,6 +487,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
 
         // Check if this is an edit (has db_id) or new creation
         const isEditing = section.db_id !== undefined;
+        console.log("Submitting section:", payload, isEditing);
 
         const method = isEditing ? "PUT" : "POST";
         const url = isEditing
@@ -543,8 +509,6 @@ const SourceForm: React.FC<SourceFormProps> = ({
             } process emissions data: ${errorText}`
           );
         }
-
-        const responseData = await response.json();
       }
 
       // Navigate to report page after successful submission

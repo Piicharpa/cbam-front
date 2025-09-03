@@ -128,9 +128,8 @@ const Report = () => {
   const [tabValue, setTabValue] = useState(0);
 
   // Add state for summary data with API integration
-  const [summaryData, setSummaryData] = useState<SummaryData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [summaryData] = useState<SummaryData | null>(null);
+  const [isLoading] = useState(true);
 
   // Tab states for form data
   const [tabAData, setTabAData] = useState<{
@@ -160,17 +159,7 @@ const Report = () => {
   const [tabDData, setTabDData] = useState<{}>({});
   const [tabEData, setTabEData] = useState<{}>({});
   const [tabZData, setTabZData] = useState<{}>({}); 
-  
-
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  // Form change handlers
-  const handleTabAChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setTabAData((prev) => ({ ...prev, [name]: value }));
-  };
+ 
 
   return (
     <ThemeProvider theme={theme}>

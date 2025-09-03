@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Box, CircularProgress, Typography, Paper, Chip } from "@mui/material";
+import React, { useState} from "react";
+import { Box, CircularProgress, Typography } from "@mui/material";
 import DataDisplayTab from "./Report_design";
 
 interface SummaryData {
@@ -210,7 +210,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
                     sx={{ fontWeight: 600, color: "#0190c3" }}
                   >
                     {summaryData.sum &&
-                    summaryData.sum.length > 0 &&
+                    // summaryData.sum.length > 0 &&
                     summaryData.sum[0]?.SEE_direct_sum
                       ? summaryData.sum[0]?.SEE_direct_sum.toFixed(4)
                       : "N/A"}{" "}

@@ -263,6 +263,14 @@ const Formdev: React.FC = () => {
     return "Continue to Next Step";
   };
 
+  const handleStep = (step: number) => {
+  setFadeIn(false);
+  setTimeout(() => {
+    setActiveStep(step);
+    setFadeIn(true);
+  }, 300);
+};
+
   // Handle form navigation with animations
   const handleNext = async () => {
     let canProceed = true;
@@ -512,33 +520,35 @@ const Formdev: React.FC = () => {
         >
           {safeSteps.map((step, index) => (
             <Step key={step?.label ? step.label : `step-${index}`}>
-              <StepLabel StepIconComponent={ColorlibStepIcon}>
-                <Typography
-                  variant="subtitle1"
-                  sx={{
-                    fontWeight: activeStep === index ? 600 : 400,
-                    fontSize: 15,
-                    color:
-                      activeStep === index
-                        ? "primary.main"
-                        : index < activeStep
-                        ? "secondary.main"
-                        : "text.primary",
-                  }}
-                >
-                  {step?.label || `Step ${index + 1}`}
-                </Typography>
-                <Typography
-                  variant="caption"
-                  sx={{
-                    display: "block",
-                    color: "text.secondary",
-                    fontSize: 12,
-                  }}
-                >
-                  {step?.description || ""}
-                </Typography>
-              </StepLabel>
+              <Box onClick={() => handleStep(index)} sx={{ cursor: "pointer" }}>
+                <StepLabel StepIconComponent={ColorlibStepIcon}>
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      fontWeight: activeStep === index ? 600 : 400,
+                      fontSize: 15,
+                      color:
+                        activeStep === index
+                          ? "primary.main"
+                          : index < activeStep
+                          ? "secondary.main"
+                          : "text.primary",
+                    }}
+                  >
+                    {step?.label || `Step ${index + 1}`}
+                  </Typography>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      display: "block",
+                      color: "text.secondary",
+                      fontSize: 12,
+                    }}
+                  >
+                    {step?.description || ""}
+                  </Typography>
+                </StepLabel>
+              </Box>
             </Step>
           ))}
         </Stepper>

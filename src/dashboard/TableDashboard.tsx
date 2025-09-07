@@ -32,7 +32,7 @@ import dayjs, { Dayjs } from "dayjs";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import FilterListIcon from "@mui/icons-material/FilterList";
+import DownloadIcon from '@mui/icons-material/Download';
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -202,8 +202,9 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
               target="_blank"
               rel="noopener noreferrer"
+              startIcon={<DownloadIcon />}
               sx={{
-                width: 300,
+                width: 350,
                 height: 60,
                 borderRadius: 2,
                 textTransform: "none",
@@ -218,9 +219,8 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1rem",
-                  lineHeight: "1.2", // Adjust line height for multiline text
-                  // Apply the gradient text effect
+                  fontSize: "1.2rem",
+                  lineHeight: "1.2", 
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -236,8 +236,9 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
               target="_blank"
               rel="noopener noreferrer"
+              startIcon={<DownloadIcon />}
               sx={{
-                width: 300,
+                width: 350,
                 height: 60,
                 borderRadius: 2,
                 textTransform: "none",
@@ -252,7 +253,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1rem",
+                  fontSize: "1.2rem",
                   lineHeight: "1.2", // Adjust line height for multiline text
                   // Apply the gradient text effect
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
@@ -270,8 +271,9 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
               target="_blank"
               rel="noopener noreferrer"
+              startIcon={<DownloadIcon />}
               sx={{
-                width: 300,
+                width: 350,
                 height: 60,
                 borderRadius: 2,
                 textTransform: "none",
@@ -286,7 +288,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1rem",
+                  fontSize: "1.2rem",
                   lineHeight: "1.2", // Adjust line height for multiline text
                   // Apply the gradient text effect
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
@@ -296,7 +298,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   textAlign: "center",
                 }}
               >
-                ไฟล์คู่มือการใช้งานแพลตฟอร์ม (User Manual)
+                ไฟล์คู่มือการใช้งานแพลตฟอร์ม  <br /> (User Manual)
               </Typography>
             </Button>
           </Box>

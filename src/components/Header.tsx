@@ -9,6 +9,8 @@ interface HeaderProps {
   userStatus?: string;
 }
 
+const URL = process.env.API_URL ;
+
 const Header: React.FC<HeaderProps> = ({ companyName = "" }) => {
   const token = useToken();
   const [companyData, setCompanyData] = useState<CompanyType>();
@@ -112,7 +114,7 @@ const Header: React.FC<HeaderProps> = ({ companyName = "" }) => {
             <Button
               variant="outlined"
               onClick={() =>
-                window.open("http://178.128.123.212:8080/cfp/select_cbam_cfp")
+                window.open(`${URL}/cfp/select_cbam_cfp`)
               }
               sx={{
                 borderColor: "#e0e0e0",

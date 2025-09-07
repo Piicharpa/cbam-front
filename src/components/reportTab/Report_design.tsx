@@ -50,8 +50,6 @@ interface DataDisplayTabProps {
 
 const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
   reportId,
-  formValues,
-  setFormValues,
   config,
   children, 
   onDataFetched
@@ -75,7 +73,7 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
         let apiEndpoint;
 
         if (config.apiEndpoint === "Summary") {
-          const baseUrl = "http://178.128.123.212:5000";
+          const baseUrl = process.env.REACT_APP_API_URL;
           apiEndpoint = `${baseUrl}/api/cbam/report/sumary/${reportId}`;
         } else {
           const apiUrl = process.env.REACT_APP_API_URL || "";

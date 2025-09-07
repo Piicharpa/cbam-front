@@ -285,7 +285,7 @@ const Section2: React.FC<Props> = ({ values, errors, onChange }) => {
             fontSize: "14px",
           }}
         >
-          ควบคุม
+          ควบคุม (ค่าต้องเป็น 0 เท่านั้น)
         </p>
 
         <div

@@ -25,17 +25,12 @@ import {
   Alert,
 } from "@mui/material";
 import BarChartIcon from "@mui/icons-material/BarChart";
-import DescriptionIcon from "@mui/icons-material/Description";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import EditIcon from "@mui/icons-material/Edit";
-import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import WarningIcon from "@mui/icons-material/Warning";
 import { useNavigate } from "react-router-dom";
 import TableDashboard from "../dashboard/TableDashboard";
-import SumupForm from "../forms/SumupForm";
-import { useToken } from "../utils/localStorage";
 // Custom theme based on provided colors
 const theme = createTheme({
   palette: {
@@ -175,13 +170,8 @@ function ColorlibStepIcon(props: StepIconProps) {
   );
 }
 
-// Steps definition
-// const steps = [
-//   { label: "CBAM Dashboard", description: "View your carbon emission data" },
-// ];
-
 const Form: React.FC = () => {
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeStep] = useState(0);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [reportToDelete, setReportToDelete] = useState<string | number | null>(
     null
@@ -303,14 +293,6 @@ const Form: React.FC = () => {
     setSnackbarOpen(false);
   };
 
-  const handleNext = () => {
-    setActiveStep((prevStep) => prevStep + 1);
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevStep) => prevStep - 1);
-  };
-
  
 
   const renderStepContent = (step: number) => {
@@ -330,7 +312,6 @@ const Form: React.FC = () => {
   return (
     <ThemeProvider theme={theme}>
       <Container maxWidth="lg" sx={{ py: 5 }}>
-        {/* Form content with animation */}
         <Box
           sx={{
             mt: 4,
@@ -422,30 +403,6 @@ const Form: React.FC = () => {
                 report will be permanently deleted.
               </Typography>
             </Box>
-
-            {/* Show API endpoint being used (for debugging) */}
-            {/* {process.env.NODE_ENV === "development" && (
-              <Box
-                mt={2}
-                p={2}
-                sx={{
-                  backgroundColor: "#f5f5f5",
-                  borderRadius: 1,
-                  border: "1px solid #ddd",
-                }}
-              >
-                <Typography variant="caption" component="div" fontWeight="bold">
-                  🔗 API Endpoint (Development):
-                </Typography>
-                <Typography
-                  variant="caption"
-                  component="div"
-                  fontFamily="monospace"
-                >
-                  DELETE {apiUrl}/api/cbam/report/del/{reportToDelete}
-                </Typography>
-              </Box>
-            )} */}
           </DialogContent>
           <DialogActions sx={{ p: 3, pt: 1 }}>
             <Button

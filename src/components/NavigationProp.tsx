@@ -24,6 +24,7 @@ const navItems = [
     icon: <HomeIcon fontSize="medium" />,
     tooltip: "Dashboard",
   },
+
 ];
 
 interface NavigationPropProps {
@@ -103,7 +104,7 @@ const NavigationProp: React.FC<NavigationPropProps> = ({ children }) => {
               theme.palette.divider,
               scrolled ? 0.1 : 0
             )}`,
-            mb: 3,
+            
           }}
         >
           <Toolbar sx={{ py: 5 }}>

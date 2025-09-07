@@ -21,8 +21,8 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  Fade,
   Collapse,
+  Divider,
 } from "@mui/material";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -80,7 +80,6 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
     try {
       const response = await axios.get(
         `${apiUrl}/api/cbam/report/dashboard/${company_id}`
-
       );
       const raw = response.data;
       const items = Array.isArray(raw) ? raw : [raw];
@@ -187,6 +186,121 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
       {/* Search and Filter Section */}
       <Box mb={3}>
         <Grid container spacing={2} alignItems="center">
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", md: "row" },
+              gap: 2,
+              alignItems: "center",
+              justifyContent: "center",
+              borderBottom: "1px solid #e0e0e0",
+              pb: 3,
+            }}
+          >
+            <Button
+              variant="outlined"
+              href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                width: 300,
+                height: 60,
+                borderRadius: 2,
+                textTransform: "none",
+                py: 1.5,
+                borderColor: "#3085C1", // Default border color
+                "&:hover": {
+                  borderColor: "#2470A8", // Darker border on hover
+                },
+              }}
+            >
+              <Typography
+                component="span" // Use span to ensure the text stays inline
+                sx={{
+                  fontWeight: "bold", // Make text bold
+                  fontSize: "1rem",
+                  lineHeight: "1.2", // Adjust line height for multiline text
+                  // Apply the gradient text effect
+                  background: "linear-gradient(to right, #3085C1, #4CAF50)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  whiteSpace: "pre-wrap", // Allows the <br /> to work
+                  textAlign: "center",
+                }}
+              >
+                คู่มือการรายงาน CBAM ของ อบก.
+              </Typography>
+            </Button>
+            <Button
+              variant="outlined"
+              href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                width: 300,
+                height: 60,
+                borderRadius: 2,
+                textTransform: "none",
+                py: 1.5,
+                borderColor: "#3085C1", // Default border color
+                "&:hover": {
+                  borderColor: "#2470A8", // Darker border on hover
+                },
+              }}
+            >
+              <Typography
+                component="span" // Use span to ensure the text stays inline
+                sx={{
+                  fontWeight: "bold", // Make text bold
+                  fontSize: "1rem",
+                  lineHeight: "1.2", // Adjust line height for multiline text
+                  // Apply the gradient text effect
+                  background: "linear-gradient(to right, #3085C1, #4CAF50)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  whiteSpace: "pre-wrap", // Allows the <br /> to work
+                  textAlign: "center",
+                }}
+              >
+                CBAM <br /> communication template for installations
+              </Typography>
+            </Button>
+            <Button
+              variant="outlined"
+              href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                width: 300,
+                height: 60,
+                borderRadius: 2,
+                textTransform: "none",
+                py: 1.5,
+                borderColor: "#3085C1", // Default border color
+                "&:hover": {
+                  borderColor: "#2470A8", // Darker border on hover
+                },
+              }}
+            >
+              <Typography
+                component="span" // Use span to ensure the text stays inline
+                sx={{
+                  fontWeight: "bold", // Make text bold
+                  fontSize: "1rem",
+                  lineHeight: "1.2", // Adjust line height for multiline text
+                  // Apply the gradient text effect
+                  background: "linear-gradient(to right, #3085C1, #4CAF50)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                  whiteSpace: "pre-wrap", // Allows the <br /> to work
+                  textAlign: "center",
+                }}
+              >
+                ไฟล์คู่มือการใช้งานแพลตฟอร์ม (User Manual)
+              </Typography>
+            </Button>
+          </Box>
+
           <Grid size={12}>
             <TextField
               fullWidth
@@ -474,7 +588,9 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   <strong style={{ fontSize: "14px" }}>ชื่อผลิตภัณฑ์</strong>
                 </TableCell>
                 <TableCell>
-                  <strong style={{ fontSize: "14px" }}>หมวดหมู่ผลิตภัณฑ์</strong>
+                  <strong style={{ fontSize: "14px" }}>
+                    หมวดหมู่ผลิตภัณฑ์
+                  </strong>
                 </TableCell>
                 <TableCell>
                   <strong style={{ fontSize: "14px" }}>CN Code</strong>
@@ -568,7 +684,9 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                         fontFamily="monospace"
                         fontSize="14px"
                       >
-                        {typeof row.see === "number" ? row.see.toFixed(4) : row.see}
+                        {typeof row.see === "number"
+                          ? row.see.toFixed(4)
+                          : row.see}
                       </Typography>
                     </TableCell>
                     <TableCell>

@@ -132,7 +132,7 @@ const fetchExistingEmissions = async () => {
           p_net_calorific_value:
             item.net_calorific_value !== null
               ? String(item.net_calorific_value)
-              : "",
+              : "0",
           p_ncv_unit: item.NCV_unit || "",
           p_emission_factor: String(item.ef || ""),
           p_ef_unit: item.ef_unit || "",

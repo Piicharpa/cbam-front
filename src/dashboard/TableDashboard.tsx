@@ -32,7 +32,7 @@ import dayjs, { Dayjs } from "dayjs";
 import DescriptionIcon from "@mui/icons-material/Description";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadIcon from '@mui/icons-material/Download';
+import DownloadIcon from "@mui/icons-material/Download";
 import SearchIcon from "@mui/icons-material/Search";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ClearIcon from "@mui/icons-material/Clear";
@@ -199,7 +199,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
           >
             <Button
               variant="outlined"
-              href="https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/cbam-guidance-and-legislation_en"
+              href="https://thaicarbonlabel.tgo.or.th/index.php?lang=TH&mod=WldKdmIycz0&action=YkdsemRBPT0"
               target="_blank"
               rel="noopener noreferrer"
               startIcon={<DownloadIcon />}
@@ -220,7 +220,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 sx={{
                   fontWeight: "bold", // Make text bold
                   fontSize: "1.2rem",
-                  lineHeight: "1.2", 
+                  lineHeight: "1.2",
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
                   WebkitBackgroundClip: "text",
                   WebkitTextFillColor: "transparent",
@@ -298,7 +298,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                   textAlign: "center",
                 }}
               >
-                ไฟล์คู่มือการใช้งานแพลตฟอร์ม  <br /> (User Manual)
+                คู่มือการใช้งานแพลตฟอร์ม <br /> (User Manual)
               </Typography>
             </Button>
           </Box>

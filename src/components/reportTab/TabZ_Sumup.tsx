@@ -371,25 +371,7 @@ const TabZ_Summary: React.FC<TabProps> = ({
               </Box>
             )}
 
-            {/* Footnote */}
-            <Box
-              sx={{
-                mt: 4,
-                display: "flex",
-                justifyContent: "space-between",
-                borderTop: "1px solid #e0e0e0",
-                pt: 2,
-              }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                หมายเหตุ: SEE = Specific Emissions Embedded
-                (การปล่อยมลพิษต่อหน่วยสินค้า)
-              </Typography>
-
-              <Typography variant="caption" color="text.secondary">
-                ข้อมูล ณ วันที่: {new Date().toLocaleDateString("th-TH")}
-              </Typography>
-            </Box>
+            
           </>
         )
       )}

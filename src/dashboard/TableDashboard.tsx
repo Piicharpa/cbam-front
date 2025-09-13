@@ -205,7 +205,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               startIcon={<DownloadIcon />}
               sx={{
                 width: 350,
-                height: 60,
+                height: 80,
                 borderRadius: 2,
                 textTransform: "none",
                 py: 1.5,
@@ -219,7 +219,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1.2rem",
+                  fontSize: "1.1rem",
                   lineHeight: "1.2",
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
                   WebkitBackgroundClip: "text",
@@ -239,7 +239,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               startIcon={<DownloadIcon />}
               sx={{
                 width: 350,
-                height: 60,
+                height: 80,
                 borderRadius: 2,
                 textTransform: "none",
                 py: 1.5,
@@ -253,7 +253,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1.2rem",
+                  fontSize: "1.1rem",
                   lineHeight: "1.2", // Adjust line height for multiline text
                   // Apply the gradient text effect
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",
@@ -274,7 +274,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
               startIcon={<DownloadIcon />}
               sx={{
                 width: 350,
-                height: 60,
+                height: 80,
                 borderRadius: 2,
                 textTransform: "none",
                 py: 1.5,
@@ -288,7 +288,7 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
                 component="span" // Use span to ensure the text stays inline
                 sx={{
                   fontWeight: "bold", // Make text bold
-                  fontSize: "1.2rem",
+                  fontSize: "1.1rem",
                   lineHeight: "1.2", // Adjust line height for multiline text
                   // Apply the gradient text effect
                   background: "linear-gradient(to right, #3085C1, #4CAF50)",

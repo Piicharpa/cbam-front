@@ -36,6 +36,12 @@ const SourceForm: React.FC<SourceFormProps> = ({
   onChange,
   onNextStep,
 }) => {
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
   const location = useLocation();
   const reportId = localStorage.getItem("reportId");
   const apiUrl = process.env.REACT_APP_API_URL;
@@ -87,7 +93,7 @@ const SourceForm: React.FC<SourceFormProps> = ({
     try {
       const response = await fetch(`${apiUrl}/api/cbam/b_emission/${db_id}`, {
         method: "DELETE",
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
       });
 
       if (!response.ok) {
@@ -110,7 +116,10 @@ const fetchExistingEmissions = async () => {
 
   try {
     const response = await fetch(
-      `${apiUrl}/api/cbam/b_emission/report/${reportId}`
+      `${apiUrl}/api/cbam/b_emission/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
     );
 
     if (response.ok) {
@@ -496,7 +505,10 @@ const fetchExistingEmissions = async () => {
 
         const response = await fetch(url, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
           body: JSON.stringify(payload),
         });
 

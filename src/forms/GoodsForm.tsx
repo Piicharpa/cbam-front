@@ -57,6 +57,8 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   onChange,
   onNextStep,
 }) => {
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
   const reportId = Number(localStorage.getItem("reportId"));
   const apiUrl = process.env.REACT_APP_API_URL;
   const [existingData, setExistingData] = useState<any>(null);
@@ -127,6 +129,15 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
   // -- Main data loading logic --
   useEffect(() => {
     const loadGoodsData = async () => {
+      const user_account = localStorage.getItem("user_account");
+      if (!user_account) {
+        return;
+      }
+     const token = JSON.parse(user_account).token;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
       setIsLoading(true);
       try {
         if (!reportId) {
@@ -140,7 +151,12 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
         }
 
         // 1. fetch report data
-        const reportRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`);
+        const reportRes = await fetch(`${apiUrl}/api/cbam/report/${reportId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
         if (!reportRes.ok) throw new Error(`Failed to fetch report`);
 
         const reportArr = await reportRes.json();
@@ -154,7 +170,13 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
           try {
             // กรณีมี goods_id ให้ดึงข้อมูล
             const goodsRes = await fetch(
-              `${apiUrl}/api/cbam/d_goods/${report.d_processes_id}`
+              `${apiUrl}/api/cbam/d_goods/${report.d_processes_id}`,
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
             );
 
             if (!goodsRes.ok) {
@@ -298,15 +320,14 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
 
   // -- Sync local to parent --
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const { name, value } = e.target;
-  setLocalFormValues((prev) => {
-    const updated = { ...prev, [name]: value };
-    onChange(updated); // เรียกตรงนี้เลย
-    return updated;
-  });
-  setFormErrors((prev) => ({ ...prev, [name]: "" }));
-};
-
+    const { name, value } = e.target;
+    setLocalFormValues((prev) => {
+      const updated = { ...prev, [name]: value };
+      onChange(updated); // เรียกตรงนี้เลย
+      return updated;
+    });
+    setFormErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
   const handleSection1Change = (field: string, value: any) => {
     setLocalFormValues((prev) => {
@@ -416,22 +437,24 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       };
 
       let response, newGoodsId;
+      const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
 
       if (formMode === "edit" && existingData?.d_processes_id) {
-        
         response = await fetch(
           `${apiUrl}/api/cbam/d_goods/${existingData.d_processes_id}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: headers,
             body: JSON.stringify(cleanPayload),
           }
         );
-        newGoodsId = existingData.d_processes_id;
       } else {
         response = await fetch(`${apiUrl}/api/cbam/d_goods`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: headers,
           body: JSON.stringify(cleanPayload),
         });
       }
@@ -445,7 +468,6 @@ const GoodsForm: React.FC<GoodsFormProps> = ({
       const result = await response.json();
       if (formMode !== "edit") {
         newGoodsId = result.id;
-        
       }
 
       localStorage.removeItem("goodsFormData");

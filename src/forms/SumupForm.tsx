@@ -42,6 +42,12 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   onChange,
   onNextStep,
 }) => {
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
   const navigate = useNavigate();
   const { reportId: urlReportId } = useParams();
   const [searchParams] = useSearchParams();
@@ -111,7 +117,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
   useEffect(() => {
     const fetchIndustryTypes = async () => {
       try {
-        const res = await fetch(`${apiUrl}/api/cbam/industry_types`);
+        const res = await fetch(`${apiUrl}/api/cbam/industry_types`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }});
         if (res.ok) {
           const data = await res.json();
           setIndustryTypes(data);
@@ -132,7 +141,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       }
 
       try {
-        const res = await fetch(`${apiUrl}/api/cbam/report/${reportIdFromUrl}`);
+        const res = await fetch(`${apiUrl}/api/cbam/report/${reportIdFromUrl}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }});
 
         if (!res.ok) {
           if (res.status === 404) {
@@ -188,7 +200,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       }
       try {
         const res = await fetch(
-          `${apiUrl}/api/cbam/goods/${formValues.industry_id}`
+          `${apiUrl}/api/cbam/goods/${formValues.industry_id}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
         if (res.ok) {
           const data = await res.json();
@@ -211,7 +226,10 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
       }
       try {
         const res = await fetch(
-          `${apiUrl}/api/cbam/cncodes/${formValues.goods_id}`
+          `${apiUrl}/api/cbam/cncodes/${formValues.goods_id}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
         if (res.ok) {
           const data = await res.json();
@@ -313,7 +331,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
           `${apiUrl}/api/cbam/report/${currentReportId}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: headers,
             body: JSON.stringify(payload),
           }
         );
@@ -330,7 +348,7 @@ const SumupForm: React.FC<CNcodeFormProps> = ({
 
         const res = await fetch(`${apiUrl}/api/cbam/report`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: headers,
           body: JSON.stringify(payload),
         });
 

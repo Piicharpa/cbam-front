@@ -64,7 +64,20 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
   onEditReport,
   onDeleteReport,
 }) => {
-  const token = useToken();
+  // ✅ Properly parse user account data
+  const user_account = localStorage.getItem("user_account");
+  const token = user_account ? JSON.parse(user_account).token : null;
+  
+  // ✅ Extract company_id properly
+  const companyId = (() => {
+    if (!user_account) return null;
+    try {
+      const parsed = JSON.parse(user_account);
+      return parsed.company?.[0]?.company_id || null;
+    } catch {
+      return null;
+    }
+  })();
 
   const [data, setData] = useState<CBAMData[]>([]);
   const [filteredData, setFilteredData] = useState<CBAMData[]>([]);
@@ -76,10 +89,28 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
 
   const apiUrl = process.env.REACT_APP_API_URL;
+
   const fetchData = async (company_id: number) => {
+    // ✅ Add safety check for token and company_id
+    if (!token || !company_id) {
+      console.error("Missing token or company_id");
+      setData([]);
+      setFilteredData([]);
+      return;
+    }
+
     try {
+      console.log("Fetching data for company:", company_id);
+      console.log("Using token:", token.substring(0, 20) + "...");
+
       const response = await axios.get(
-        `${apiUrl}/api/cbam/report/dashboard/${company_id}`
+        `${apiUrl}/api/cbam/report/dashboard/${company_id}`,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
       const raw = response.data;
       const items = Array.isArray(raw) ? raw : [raw];
@@ -102,13 +133,33 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
       setFilteredData(mapped);
     } catch (err) {
       console.error("❌ Error fetching CBAM data:", err);
+      
+      // ✅ Better error handling for different error types
+      if (axios.isAxiosError(err)) {
+        if (err.response?.status === 401) {
+          console.error("Authentication failed - token may be expired");
+          // Optionally redirect to login or show auth error
+        } else {
+          console.error("API Error:", err.response?.status, err.response?.data);
+        }
+      }
+      
       setData([]);
       setFilteredData([]);
     }
   };
+
   useEffect(() => {
-    fetchData(token?.company?.[0].company_id);
-  }, [apiUrl]);
+    // ✅ Only fetch if we have both token and companyId
+    if (token && companyId) {
+      fetchData(companyId);
+    } else {
+      console.error("Missing required authentication data:", { 
+        hasToken: !!token, 
+        companyId 
+      });
+    }
+  }, [apiUrl, token, companyId]);
 
   // Apply filters when search term, dates, or category changes
   useEffect(() => {
@@ -180,6 +231,27 @@ const TableDashboard: React.FC<TableDashboardProps> = ({
     setEndDate(null);
     setCategoryFilter("");
   };
+
+  // ✅ Show error message if authentication is missing
+  if (!user_account) {
+    return (
+      <Box p={3} textAlign="center">
+        <Typography variant="h6" color="error">
+          User not logged in
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (!companyId) {
+    return (
+      <Box p={3} textAlign="center">
+        <Typography variant="h6" color="error">
+          Company information not found
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box>

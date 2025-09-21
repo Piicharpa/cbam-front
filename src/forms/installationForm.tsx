@@ -44,33 +44,19 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   onChange,
   onNextStep,
 }) => {
-  // Get report ID from localStorage (always exists in real situation)
-  const storedReportId = localStorage.getItem("reportId");
-  const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
-  const companyId = (() => {
-    const data = localStorage.getItem("user_account");
-    if (!data) return null;
-    try {
-      const parsed = JSON.parse(data);
-      return parsed.company?.[0]?.company_id || null;
-    } catch {
-      return null;
-    }
-  })();
+  // ✅ ALL hooks must be at the very top, before ANY conditional logic
   const apiUrl = process.env.REACT_APP_API_URL;
   const [existingData, setExistingData] = useState<any>(null);
   const [countries, setCountries] = useState<CountryOption[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [formMode, setFormMode] = useState<"edit" | "create" | "empty">(
-    "empty"
-  );
+  const [formMode, setFormMode] = useState<"edit" | "create" | "empty">("empty");
 
   // Initialize form values with today's date
   const getTodayDate = () => dayjs();
 
   const [formValues, setFormValues] = useState({
-    reportId: reportId || 0,
+    reportId: 0,
     name: data.name || "",
     name_specific: data.name_specific || "",
     eco_activity: data.eco_activity || "",
@@ -90,6 +76,24 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
+
+  // ✅ Get user data but don't return early yet - need to define all hooks first
+  const user_account = localStorage.getItem("user_account");
+  const token = user_account ? JSON.parse(user_account).token : null;
+  
+  // Get report ID from localStorage (always exists in real situation)
+  const storedReportId = localStorage.getItem("reportId");
+  const reportId = storedReportId ? parseInt(storedReportId, 10) : null;
+  const companyId = (() => {
+    const data = localStorage.getItem("user_account");
+    if (!data) return null;
+    try {
+      const parsed = JSON.parse(data);
+      return parsed.company?.[0]?.company_id || null;
+    } catch {
+      return null;
+    }
+  })();
 
   // Handle date change with dayjs objects
   const handleDateChange = (name: string, date: dayjs.Dayjs | null) => {
@@ -124,7 +128,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       // เรียกข้อมูลสถานที่ติดตั้ง
       const installationResponse = await fetch(
-        `${apiUrl}/api/cbam/installation/${installationId}`
+        `${apiUrl}/api/cbam/installation/${installationId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
       if (!installationResponse.ok) {
         throw new Error(
@@ -134,12 +141,18 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
       // เรียกข้อมูลรายงานทั้งหมดของบริษัท
       const companyReportsResponse = await fetch(
-        `${apiUrl}/api/cbam/report/company/${companyId}`
+        `${apiUrl}/api/cbam/report/company/${companyId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       // เรียกข้อมูลรายงานที่กำลังแก้ไข (รายงานปัจจุบัน)
       const currentReportResponse = await fetch(
-        `${apiUrl}/api/cbam/report/${reportId}`
+        `${apiUrl}/api/cbam/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       // ประมวลผลข้อมูล
@@ -215,7 +228,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
   const fetchLatestCompanyInstallation = async (companyId: number) => {
     try {
       const response = await fetch(
-        `${apiUrl}/api/cbam/report/company/${companyId}`
+        `${apiUrl}/api/cbam/report/company/${companyId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
       if (!response.ok) {
         throw new Error(
@@ -228,7 +244,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         const latestInstallation = installations[installations.length - 1];
         const latestinstallationId = latestInstallation.installation_id;
         const latestdata_response = await fetch(
-          `${apiUrl}/api/cbam/installation/${latestinstallationId}`
+          `${apiUrl}/api/cbam/installation/${latestinstallationId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
         const latestdata = await latestdata_response.json();
         // Update form with basic info but set dates to today
@@ -268,6 +287,9 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
 
   // 🔍 Main data loading logic
   useEffect(() => {
+    // Skip if not authenticated
+    if (!token) return;
+    
     const loadInstallationData = async () => {
       setIsLoading(true);
       try {
@@ -279,7 +301,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         }
         // Case 2: Fetch report data to check if it has installation_id
         const reportResponse = await fetch(
-          `${apiUrl}/api/cbam/report/${reportId}`
+          `${apiUrl}/api/cbam/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
         if (!reportResponse.ok) {
           throw new Error(
@@ -302,13 +327,15 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         }
       } catch (error) {
         console.error("❌ Error in main data loading:", error);
-        await fetchLatestCompanyInstallation(companyId);
+        if (companyId) {
+          await fetchLatestCompanyInstallation(companyId);
+        }
       } finally {
         setIsLoading(false);
       }
     };
     loadInstallationData();
-  }, [apiUrl, reportId, companyId]);
+  }, [apiUrl, reportId, companyId, token]);
 
   // Load countries
   useEffect(() => {
@@ -462,7 +489,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
           `${apiUrl}/api/cbam/installation/${existingData.installation_id}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: { 
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`
+            },
             body: JSON.stringify(installationPayload),
           }
         );
@@ -471,7 +501,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         // CREATE new installation
         installationResponse = await fetch(`${apiUrl}/api/cbam/installation`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify(installationPayload),
         });
       }
@@ -504,7 +537,10 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
         `${apiUrl}/api/cbam/report/${reportId}`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: { 
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
           body: JSON.stringify(reportUpdatePayload),
         }
       );
@@ -532,6 +568,17 @@ const InstallationForm: React.FC<InstallationFormProps> = ({
       setIsSubmitting(false);
     }
   };
+
+  // ✅ Now handle authentication check AFTER all hooks are defined
+  if (!user_account) {
+    return (
+      <Container>
+        <Typography variant="h6" color="error">
+          User not logged in
+        </Typography>
+      </Container>
+    );
+  }
 
   // Show loading state
   if (isLoading) {

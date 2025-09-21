@@ -18,7 +18,6 @@ import {
 } from "../../components/dropdown/goods";
 import { justification } from "../../components/dropdown/justification";
 import { electricitys } from "../../components/dropdown/electricitys";
-import Swal from "sweetalert2";
 
 interface PrecursorFieldsProps {
   index: number;
@@ -154,6 +153,9 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
   // Ref to prevent infinite loop
   const isCalculating = useRef(false);
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+ 
 
   // Removed state for calculated values to calculate them right before saving
   const apiUrl = process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
@@ -395,7 +397,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
     try {
       // If no specific ID or the specific fetch failed, get all precursors for this report
       const response = await fetch(
-        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
+        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
       if (!response.ok) {
         throw new Error(
@@ -820,7 +825,10 @@ const PrecursorFields1: React.FC<PrecursorFieldsProps> = ({
 
         const response = await fetch(url, {
           method,
-          headers: { "Content-Type": "application/json" },
+          headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
           body: JSON.stringify(precursor),
         });
 

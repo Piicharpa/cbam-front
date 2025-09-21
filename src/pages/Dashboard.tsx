@@ -107,28 +107,6 @@ const theme = createTheme({
   },
 });
 
-// Custom connector for stepper
-const ColorlibConnector = styled(StepConnector)(({ theme }) => ({
-  [`&.${stepConnectorClasses.alternativeLabel}`]: {
-    top: 22,
-  },
-  [`&.${stepConnectorClasses.active}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: `linear-gradient(95deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-    },
-  },
-  [`&.${stepConnectorClasses.completed}`]: {
-    [`& .${stepConnectorClasses.line}`]: {
-      backgroundImage: `linear-gradient(95deg, ${theme.palette.primary.light} 0%, ${theme.palette.primary.main} 100%)`,
-    },
-  },
-  [`& .${stepConnectorClasses.line}`]: {
-    height: 4,
-    border: 0,
-    backgroundColor: theme.palette.grey[300],
-    borderRadius: 2,
-  },
-}));
 
 // Custom step icon
 const ColorlibStepIconRoot = styled("div")<{
@@ -191,30 +169,12 @@ const Form: React.FC = () => {
     navigate(`/formdev?reportId=${reportId}`);
   };
 
-  // Function to handle creating a new report
-  const handleCreateNewReport = () => {
-    // ✅ Clear CBAM form data เมื่อสร้าง report ใหม่
-    const cbamKeys = [
-      "reportId",
-      "cbamFormData",
-      "amountFormData",
-      "goodsFormData",
-      "precursorData",
-      "precursorId",
-      "selectedCnCode",
-      "selectedGoods",
-      "selectedIndustry",
-      "activeTable",
-      "selectedCctvIds",
-      "selectedNodeIds",
-      "searchFilters",
-    ];
-
-    cbamKeys.forEach((key) => localStorage.removeItem(key));
-
-    // Navigate to form page
-    navigate(`/formdev`);
-  };
+const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
 
   // Function to initiate delete process
   const handleDeleteReport = (reportId: string | number) => {

@@ -77,6 +77,12 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
 }) => {
   const navigate = useNavigate();
   const reportId = localStorage.getItem("reportId");
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
 
   // State management
   const [countries, setCountries] = useState<CountryOption[]>([]);
@@ -141,10 +147,14 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
 
   // Fetch existing precursor data
   const fetchExistingPrecursorData = async () => {
+    
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
+        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       if (response.ok) {
@@ -336,7 +346,10 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
     try {
       // Get current data for this report from API
       const fetchResponse = await fetch(
-        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`
+        `${apiUrl}/api/cbam/e_precursors/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
       const existingData = fetchResponse.ok ? await fetchResponse.json() : null;
 
@@ -375,7 +388,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               `${apiUrl}/api/cbam/e_precursors/${existingPrecursor.id}`,
               {
                 method: "PUT",
-                headers: { "Content-Type": "application/json" },
+                headers: headers,
                 body: JSON.stringify(submission),
               }
             );
@@ -393,7 +406,7 @@ const PrecursorsForm: React.FC<PrecursorsFormProps> = ({
               `${apiUrl}/api/cbam/e_precursors`,
               {
                 method: "POST",
-                headers: { "Content-Type": "application/json" },
+                headers: headers,
                 body: JSON.stringify(submission),
               }
             );

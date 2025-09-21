@@ -52,6 +52,12 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
   setFormValues,
   setFormErrors,
 }) => {
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
   const generalInfoOptions = generalinfo?.map((item) => item?.name || "") || [];
   const justificationOptions =
     justification?.map((item) => item?.name || "") || [];
@@ -73,7 +79,10 @@ const Source_sec2: React.FC<SourceFormSection2Props> = ({
         const apiUrl =
           process.env.REACT_APP_API_URL || "http://178.128.123.212:5000";
         const response = await fetch(
-          `${apiUrl}/api/cbam/b_emission/report/${reportId}`
+          `${apiUrl}/api/cbam/b_emission/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
 
         if (!response.ok) {

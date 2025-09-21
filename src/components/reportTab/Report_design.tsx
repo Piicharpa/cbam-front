@@ -68,6 +68,12 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
     if (!reportId) return;
 
     const fetchData = async () => {
+     const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
       setLoading(true);
       try {
         let apiEndpoint;
@@ -80,7 +86,10 @@ const DataDisplayTab: React.FC<DataDisplayTabProps> = ({
           apiEndpoint = `${apiUrl}/api/cbam/excelreport/${config.apiEndpoint}/${reportId}`;
         }
 
-        const response = await fetch(apiEndpoint);
+        const response = await fetch(apiEndpoint,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }});
 
         if (!response.ok) {
           throw new Error(

@@ -57,11 +57,17 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
   // ฟังก์ชันดึงข้อมูลจาก API ที่ปรับปรุงแล้ว
   // Fix for fetching and handling the emission data
   const fetchEmissionData = async () => {
+   const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+
     if (!reportId) return;
     setIsLoading(true);
     try {
       const response = await fetch(
-        `${apiUrl}/api/cbam/c_emission/report/${reportId}`
+        `${apiUrl}/api/cbam/c_emission/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       if (!response.ok) {
@@ -199,6 +205,9 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
       manual_total_indirect_emissions: null,
     };
 
+    const user_account = localStorage.getItem("user_account");
+  const token = user_account ? JSON.parse(user_account).token : null;
+  
     // Determine if we're updating an existing record or creating a new one
     const isUpdate = apiData && apiData.id;
     const method = isUpdate ? "PUT" : "POST";
@@ -213,7 +222,10 @@ const EmissionForm: React.FC<EmissionFormProps> = ({
     // Send data to API
     fetch(url, {
       method,
-      headers: { "Content-Type": "application/json" },
+      headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
       body: JSON.stringify(payload),
     })
       .then((response) => {

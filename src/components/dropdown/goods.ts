@@ -19,9 +19,15 @@ export interface OptionType {
 
 // ฟังก์ชัน fetch หลัก
 export const fetchGoodsData = async (): Promise<IndustryGroup[]> => {
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  
       const apiUrl = process.env.REACT_APP_API_URL;
   try {
-    const response = await fetch(`${apiUrl}/api/cbam/goods`);
+    const response = await fetch(`${apiUrl}/api/cbam/goods`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }});
     if (!response.ok) {
       throw new Error("Failed to fetch goods data");
     }

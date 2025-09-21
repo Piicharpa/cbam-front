@@ -9,9 +9,21 @@ export const fetchCountries = async (): Promise<{
   countries: CountryOption[];
   defaultCountry: CountryOption | null;
 }> => {
+ const user_account = localStorage.getItem("user_account");
+if (!user_account) {
+  return { countries: [], defaultCountry: null };
+}
+
+const token = JSON.parse(user_account).token;
+
   const apiUrl = process.env.REACT_APP_API_URL;
   try {
-    const res = await fetch(`${apiUrl}/api/cbam/countries`);
+    const res = await fetch(`${apiUrl}/api/cbam/countries`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
     const data = await res.json();
 
     const mappedCountries: CountryOption[] = data.map((item: any) => ({

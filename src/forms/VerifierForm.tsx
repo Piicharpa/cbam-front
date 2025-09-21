@@ -38,7 +38,12 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   onSave, // ✅ รับ onSave prop
   onNextStep,
 }) => {
-  const navigate = useNavigate();
+ const user_account = localStorage.getItem("user_account");
+const token = user_account ? JSON.parse(user_account).token : null;
+  const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // ต้องอยู่ใน headers
+      };
   // Get reportId from localStorage (same as InstallationForm)
   const storedReportId = localStorage.getItem("reportId");
   const reportId = storedReportId ? parseInt(storedReportId) : null;
@@ -85,7 +90,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   const fetchAuthorizedRepresentative = async (authorizedRepId: number) => {
     try {
       const response = await fetch(
-        `${apiUrl}/api/cbam/authorised/${authorizedRepId}`
+        `${apiUrl}/api/cbam/authorised/${authorizedRepId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       if (!response.ok) {
@@ -108,7 +116,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
   const fetchVerifierData = async (verifierId: number) => {
     try {
       const response = await fetch(
-        `${apiUrl}/api/cbam/verifier/detail/${verifierId}`
+        `${apiUrl}/api/cbam/verifier/detail/${verifierId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       if (!response.ok) {
@@ -170,7 +181,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
     try {
       // Get all company reports first
       const response = await fetch(
-        `${apiUrl}/api/cbam/report/company/${companyId}`
+        `${apiUrl}/api/cbam/report/company/${companyId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
       );
 
       if (!response.ok) {
@@ -195,7 +209,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
         // ✅ ดึงข้อมูล verifier
         const latestdata_response = await fetch(
-          `${apiUrl}/api/cbam/verifier/${latestVerifierId}`
+          `${apiUrl}/api/cbam/verifier/${latestVerifierId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
 
         if (!latestdata_response.ok) {
@@ -265,7 +282,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
         // Case 2: Fetch report data to check if it has verifier_id
         const reportResponse = await fetch(
-          `${apiUrl}/api/cbam/report/${reportId}`
+          `${apiUrl}/api/cbam/report/${reportId}`,{headers:{
+          'Content-Type' :"application/json",
+          Authorization:`Bearer ${token}`
+        }}
         );
 
         if (!reportResponse.ok) {
@@ -408,7 +428,7 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
 
       const authorizedResponse = await fetch(authorizedUrl, {
         method: authorizedMethod,
-        headers: { "Content-Type": "application/json" },
+        headers: headers,
         body: JSON.stringify(authorizedPayload),
       });
 
@@ -450,7 +470,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           `${apiUrl}/api/cbam/verifier/${existingData.verifier_id}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
             body: JSON.stringify(verifierPayload),
           }
         );
@@ -459,7 +482,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
         // CREATE new verifier
         verifierResponse = await fetch(`${apiUrl}/api/cbam/verifier/`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
           body: JSON.stringify(verifierPayload),
         });
       }
@@ -492,7 +518,10 @@ const VerifierForm: React.FC<VerifierFormProps> = ({
           `${apiUrl}/api/cbam/report/${reportId}`,
           {
             method: "PUT",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+  "Content-Type": "application/json",
+  Authorization: `Bearer ${token}`
+},
             body: JSON.stringify(reportUpdatePayload),
           }
         );
